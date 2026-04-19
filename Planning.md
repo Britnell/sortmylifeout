@@ -82,3 +82,7 @@ i want to talk to my calendar
 # AI
 - start w gemma 4? maybe good model for basic tool usage and crazy cheap?
 - also mistral + mistral voice?
+
+# Auth
+- astro x better auth ? 
+https://docs.astro.build/en/guides/authentication/#better-auth
