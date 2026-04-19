@@ -1,17 +1,27 @@
 ---
+import { env } from "cloudflare:workers";
 
+const db = env.sortinglifedb;
+
+if (!db) {
+	console.log("no db", env);
+	return;
+}
+
+const { results } = await db.prepare("SELECT * FROM users").all();
+console.log(results);
 ---
 
 <html lang="en">
 	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
+		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<title>Sort yourself our</title>
 	</head>
 	<body>
-		<h1>Astro</h1>
+		<h1>Sort my life out</h1>
+		<p class="x">asdasdasd</p>
+
+		please <a href="/login">login</a> to continue.
 	</body>
 </html>

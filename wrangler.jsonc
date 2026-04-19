@@ -1,6 +1,8 @@
 {
 	"compatibility_date": "2026-04-19",
-	"compatibility_flags": ["global_fetch_strictly_public"],
+	"compatibility_flags": [
+		"global_fetch_strictly_public"
+	],
 	"name": "sorting",
 	"main": "@astrojs/cloudflare/entrypoints/server",
 	"assets": {
@@ -9,5 +11,13 @@
 	},
 	"observability": {
 		"enabled": true
-	}
+	},
+	"d1_databases": [
+		{
+			"binding": "sortinglifedb",
+			"database_name": "sortinglifedb",
+			"database_id": "55c30877-0a91-410b-a4a8-00b7a976dd2e",
+			"remote": true
+		}
+	]
 }
