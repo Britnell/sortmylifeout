@@ -1,6 +1,6 @@
 ---
 import { getSession } from "../db/auth";
-import AppLayout from "../layouts/AppLayout.astro";
+import AppLayout from "../comp/AppLayout.astro";
 import CalendarComp from "../react/calendar.tsx";
 
 const session = await getSession(Astro.request);
@@ -16,6 +16,36 @@ if (!session) return Astro.redirect("/login");
 			</ul>
 		</nav>
 
-		<CalendarComp client:idle />
+		<div className="calendar-demo">
+			{/* Sample events for demonstration */}
+			<CalendarComp
+				client:idle
+				month={new Date().getMonth()}
+				year={new Date().getFullYear()}
+				events={{
+					"2024-04-15": [
+						{ title: "Team Meeting", time: "10:00 AM" },
+						{ title: "Lunch with client", time: "12:30 PM" },
+					],
+					"2024-04-18": [{ title: "Doctor Appointment", time: "2:00 PM" }],
+					"2024-04-20": [
+						{ title: "Project Deadline", time: "All day" },
+						{ title: "Team Dinner", time: "7:00 PM" },
+						{ title: "Code Review", time: "3:00 PM" },
+					],
+					"2024-04-25": [{ title: "Birthday Party", time: "6:00 PM" }],
+				}}
+				onDayClick={(date) => {
+					console.log("Day clicked:", date);
+					// You can add your own click handler here
+				}}
+			/>
+		</div>
+
+		<div className="calendar-controls mt-4">
+			<p className="text-sm text-gray-600">
+				Click on any day to select it. Days with events show event indicators.
+			</p>
+		</div>
 	</main>
 </AppLayout>
