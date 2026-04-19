@@ -39,7 +39,7 @@ export async function POST({ request }: APIContext) {
 		});
 	}
 
-	const sessionId = await createSession(db, user.id);
+	const sessionId = await createSession(user.id);
 
 	return new Response(null, {
 		status: 302,

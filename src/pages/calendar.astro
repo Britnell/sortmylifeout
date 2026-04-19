@@ -1,7 +1,7 @@
 ---
 import { getSession } from "../db/auth";
 import AppLayout from "../comp/AppLayout.astro";
-import CalendarComp from "../react/calendar.tsx";
+import CalendarMonth from "../react/calendar.tsx";
 
 const session = await getSession(Astro.request);
 if (!session) return Astro.redirect("/login");
@@ -18,7 +18,7 @@ if (!session) return Astro.redirect("/login");
 
 		<div className="calendar-demo">
 			{/* Sample events for demonstration */}
-			<CalendarComp
+			<CalendarMonth
 				client:idle
 				month={new Date().getMonth()}
 				year={new Date().getFullYear()}

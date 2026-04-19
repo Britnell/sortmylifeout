@@ -54,16 +54,23 @@ export function sessionCookie(sessionId: string): string {
 	return `session=${sessionId}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${SESSION_TTL_SECONDS}`;
 }
 
-export async function getSession(request: Request): Promise<{ userId: number } | null> {
+export async function getSession(
+	request: Request,
+): Promise<{ userId: number } | null> {
 	const cookie = request.headers.get("cookie") ?? "";
 	const match = cookie.match(/(?:^|;\s*)session=([^;]+)/);
 	if (!match) return null;
 	const sessionId = match[1];
 	const now = Math.floor(Date.now() / 1000);
-	const row = await db
-		.prepare("SELECT user_id FROM sessions WHERE id = ? AND expires_at > ?")
-		.bind(sessionId, now)
-		.first<{ user_id: number }>();
-	if (!row) return null;
-	return { userId: row.user_id };
+	try {
+		const row = await db
+			.prepare("SELECT user_id FROM sessions WHERE id = ? AND expires_at > ?")
+			.bind(sessionId, now)
+			.first<{ user_id: number }>();
+		if (!row) return null;
+		return { userId: row.user_id };
+	} catch (e) {
+		console.error("Session lookup failed:", e);
+		return null;
+	}
 }

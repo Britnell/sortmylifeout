@@ -1,128 +1,174 @@
-import { useState } from 'react';
+import { useState } from "react";
+import Dialog from "./Dialog";
 
-type CalendarProps = {
-  month: number; // 0-11 (January-December)
-  year?: number; // Optional year, defaults to current year
-  events?: Record<string, any[]>; // Events by date (YYYY-MM-DD format)
-  onDayClick?: (date: Date) => void; // Callback when a day is clicked
-};
+interface CalendarEvent {
+	id: number;
+	user_id: number;
+	title: string;
+	description: string;
+	start_at: string;
+	end_at: string;
+	location?: string;
+	color?: string;
+}
 
-export default function CalendarComp({
-  month,
-  year = new Date().getFullYear(),
-  events = {},
-  onDayClick,
-}: CalendarProps) {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+interface CalendarProps {
+	events: CalendarEvent[];
+}
 
-  // Get the first day of the month
-  const firstDay = new Date(year, month, 1);
-  const firstDayOfWeek = firstDay.getDay(); // 0 (Sunday) - 6 (Saturday)
+export default function Calendar({ events }: CalendarProps) {
+	const [currentDate, setCurrentDate] = useState(new Date());
+	const [selectedDay, setSelectedDay] = useState<number | null>(null);
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Get the number of days in the month
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+	// Get current month and year
+	const currentMonth = currentDate.getMonth();
+	const currentYear = currentDate.getFullYear();
 
-  // Get the number of days in the previous month
-  const prevMonth = month === 0 ? 11 : month - 1;
-  const prevYear = month === 0 ? year - 1 : year;
-  const daysInPrevMonth = new Date(prevYear, prevMonth + 1, 0).getDate();
+	// Get first day of month and total days
+	const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+	const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-  // Create an array of all days to display (including previous/next month days)
-  const days: (Date | null)[] = [];
+	// Generate days array
+	const days = [];
+	for (let i = 0; i < firstDay; i++) {
+		days.push(null); // Empty cells for days before month starts
+	}
 
-  // Add days from previous month
-  for (let i = 0; i < firstDayOfWeek; i++) {
-    const day = daysInPrevMonth - firstDayOfWeek + i + 1;
-    days.push(new Date(prevYear, prevMonth, day));
-  }
+	for (let i = 1; i <= daysInMonth; i++) {
+		days.push(i);
+	}
 
-  // Add days from current month
-  for (let i = 1; i <= daysInMonth; i++) {
-    days.push(new Date(year, month, i));
-  }
+	// Group events by day
+	const eventsByDay = new Map<number, CalendarEvent[]>();
+	events.forEach(event => {
+		const eventDate = new Date(event.start_at);
+		const day = eventDate.getDate();
 
-  // Add days from next month to complete the grid
-  const remainingDays = 42 - days.length; // 6 weeks * 7 days
-  for (let i = 1; i <= remainingDays; i++) {
-    const nextMonth = month === 11 ? 0 : month + 1;
-    const nextYear = month === 11 ? year + 1 : year;
-    days.push(new Date(nextYear, nextMonth, i));
-  }
+		if (eventDate.getMonth() === currentMonth && eventDate.getFullYear() === currentYear) {
+			if (!eventsByDay.has(day)) {
+				eventsByDay.set(day, []);
+			}
+			eventsByDay.get(day)?.push(event);
+		}
+	});
 
-  // Format date as YYYY-MM-DD for event lookup
-  const formatDate = (date: Date) => {
-    return date.toISOString().split('T')[0];
-  };
+	// Get events for a specific day
+	const getEventsForDay = (day: number | null) => {
+		if (day === null) return [];
+		return eventsByDay.get(day) || [];
+	};
 
-  // Handle day click
-  const handleDayClick = (date: Date) => {
-    setSelectedDate(date);
-    if (onDayClick) {
-      onDayClick(date);
-    }
-  };
+	// Weekday names
+	const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  // Check if a date is from the current month
-  const isCurrentMonth = (date: Date) => {
-    return date.getMonth() === month && date.getFullYear() === year;
-  };
+	const handleDayClick = (day: number) => {
+		setSelectedDay(day);
+		setIsDialogOpen(true);
+	};
 
-  // Get month name
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
+	const handleCloseDialog = () => {
+		setIsDialogOpen(false);
+	};
 
-  // Weekday names
-  const weekdayNames = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+	return (
+		<div className="calendar">
+			<div className="flex justify-between items-center mb-4">
+				<h2 className="text-xl font-semibold">
+					{currentDate.toLocaleString("default", { month: "long" })} {currentYear}
+				</h2>
+				<div className="flex gap-2">
+					<button
+						className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+						onClick={() => setCurrentDate(new Date(currentYear, currentMonth - 1, 1))}
+					>
+						&lt;
+					</button>
+					<button
+						className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+						onClick={() => setCurrentDate(new Date(currentYear, currentMonth + 1, 1))}
+					>
+						&gt;
+					</button>
+				</div>
+			</div>
 
-  return (
-    <div className="calendar-container">
-      <div className="calendar-header">
-        <h2>{monthNames[month]} {year}</h2>
-      </div>
+			<div className="grid grid-cols-7 gap-1">
+				{/* Weekday headers */}
+				{weekdays.map((day) => (
+					<div key={day} className="text-center font-medium p-2 bg-gray-100">
+						{day}
+					</div>
+				))}
 
-      <div className="calendar-weekdays">
-        {weekdayNames.map((day, index) => (
-          <div key={index} className="weekday-header">
-            {day}
-          </div>
-        ))}
-      </div>
+				{/* Calendar days */}
+				{days.map((day, index) => {
+					const dayEvents = getEventsForDay(day);
+					const isToday =
+						day !== null &&
+						new Date().getDate() === day &&
+						new Date().getMonth() === currentMonth &&
+						new Date().getFullYear() === currentYear;
 
-      <div className="calendar-grid">
-        {days.map((date, index) => {
-          if (!date) return null;
+					return (
+						<div
+							key={index}
+							className={`border p-2 min-h-[100px] cursor-pointer hover:bg-gray-50 ${
+								day === null ? "bg-gray-50" : "bg-white"
+							} ${isToday ? "bg-blue-50" : ""}`}
+							onClick={() => day !== null && handleDayClick(day)}
+						>
+							{day !== null && (
+								<>
+									<div className="font-medium">{day}</div>
+									{dayEvents.length > 0 && (
+										<div className="mt-1 space-y-1">
+											{dayEvents.map((event) => (
+												<div
+													key={event.id}
+													className={`text-xs p-1 rounded ${
+														event.color || "bg-blue-100"
+													}`}
+													style={{ backgroundColor: event.color || "#e0f2fe" }}
+												>
+													{event.title}
+												</div>
+											))}
+										</div>
+									)}
+								</>
+							)}
+						</div>
+					);
+				})}
+			</div>
 
-          const dateKey = formatDate(date);
-          const dayEvents = events[dateKey] || [];
-          const isCurrent = isCurrentMonth(date);
-          const isSelected = selectedDate && formatDate(selectedDate) === dateKey;
-          const isToday = 
-            date.toDateString() === new Date().toDateString();
-
-          return (
-            <button
-              key={index}
-              className={`calendar-day ${!isCurrent ? 'other-month' : ''} ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}`}
-              onClick={() => handleDayClick(date)}
-              disabled={!isCurrent}
-            >
-              <div className="day-number">{date.getDate()}</div>
-              {dayEvents.length > 0 && (
-                <div className="day-events">
-                  {dayEvents.slice(0, 2).map((event, eventIndex) => (
-                    <div key={eventIndex} className="event-dot" title={event.title || 'Event'}></div>
-                  ))}
-                  {dayEvents.length > 2 && (
-                    <div className="more-events">+{dayEvents.length - 2}</div>
-                  )}
-                </div>
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
+			<Dialog isOpen={isDialogOpen} onClose={handleCloseDialog}>
+				<div>
+					<h3 className="text-lg font-semibold mb-4">Events for {selectedDay}</h3>
+					{selectedDay && getEventsForDay(selectedDay).length > 0 ? (
+						<div className="space-y-2">
+							{getEventsForDay(selectedDay).map((event) => (
+								<div key={event.id} className="border p-3 rounded">
+									<h4 className="font-medium">{event.title}</h4>
+									<p className="text-sm text-gray-600">{event.description}</p>
+									{event.location && (
+										<p className="text-sm text-gray-500">📍 {event.location}</p>
+									)}
+								</div>
+							))}
+						</div>
+					) : (
+						<p className="text-gray-500">No events for this day</p>
+					)}
+					<button
+						className="mt-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+						onClick={handleCloseDialog}
+					>
+						Close
+					</button>
+				</div>
+			</Dialog>
+		</div>
+	);
 }

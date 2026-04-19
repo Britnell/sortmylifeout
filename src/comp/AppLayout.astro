@@ -1,20 +1,14 @@
 ---
 import Layout from "./Layout.astro";
 
-import { getSession } from "../db/auth";
-
-const session = await getSession(Astro.request);
-
-if (!session) return Astro.redirect("/login");
+const { userId } = Astro.locals;
+if (!userId) return Astro.redirect("/login");
 ---
 
 <Layout>
 	<header class="flex justify-between bg-lime-100 px-4">
 		<h1>Sort your life out</h1>
-		<a
-			href="/api/logout"
-			class="text-indigo-600 hover:text-indigo-500 font-medium">Logout</a
-		>
+		<a href="/api/logout" class="font-medium">Logout</a>
 	</header>
 	<slot />
 </Layout>

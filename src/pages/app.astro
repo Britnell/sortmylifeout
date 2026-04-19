@@ -1,14 +1,33 @@
 ---
 import AppLayout from "../comp/AppLayout.astro";
+import AppComp from "../react/app.tsx";
+import { env } from "cloudflare:workers";
+import {
+	getFirstDayOfCurrentMonth,
+	getLastDayOfCurrentMonth,
+	dateString,
+} from "../lib/date";
+import { getCalendarEvents } from "../lib/sql";
+
+const { userId } = Astro.locals;
+const db = env.sortinglifedb;
+
+// Get current month date range
+const firstDayOfMonth = getFirstDayOfCurrentMonth();
+const lastDayOfMonth = getLastDayOfCurrentMonth();
+const firstDayStr = dateString(firstDayOfMonth);
+const lastDayStr = dateString(lastDayOfMonth);
+
+if (!userId) {
+	return new Response(null, {
+		status: 302,
+		headers: { Location: "/login" },
+	});
+}
+
+const calendar = await getCalendarEvents(db, userId, firstDayStr, lastDayStr);
 ---
 
 <AppLayout>
-	<main>
-		<h1>App</h1>
-		<nav>
-			<ul>
-				<a href="/calendar">see Calendar</a>
-			</ul>
-		</nav>
-	</main>
+	<AppComp client:load userId={userId} events={calendar} />
 </AppLayout>
