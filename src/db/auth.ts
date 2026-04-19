@@ -1,7 +1,10 @@
 import type { D1Database } from "@cloudflare/workers-types";
+import { env } from "cloudflare:workers";
 
 export const ITERATIONS = 100_000;
 export const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
+
+export const db = env.sortinglifedb;
 
 export function randomHex(bytes: number): string {
 	return Array.from(crypto.getRandomValues(new Uint8Array(bytes)))
@@ -34,10 +37,7 @@ export async function hashPassword(
 	return btoa(String.fromCharCode(...new Uint8Array(bits)));
 }
 
-export async function createSession(
-	db: D1Database,
-	userId: number,
-): Promise<string> {
+export async function createSession(userId: number): Promise<string> {
 	const sessionId = randomHex(32);
 	const now = Math.floor(Date.now() / 1000);
 	const expiresAt = now + SESSION_TTL_SECONDS;
@@ -54,10 +54,7 @@ export function sessionCookie(sessionId: string): string {
 	return `session=${sessionId}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${SESSION_TTL_SECONDS}`;
 }
 
-export async function getSession(
-	request: Request,
-	db: D1Database,
-): Promise<{ userId: number } | null> {
+export async function getSession(request: Request): Promise<{ userId: number } | null> {
 	const cookie = request.headers.get("cookie") ?? "";
 	const match = cookie.match(/(?:^|;\s*)session=([^;]+)/);
 	if (!match) return null;

@@ -1,10 +1,9 @@
 ---
 import Layout from "./Layout.astro";
 
-import { env } from "cloudflare:workers";
 import { getSession } from "../db/auth";
 
-const session = await getSession(Astro.request, env.sortinglifedb);
+const session = await getSession(Astro.request);
 
 if (!session) return Astro.redirect("/login");
 ---

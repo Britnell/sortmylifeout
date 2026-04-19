@@ -1,11 +1,9 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import { env } from "cloudflare:workers";
 import { getSession } from "../db/auth";
 import AppLayout from "../layouts/AppLayout.astro";
+import CalendarComp from "../react/calendar.tsx";
 
-const session = await getSession(Astro.request, env.sortinglifedb);
-
+const session = await getSession(Astro.request);
 if (!session) return Astro.redirect("/login");
 ---
 
@@ -17,5 +15,7 @@ if (!session) return Astro.redirect("/login");
 				<a href="/app">back to app</a>
 			</ul>
 		</nav>
+
+		<CalendarComp client:idle />
 	</main>
 </AppLayout>

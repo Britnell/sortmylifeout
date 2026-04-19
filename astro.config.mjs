@@ -5,15 +5,20 @@ import cloudflare from "@astrojs/cloudflare";
 
 import tailwindcss from "@tailwindcss/vite";
 
+import react from "@astrojs/react";
+
 // https://astro.build/config
 export default defineConfig({
-	adapter: cloudflare({
-		mode: "worker",
-		bindings: {
-			sortinglifedb: "sortinglifedb",
-		},
+  adapter: cloudflare({
+      mode: "worker",
+      bindings: {
+          sortinglifedb: "sortinglifedb",
+      },
 	}),
-	vite: {
-		plugins: [tailwindcss()],
+
+  vite: {
+      plugins: [tailwindcss()],
 	},
+
+  integrations: [react()],
 });
