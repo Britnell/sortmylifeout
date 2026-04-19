@@ -37,7 +37,6 @@ tables
 
 ## notes
 
-
 - maybe w tags across all we can easily connect, calendar / todo all for #foot 
 - thus search for everything #foot 
 - jsut #foot in text? they all have details 
