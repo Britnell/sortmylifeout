@@ -7,7 +7,6 @@ export default function App({
 	userId: number;
 	events: any[];
 }) {
-	console.log(events);
 	return (
 		<div className="p-4">
 			<h1 className="text-2xl font-bold mb-6">Calendar</h1>

@@ -24,6 +24,10 @@ export default function Dialog({ children, isOpen, onClose }: DialogProps) {
     <dialog
       ref={dialogRef}
       className="backdrop:bg-black/50 backdrop:backdrop-blur-sm p-0 rounded-lg"
+      onCancel={(e) => {
+        e.preventDefault();
+        onClose();
+      }}
       onClick={(e) => {
         const dialogDimensions = dialogRef.current?.getBoundingClientRect();
         if (

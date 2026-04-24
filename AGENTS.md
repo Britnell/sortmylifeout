@@ -10,5 +10,6 @@
 - react FE components src/react/*
 
 ## Working
+- use tabs not spaces - important! you have edit errors all the time with edit tool
 - i have `npm dev` running
 - pckg manager bun

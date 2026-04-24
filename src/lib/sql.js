@@ -5,12 +5,12 @@
  * @typedef {Object} CalendarEvent
  * @property {number} id - Event ID
  * @property {number} user_id - User ID
- * @property {string} title - Event title
- * @property {string} description - Event description
- * @property {string} start_at - Start datetime as ISO string
- * @property {string} end_at - End datetime as ISO string
- * @property {string} [location] - Optional location
- * @property {string} [color] - Optional color code
+ * @property {string} name - Event name
+ * @property {string} details - Event details
+ * @property {string} start_date - Start date as YYYY-MM-DD
+ * @property {string} start_time - Start time as HH:MM
+ * @property {string} [end_date] - End date as YYYY-MM-DD (null for all-day events)
+ * @property {string} [end_time] - End time as HH:MM (null for all-day events)
  */
 
 /**
@@ -24,10 +24,15 @@
 export async function getCalendarEvents(db, userId, startDate, endDate) {
 	const result = await db
 		.prepare(
-			"SELECT * FROM calendar WHERE user_id = ? AND start_at >= ? AND start_at <= ? ORDER BY start_at ASC",
+			`SELECT * FROM events
+			WHERE user_id = ?
+  			AND start_date >= ?
+  			AND start_date <= ?
+			ORDER BY
+			  start_date ASC, start_time ASC`,
 		)
 		.bind(userId, startDate, endDate)
 		.all();
-	
+
 	return result.results || [];
 }
