@@ -93,9 +93,9 @@ export default function Calendar({ events }: CalendarProps) {
 
 			if (response.ok) {
 				const result = await response.json();
-				alert("Event created successfully!");
 				form.reset();
-				// TODO: Refresh events or add the new event to state
+				setIsDialogOpen(false);
+				window.location.reload();
 			} else {
 				const error = await response.json();
 				alert(`Error: ${error.error || "Failed to create event"}`);
