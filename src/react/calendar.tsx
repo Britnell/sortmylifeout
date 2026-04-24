@@ -27,6 +27,7 @@ export default function Calendar({ events }: CalendarProps) {
 	const [selectedDay, setSelectedDay] = useState<number | null>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+	console.log(events);
 	// Get current month and year
 	const currentMonth = currentDate.getMonth();
 	const currentYear = currentDate.getFullYear();
@@ -34,8 +35,6 @@ export default function Calendar({ events }: CalendarProps) {
 	// Get first day of month and total days
 	const firstDay = new Date(currentYear, currentMonth, 1).getDay();
 	const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-
-	console.log(events);
 
 	// Generate days array
 	const days = [];
@@ -50,15 +49,16 @@ export default function Calendar({ events }: CalendarProps) {
 	// Group events by day
 	const eventsByDay = new Map<number, CalendarEvent[]>();
 	events.forEach((event) => {
-		// Combine start_date and start_time to create a full datetime string
-		const dateTimeString = `${event.start_date}T${event.start_time}`;
-		const eventDate = new Date(dateTimeString);
+		// Parse the full UTC datetime string and convert to local time
+		const eventDate = new Date(event.start_date);
+		
+		// Get local date components (this handles timezone conversion automatically)
 		const day = eventDate.getDate();
+		const month = eventDate.getMonth();
+		const year = eventDate.getFullYear();
 
-		if (
-			eventDate.getMonth() === currentMonth &&
-			eventDate.getFullYear() === currentYear
-		) {
+		// Only include events for the current month/year being displayed
+		if (month === currentMonth && year === currentYear) {
 			if (!eventsByDay.has(day)) {
 				eventsByDay.set(day, []);
 			}
@@ -167,13 +167,7 @@ export default function Calendar({ events }: CalendarProps) {
 									{dayEvents.length > 0 && (
 										<div className="mt-1 space-y-1">
 											{dayEvents.map((event) => (
-												<div
-													key={event.id}
-													className={`text-xs p-1 rounded ${
-														event.color || "bg-blue-100"
-													}`}
-													style={{ backgroundColor: event.color || "#e0f2fe" }}
-												>
+												<div key={event.id} className="text-xs border p-1">
 													{event.name}
 												</div>
 											))}
