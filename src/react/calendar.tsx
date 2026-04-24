@@ -22,12 +22,13 @@ interface CalendarProps {
 	events: CalendarEvent[];
 }
 
+const weekdays = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+
 export default function Calendar({ events }: CalendarProps) {
 	const [currentDate, setCurrentDate] = useState(new Date());
 	const [selectedDay, setSelectedDay] = useState<number | null>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-	console.log(events);
 	// Get current month and year
 	const currentMonth = currentDate.getMonth();
 	const currentYear = currentDate.getFullYear();
@@ -49,16 +50,14 @@ export default function Calendar({ events }: CalendarProps) {
 	// Group events by day
 	const eventsByDay = new Map<number, CalendarEvent[]>();
 	events.forEach((event) => {
-		// Parse the full UTC datetime string and convert to local time
-		const eventDate = new Date(event.start_date);
-		
-		// Get local date components (this handles timezone conversion automatically)
-		const day = eventDate.getDate();
-		const month = eventDate.getMonth();
-		const year = eventDate.getFullYear();
+		// Parse date parts directly from the date string to avoid timezone shifting
+		const [year, month, day] = event.start_date
+			.split("T")[0]
+			.split("-")
+			.map(Number);
 
 		// Only include events for the current month/year being displayed
-		if (month === currentMonth && year === currentYear) {
+		if (month - 1 === currentMonth && year === currentYear) {
 			if (!eventsByDay.has(day)) {
 				eventsByDay.set(day, []);
 			}
@@ -71,9 +70,6 @@ export default function Calendar({ events }: CalendarProps) {
 		if (day === null) return [];
 		return eventsByDay.get(day) || [];
 	};
-
-	// Weekday names
-	const weekdays = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
 	const handleDayClick = (day: number) => {
 		setSelectedDay(day);
@@ -109,6 +105,8 @@ export default function Calendar({ events }: CalendarProps) {
 		}
 	};
 
+	console.log(events);
+	console.log(eventsByDay);
 	return (
 		<div className="calendar">
 			<div className="flex justify-between items-center mb-4">
