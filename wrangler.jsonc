@@ -3,5 +3,13 @@
   "name": "tanstack-start-app",
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "@tanstack/react-start/server-entry"
+  "main": "@tanstack/react-start/server-entry",
+  "d1_databases": [
+    {
+      "binding": "sortinglifedb",
+      "database_name": "sortinglifedb",
+      "database_id": "55c30877-0a91-410b-a4a8-00b7a976dd2e",
+      "remote": true,
+    },
+  ],
 }
