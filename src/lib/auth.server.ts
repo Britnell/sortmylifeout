@@ -86,16 +86,6 @@ export const logoutFn = createServerFn({ method: 'POST' }).handler(
 	},
 );
 
-// Helper: server function responses can't set headers directly,
-// so we throw a special redirect with cookie info and catch it on the client side.
-// Actually — TanStack Start server functions can return data. We'll handle
-// the cookie setting via a different approach: return the sessionId and set
-// it client-side, or use the API route pattern.
-
-// Let me rethink this. Server functions in TanStack Start run as RPC calls,
-// not as full HTTP handlers. They can't set cookies on the response.
-// We need to use API file routes for login/signup/logout to set cookies.
-
 function redirect(url: string, cookie: string) {
 	return {
 		__redirect: url,

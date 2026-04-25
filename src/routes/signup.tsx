@@ -1,10 +1,52 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { signupFn } from '#lib/auth.server'
+import { useState } from 'react'
 
 export const Route = createFileRoute('/signup')({
 	component: SignupPage,
 })
 
 function SignupPage() {
+	const navigate = useNavigate()
+	const [error, setError] = useState('')
+	const [loading, setLoading] = useState(false)
+
+	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+		e.preventDefault()
+		setError('')
+		setLoading(true)
+
+		const formData = new FormData(e.currentTarget)
+		const username = formData.get('username') as string
+		const email = formData.get('email') as string
+		const password = formData.get('password') as string
+		const confirmPassword = formData.get('confirmPassword') as string
+
+		if (password !== confirmPassword) {
+			setError('Passwords do not match')
+			setLoading(false)
+			return
+		}
+
+		try {
+			const result = await signupFn({ data: { username, email, password } })
+			if (result?.error) {
+				setError(result.error)
+			}
+		} catch (err: unknown) {
+			// The redirect object from the server function gets thrown
+			const redirect = err as { __redirect?: string; __cookie?: string }
+			if (redirect?.__redirect && redirect?.__cookie) {
+				document.cookie = redirect.__cookie
+				navigate({ to: redirect.__redirect })
+			} else {
+				setError('Something went wrong')
+			}
+		} finally {
+			setLoading(false)
+		}
+	}
+
 	return (
 		<div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
 			<div className="w-full max-w-md space-y-8">
@@ -13,7 +55,7 @@ function SignupPage() {
 						Create your account
 					</h2>
 				</div>
-				<form className="mt-8 space-y-6" id="signupForm">
+				<form className="mt-8 space-y-6" onSubmit={handleSubmit}>
 					<input type="hidden" name="remember" value="true" />
 					<div className="-space-y-px rounded-md shadow-sm">
 						<div>
@@ -70,12 +112,17 @@ function SignupPage() {
 						</div>
 					</div>
 
+					{error && (
+						<p className="text-center text-sm text-red-600">{error}</p>
+					)}
+
 					<div>
 						<button
 							type="submit"
-							className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+							disabled={loading}
+							className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
 						>
-							Sign up
+							{loading ? 'Creating account...' : 'Sign up'}
 						</button>
 					</div>
 				</form>
