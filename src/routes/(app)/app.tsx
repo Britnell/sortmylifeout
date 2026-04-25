@@ -55,6 +55,7 @@ function RouteComponent() {
   const [weekOffset, setWeekOffset] = useState(0)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [chatInput, setChatInput] = useState('')
 
   const { data: events = [] } = useQuery({
     queryKey: ['getMonth'],
@@ -174,6 +175,16 @@ function RouteComponent() {
             </div>
           )
         })}
+      </div>
+
+      <div className="mt-6">
+        <textarea
+          value={chatInput}
+          onChange={(e) => setChatInput(e.target.value)}
+          rows={3}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Chat with AI about your calendar..."
+        />
       </div>
 
       <Dialog isOpen={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
