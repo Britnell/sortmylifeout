@@ -1,6 +1,6 @@
 import { chat, toolDefinition } from '@tanstack/ai'
 import { createOpenRouterText } from '@tanstack/ai-openrouter'
-import { z } from 'zod'
+import { sql } from 'kysely'
 import { getDb } from '@/lib/db'
 
 export const MODEL = 'deepseek/deepseek-v3.2'
@@ -63,21 +63,28 @@ Schema:
 const sqlQueryDef = toolDefinition({
   name: 'sql_query',
   description: getSqlToolDescription(),
-  inputSchema: z.object({
-    query: z
-      .string()
-      .meta({ description: 'The SQL SELECT or INSERT query to execute' }),
-  }),
-  outputSchema: z.object({
-    rows: z.array(z.record(z.unknown())),
-    rowCount: z.number(),
-  }),
+  inputSchema: {
+    type: 'object' as const,
+    properties: {
+      query: { type: 'string', description: 'The SQL SELECT or INSERT query to execute' },
+    },
+    required: ['query'],
+  },
+  outputSchema: {
+    type: 'object' as const,
+    properties: {
+      rows: { type: 'array', items: { type: 'object' } },
+      rowCount: { type: 'number' },
+    },
+    required: ['rows', 'rowCount'],
+  },
 })
 
-export const sqlQuery = sqlQueryDef.server(async ({ query }) => {
+export const sqlQuery = sqlQueryDef.server(async (args) => {
+  const { query } = args as { query: string }
   validateSql(query)
   const db = getDb()
-  const result = await db.executeQuery(db.raw(query).compile(db as never))
+  const result = await db.executeQuery(sql.raw(query).compile(db as never))
   const rows = (result.rows as Array<Record<string, unknown>>) ?? []
   return { rows, rowCount: rows.length }
 })
