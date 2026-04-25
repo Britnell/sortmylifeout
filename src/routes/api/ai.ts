@@ -15,12 +15,58 @@ export const SYSTEM_PROMPT = ``
 
 // --- Tools ---
 
+const ALLOWED_STATEMENT_TYPES = /^\s*(select|insert)\s/i
+const FORBIDDEN_KEYWORDS =
+  /\b(drop|delete|truncate|alter|create|replace|update|attach|detach|pragma|vacuum|reindex)\b/i
+
+function stripStringLiterals(sql: string): string {
+  // Replace single-quoted strings (handling escaped quotes via '')
+  return sql.replace(/'(?:[^']|'')*'/g, "''")
+}
+
+function validateSql(query: string): void {
+  if (!ALLOWED_STATEMENT_TYPES.test(query)) {
+    throw new Error('Only SELECT and INSERT queries are permitted')
+  }
+  const stripped = stripStringLiterals(query)
+  const match = stripped.match(FORBIDDEN_KEYWORDS)
+  if (match) {
+    throw new Error(
+      `Query contains forbidden keyword: ${match[0].toUpperCase()}`,
+    )
+  }
+}
+
+function getSqlToolDescription() {
+  const now = new Date().toISOString()
+  return `Execute a SQL SELECT or INSERT query against the application database.
+
+Database: Cloudflare D1 (SQLite-compatible). Use SQLite syntax only.
+Current date/time (UTC): ${now}
+
+Schema:
+  event (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    type TEXT NOT NULL -- 'event' | 'todo' | 'note'
+    date TEXT,         -- ISO date string, nullable
+    end TEXT,          -- ISO date string, nullable
+    title TEXT NOT NULL,
+    detail TEXT,
+    repeating TEXT,
+    done INTEGER DEFAULT 0,
+    created_at INTEGER NOT NULL, -- unix epoch
+    updated_at INTEGER NOT NULL  -- unix epoch
+  )`
+}
+
 const sqlQueryDef = toolDefinition({
   name: 'sql_query',
-  description:
-    'Execute a read-only SQL SELECT query against the application database',
+  description: getSqlToolDescription(),
   inputSchema: z.object({
-    query: z.string().meta({ description: 'The SQL SELECT query to execute' }),
+    query: z
+      .string()
+      .meta({ description: 'The SQL SELECT or INSERT query to execute' }),
   }),
   outputSchema: z.object({
     rows: z.array(z.record(z.unknown())),
@@ -29,10 +75,7 @@ const sqlQueryDef = toolDefinition({
 })
 
 export const sqlQuery = sqlQueryDef.server(async ({ query }) => {
-  const trimmed = query.trim().toLowerCase()
-  if (!trimmed.startsWith('select')) {
-    throw new Error('Only SELECT queries are permitted')
-  }
+  validateSql(query)
   const db = getDb()
   const result = await db.executeQuery(db.raw(query).compile(db as never))
   const rows = (result.rows as Array<Record<string, unknown>>) ?? []
