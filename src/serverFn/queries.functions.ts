@@ -1,4 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
+import { getRequest } from '@tanstack/react-start/server'
 import { loginUser, signupUser, logoutUser } from '../lib/auth.server'
 
 export const loginFn = createServerFn({ method: 'POST' })
@@ -16,7 +17,8 @@ export const signupFn = createServerFn({ method: 'POST' })
 	})
 
 export const logoutFn = createServerFn({ method: 'POST' }).handler(
-	async ({ request }) => {
+	async () => {
+		const request = getRequest()
 		return logoutUser(request)
 	},
 )
