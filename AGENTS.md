@@ -1,4 +1,3 @@
-
 ## Project
 - fullstack astro app
 - cloudflare d1 sql db

@@ -1,6 +1,6 @@
 ---
 import AppLayout from "../comp/AppLayout.astro";
-import AppComp from "../react/app.tsx";
+import TanstackRouterRoot from "../react/TanstackRouterRoot.tsx";
 import { env } from "cloudflare:workers";
 import {
 	getFirstDayOfCurrentMonth,
@@ -26,8 +26,14 @@ if (!userId) {
 }
 
 const calendar = await getCalendarEvents(db, userId, firstDayStr, lastDayStr);
+
 ---
 
 <AppLayout>
-	<AppComp client:load userId={userId} events={calendar} />
+	<div 
+		id="tanstack-router-root"
+		data-user-id={userId}
+		data-events={JSON.stringify(calendar)}
+	></div>
+	<TanstackRouterRoot client:load />
 </AppLayout>
