@@ -22,6 +22,7 @@ function RouteComponent() {
     }
   }
 
+  console.log(messages)
   return (
     <div className="max-w-5xl mx-auto p-4">
       <Calendar />
@@ -60,6 +61,37 @@ function RouteComponent() {
                   }
                   if (part.type === 'text') {
                     return <div key={idx}>{part.content}</div>
+                  }
+                  if (part.type === 'tool-call') {
+                    return (
+                      <details key={idx} className="my-1 text-sm">
+                        <summary className="cursor-pointer text-gray-500 dark:text-gray-400">
+                          Tool call: <code>{part.name}</code>
+                          {part.output !== undefined
+                            ? ' (complete)'
+                            : ' (pending)'}
+                        </summary>
+                        <pre className="mt-1 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs overflow-auto">
+                          <div>
+                            <strong>Args:</strong>{' '}
+                            {JSON.stringify(
+                              JSON.parse(part.arguments),
+                              null,
+                              2,
+                            )}
+                          </div>
+                          {part.output !== undefined && (
+                            <div className="mt-1">
+                              <strong>Result:</strong>{' '}
+                              {JSON.stringify(part.output, null, 2)}
+                            </div>
+                          )}
+                        </pre>
+                      </details>
+                    )
+                  }
+                  if (part.type === 'tool-result') {
+                    return null
                   }
                   return null
                 })}
