@@ -1,3 +1,24 @@
+-- App tables (user_id is TEXT to match BetterAuth's user.id)
+CREATE TABLE IF NOT EXISTS event (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  type TEXT NOT NULL CHECK(type IN ('event', 'todo', 'note')),
+
+  date TEXT,
+  end TEXT,
+
+  title TEXT NOT NULL,
+  detail TEXT,
+
+  repeating TEXT,
+  done INTEGER DEFAULT 0,
+  -- people TEXT,
+  -- tags TEXT,
+
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
 -- BetterAuth tables
 CREATE TABLE IF NOT EXISTS "user" (
   id TEXT PRIMARY KEY,
@@ -43,37 +64,4 @@ CREATE TABLE IF NOT EXISTS "verification" (
   expires_at INTEGER NOT NULL,
   created_at INTEGER,
   updated_at INTEGER
-);
-
--- App tables (user_id is TEXT to match BetterAuth's user.id)
-CREATE TABLE IF NOT EXISTS event (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-  type TEXT NOT NULL CHECK(type IN ('event', 'todo', 'note')),
-
-  -- shared
-  name TEXT NOT NULL,
-  details TEXT,
-
-  -- event fields
-  start_date TEXT,
-  start_time TEXT,
-  end_date TEXT,
-  end_time TEXT,
-  repeating TEXT,
-
-  -- todo fields
-  done INTEGER DEFAULT 0,
-  people TEXT,
-  deadline INTEGER,
-  remind_on INTEGER,
-
-  -- note fields
-  summary TEXT,
-  text TEXT,
-  tags TEXT,
-  date INTEGER,
-
-  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-  updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
