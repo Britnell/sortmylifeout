@@ -1,6 +1,22 @@
-import { createServerFn } from '@tanstack/cloudflare-functions'
-import { signUp } from '../lib/auth.server'
+import { createServerFn } from '@tanstack/react-start'
+import { loginUser, signupUser, logoutUser } from '../lib/auth.server'
 
-export const signUpFn = createServerFn({ method: 'POST' })
-  .inputValidator((data: { orgId: string; userId: string }) => data)
-  .handler(({ data }) => signUp(data))
+export const loginFn = createServerFn({ method: 'POST' })
+	.inputValidator((d: { username: string; password: string }) => d)
+	.handler(async ({ data }) => {
+		return loginUser(data.username, data.password)
+	})
+
+export const signupFn = createServerFn({ method: 'POST' })
+	.inputValidator(
+		(d: { username: string; email: string; password: string }) => d,
+	)
+	.handler(async ({ data }) => {
+		return signupUser(data.username, data.email, data.password)
+	})
+
+export const logoutFn = createServerFn({ method: 'POST' }).handler(
+	async ({ request }) => {
+		return logoutUser(request)
+	},
+)
