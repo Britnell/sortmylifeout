@@ -60,36 +60,41 @@ Schema:
   )`
 }
 
-const sqlQueryDef = toolDefinition({
-  name: 'sql_query',
-  description: getSqlToolDescription(),
-  inputSchema: {
-    type: 'object' as const,
-    properties: {
-      query: { type: 'string', description: 'The SQL SELECT or INSERT query to execute' },
+const inputSchema = {
+  type: 'object' as const,
+  properties: {
+    query: {
+      type: 'string',
+      description: 'The SQL SELECT or INSERT query to execute',
     },
-    required: ['query'],
   },
-  outputSchema: {
-    type: 'object' as const,
-    properties: {
-      rows: { type: 'array', items: { type: 'object' } },
-      rowCount: { type: 'number' },
-    },
-    required: ['rows', 'rowCount'],
-  },
-})
+  required: ['query'],
+}
 
-export const sqlQuery = sqlQueryDef.server(async (args) => {
-  const { query } = args as { query: string }
-  validateSql(query)
+const outputSchema = {
+  type: 'object' as const,
+  properties: {
+    rows: { type: 'array', items: { type: 'object' } },
+    rowCount: { type: 'number' },
+  },
+  required: ['rows', 'rowCount'],
+}
+
+function createSqlQueryTool() {
   const db = getDb()
-  const result = await db.executeQuery(sql.raw(query).compile(db as never))
-  const rows = (result.rows as Array<Record<string, unknown>>) ?? []
-  return { rows, rowCount: rows.length }
-})
-
-export const serverTools = [sqlQuery]
+  return toolDefinition({
+    name: 'sql_query',
+    description: getSqlToolDescription(),
+    inputSchema,
+    outputSchema,
+  }).server(async (args) => {
+    const { query } = args as { query: string }
+    validateSql(query)
+    const result = await db.executeQuery(sql.raw(query).compile(db as never))
+    const rows = (result.rows as Array<Record<string, unknown>>) ?? []
+    return { rows, rowCount: rows.length }
+  })
+}
 
 export function createChatStream(messages: unknown[], conversationId?: string) {
   return chat({
@@ -97,6 +102,6 @@ export function createChatStream(messages: unknown[], conversationId?: string) {
     systemPrompts: [SYSTEM_PROMPT],
     messages: messages as never,
     conversationId,
-    tools: serverTools,
+    tools: [createSqlQueryTool()],
   })
 }
