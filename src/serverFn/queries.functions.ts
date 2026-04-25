@@ -58,7 +58,7 @@ export const createEventFn = createServerFn({ method: 'POST' })
       })
       .execute()
 
-    return result
+    return { id: Number(result[0].insertId) }
   })
 
 export const getMonthFn = createServerFn({ method: 'GET' }).handler(async () => {
