@@ -1,4 +1,5 @@
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import { authClient } from '../../lib/auth-client'
 
 export const Route = createFileRoute('/(app)')({
@@ -7,8 +8,13 @@ export const Route = createFileRoute('/(app)')({
 
 function RouteComponent() {
   const { data, isPending } = authClient.useSession()
+  const navigate = useNavigate()
 
-  if (!data && !isPending) throw redirect({ to: '/login' })
+  useEffect(() => {
+    if (!isPending && !data) navigate({ to: '/login' })
+  }, [isPending, data])
+
+  if (isPending || !data) return null
 
   return (
     <div className=" px-4">
