@@ -1,7 +1,11 @@
-import { createAPIFileRoute } from '@tanstack/react-start/api'
+import { createFileRoute } from '@tanstack/react-router'
 import { createAuth } from '../../../lib/auth'
 
-export const APIRoute = createAPIFileRoute('/api/auth/$')({
-	GET: ({ request }) => createAuth().handler(request),
-	POST: ({ request }) => createAuth().handler(request),
+export const Route = createFileRoute('/api/auth/$')({
+  server: {
+    handlers: {
+      GET: ({ request }) => createAuth().handler(request),
+      POST: ({ request }) => createAuth().handler(request),
+    },
+  },
 })
