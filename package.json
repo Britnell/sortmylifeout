@@ -12,6 +12,7 @@
     "test": "vitest run",
     "lint": "eslint",
     "format": "prettier --check .",
+    "migration": "wrangler d1 execute sortinglifedb --file=src/db/schema.sql --remote",
     "check": "prettier --write . && eslint --fix",
     "deploy": "bun run build && wrangler deploy"
   },
