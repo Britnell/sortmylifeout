@@ -16,6 +16,7 @@ export const Route = createFileRoute('/api/chat')({
 
           const stream = chat({
             adapter: createOpenRouterText('deepseek/deepseek-v3.2', apiKey),
+            systemPrompts: [``],
             messages,
             conversationId,
           })
