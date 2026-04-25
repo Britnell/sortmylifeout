@@ -1,25 +1,22 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
-import { getSessionFn } from '../../serverFn/queries.functions'
+import { authClient } from '../../lib/auth-client'
 
 export const Route = createFileRoute('/(app)')({
-  beforeLoad: async () => {
-    const userId = await getSessionFn()
-    if (!userId) {
-      throw redirect({ to: '/login' })
-    }
-    console.log({ userId })
-    return { userId }
-  },
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const x = Route.useLoaderData()
-  console.log(x)
+  const { data, isPending } = authClient.useSession()
+
+  if (!data && !isPending) throw redirect({ to: '/login' })
+
   return (
-    <div>
-      <header>App!</header>
-      <Outlet />
+    <div className=" px-4">
+      <header className="py-1 flex justify-between">
+        App!
+        <button onClick={() => authClient.signOut()}>Logout</button>
+      </header>
+      {data && <Outlet />}
     </div>
   )
 }
