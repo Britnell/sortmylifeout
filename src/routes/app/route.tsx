@@ -14,7 +14,8 @@ export const Route = createFileRoute('/app')({
 })
 
 function RouteComponent() {
-
+  const x = Route.useLoaderData()
+  console.log(x)
   return (
     <div>
       <header>App</header>
