@@ -1,13 +1,14 @@
 import { chat, toServerSentEventsResponse } from '@tanstack/ai'
 import { createFileRoute } from '@tanstack/react-router'
-import { openRouterText } from '@tanstack/ai-openrouter'
+import { createOpenRouterText } from '@tanstack/ai-openrouter'
 
 export const Route = createFileRoute('/api/chat')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Check for API key
-        if (!process.env.OPENROUTER_API_KEY) {
+        // console.log(import.meta.env, process.env)
+        const apiKey = process.env.OPENROUTER_API_KEY
+        if (!apiKey) {
           return new Response(
             JSON.stringify({
               error: 'OPENROUTER_API_KEY not configured',
@@ -22,9 +23,8 @@ export const Route = createFileRoute('/api/chat')({
         const { messages, conversationId } = await request.json()
 
         try {
-          // Create a streaming chat response
           const stream = chat({
-            adapter: openRouterText('deepseek/deepseek-v4-flash'),
+            adapter: createOpenRouterText('deepseek/deepseek-v3.2', apiKey),
             messages,
             conversationId,
           })
