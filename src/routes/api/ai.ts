@@ -45,10 +45,6 @@ Current date/time (UTC): ${d.toDateString()} ${d.toTimeString()}
 "This week" means the next 7 days / remainder of the current calendar week.
 Todos are events with type='todo' and no date set.
 Current user_id: ${userId} — always filter queries and set this on new events.
-
-Use query_events to look things up.
-Use upsert_event to create or update an event (omit id to create, include id to update).
-Use set_event_done to mark a todo as done or not done.
 `
 }
 
@@ -62,7 +58,8 @@ const EVENT_SCHEMA = `
     completed INTEGER DEFAULT 0,
     begin TEXT, -- date(time)
     end TEXT,   -- date(time)
-    -- both begin + end : 'YYYY-MM-DD' when all_day=1,
+    -- both begin + end :
+    -- 'YYYY-MM-DD' when all_day=1,
     -- 'YYYY-MM-DDTHH:MM' (local time, no TZ suffix) when all_day=0
     all_day INTEGER NOT NULL,
     created_at INTEGER NOT NULL DEFAULT (unixepoch())
@@ -73,11 +70,8 @@ const sqlPrompt = `Run a read-only SELECT query against the database.
 Database: Cloudflare D1 (SQLite syntax).
 Schema:${EVENT_SCHEMA}`
 
-const upsertPrompt = `Create or update a calendar event, todo, or note.
-Omit 'id' to create. Include 'id' to update — only provided fields are changed.
-type: 'event' | 'todo' | 'note'.
-date / end: ISO-8601. Omit date for a todo with no scheduled date.
-done: 1 = complete, 0 = incomplete.`
+const upsertPrompt = `Create or update a calendar event, todo, or reminder.
+Omit 'id' to create. Include 'id' to update — only provided fields are updated.`
 
 // --- query tool (read-only) ---
 
@@ -112,7 +106,11 @@ function sqlQueryTool() {
 
 // --- upsert tool ---
 
-function parseIsoDate(date: string): { date: string; time?: string; allDay: boolean } {
+function parseIsoDate(date: string): {
+  date: string
+  time?: string
+  allDay: boolean
+} {
   if (date.includes('T')) {
     const [d, time] = date.split('T')
     return { date: d, time, allDay: false }
@@ -135,9 +133,15 @@ function createUpsertEventTool(userId: string) {
         type: { type: 'string', enum: ['event', 'todo', 'reminder'] },
         title: { type: 'string' },
         detail: { type: 'string' },
-        date: { type: 'string', description: 'ISO-8601 start date/datetime' },
-        end: { type: 'string', description: 'ISO-8601 end date/datetime' },
-        done: { type: 'number', enum: [0, 1] },
+        date: {
+          type: 'string',
+          description: "'YYYY-MM-DD' or 'YYYY-MM-DDTHH:MM' (local time)",
+        },
+        end: {
+          type: 'string',
+          description: "'YYYY-MM-DD' or 'YYYY-MM-DDTHH:MM' (local time)",
+        },
+        completed: { type: 'boolean' },
       },
       required: [],
     },
@@ -150,14 +154,14 @@ function createUpsertEventTool(userId: string) {
       required: ['id', 'created'],
     },
   }).server(async (args) => {
-    const { id, type, title, detail, date, end, done } = args as {
+    const { id, type, title, detail, date, end, completed } = args as {
       id?: number
       type?: string
       title?: string
       detail?: string
       date?: string
       end?: string
-      done?: number
+      completed?: boolean
     }
 
     if (id != null) {
@@ -166,10 +170,12 @@ function createUpsertEventTool(userId: string) {
       if (title != null) updates.title = title
       if (detail != null) updates.detail = detail
       if (end != null) updates.end = end
-      if (done != null) updates.completed = done
+      if (completed != null) updates.completed = completed ? 1 : 0
       if (date != null) {
         const parsed = parseIsoDate(date)
-        updates.begin = parsed.allDay ? parsed.date : `${parsed.date}T${parsed.time}`
+        updates.begin = parsed.allDay
+          ? parsed.date
+          : `${parsed.date}T${parsed.time}`
         updates.all_day = parsed.allDay ? 1 : 0
       }
 
@@ -184,7 +190,9 @@ function createUpsertEventTool(userId: string) {
       if (!type || !title)
         throw new Error('type and title are required when creating an event')
 
-      const parsed = date ? parseIsoDate(date) : { date: undefined, time: undefined, allDay: true }
+      const parsed = date
+        ? parseIsoDate(date)
+        : { date: undefined, time: undefined, allDay: true }
       const result = await createEvent(userId, {
         type,
         title,
@@ -193,7 +201,7 @@ function createUpsertEventTool(userId: string) {
         time: parsed.time,
         allDay: parsed.allDay,
         end,
-        completed: done === 1,
+        completed: completed ?? false,
       })
       return { id: result.id, created: true }
     }
