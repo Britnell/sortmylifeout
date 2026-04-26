@@ -20,7 +20,7 @@ const models = {
 
 export const MODEL = models.cloudflare.gemma
 
-export function getAdapter() {
+function getAdapter() {
   // return createOpenRouterText(models.openrouter.gemma31, process.env.OPENROUTER_API_KEY!)
   return createWorkersAiChat(MODEL, { binding: env.AI })
 }

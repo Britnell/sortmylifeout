@@ -45,7 +45,7 @@ export function ChatPanel() {
   const queryClient = useQueryClient()
   const lastRefetchedToolCallId = useRef<string | null>(null)
 
-  const { messages, sendMessage, setMessages, isLoading } = useChat({
+  const { messages, sendMessage, setMessages, isLoading, stop } = useChat({
     connection: fetchServerSentEvents('/api/chat'),
   })
 
@@ -197,7 +197,7 @@ export function ChatPanel() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type a message..."
             className="flex-1 px-3 py-1.5 text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={isLoading}
+
           />
           <button
             type="button"
@@ -207,13 +207,23 @@ export function ChatPanel() {
           >
             🎤
           </button>
-          <button
-            type="submit"
-            disabled={!input.trim() || isLoading}
-            className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50 hover:bg-blue-700 transition-colors"
-          >
-            Send
-          </button>
+          {isLoading ? (
+            <button
+              type="button"
+              onClick={stop}
+              className="px-4 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Stop
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={!input.trim()}
+              className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50 hover:bg-blue-700 transition-colors"
+            >
+              Send
+            </button>
+          )}
         </form>
       )}
     </div>
