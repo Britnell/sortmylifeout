@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS event (
   type TEXT NOT NULL CHECK(type IN ('event', 'todo')),
   title TEXT NOT NULL,
   detail TEXT,
-  completed INTEGER DEFAULT 0,
-  all_day INTEGER NOT NULL,
+  completed INTEGER,
+  all_day INTEGER,
   begin TEXT, -- date/datetime
   end TEXT,   -- date/datetime
   -- both begin + end date :
