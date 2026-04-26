@@ -67,7 +67,7 @@ export default function CalendarEventDialog({
 }: Props) {
   const [itemType, setItemType] = useState<'event' | 'todo'>('event')
   const [allDay, setAllDay] = useState(true)
-  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [beginDate, setBeginDate] = useState<string>('')
   const [beginTime, setBeginTime] = useState<string>('')
   const [endDate, setEndDate] = useState<string>('')
@@ -83,11 +83,17 @@ export default function CalendarEventDialog({
       setItemType(editingEvent.type as 'event' | 'todo')
       setAllDay(!!editingEvent.all_day)
       setBeginDate(editingEvent.begin?.split('T')[0] ?? '')
-      setBeginTime(editingEvent.begin?.includes('T') ? editingEvent.begin.split('T')[1] : '')
+      setBeginTime(
+        editingEvent.begin?.includes('T')
+          ? editingEvent.begin.split('T')[1]
+          : '',
+      )
       setEndDate(editingEvent.end?.split('T')[0] ?? '')
-      setEndTime(editingEvent.end?.includes('T') ? editingEvent.end.split('T')[1] : '')
+      setEndTime(
+        editingEvent.end?.includes('T') ? editingEvent.end.split('T')[1] : '',
+      )
       setDuration('')
-      setConfirmDelete(false)
+      setShowDeleteConfirm(false)
     } else {
       setLocalEditing(null)
       setItemType('event')
@@ -98,11 +104,12 @@ export default function CalendarEventDialog({
       const { endDate: ed } = computeEnd(selectedDate ?? '', '', true, '0')
       setEndDate(ed)
       setEndTime('')
+      setShowDeleteConfirm(false)
     }
   }, [isOpen, editingEvent, selectedDate])
 
   const handleClose = () => {
-    setConfirmDelete(false)
+    setShowDeleteConfirm(false)
     onClose()
   }
 
@@ -146,260 +153,261 @@ export default function CalendarEventDialog({
 
   return (
     <Dialog isOpen={isOpen} onClose={handleClose}>
-      {localEditing && confirmDelete ? (
-        <>
-          <h3 className="text-lg font-semibold mb-2">
-            Delete {localEditing.type === 'todo' ? 'Todo' : 'Event'}?
-          </h3>
-          <p className="text-sm text-gray-600 mb-4">
-            "{localEditing.title}" will be permanently deleted.
-          </p>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <h3 className="text-lg font-semibold">
+          {localEditing
+            ? `Edit ${itemType === 'todo' ? 'Todo' : 'Event'}`
+            : 'Create'}
+        </h3>
+
+        <div className="flex gap-4">
+          <label className="flex items-center gap-1 text-sm cursor-pointer">
+            <input
+              type="radio"
+              name="itemType"
+              value="event"
+              checked={itemType === 'event'}
+              onChange={() => setItemType('event')}
+            />
+            Event
+          </label>
+          <label className="flex items-center gap-1 text-sm cursor-pointer">
+            <input
+              type="radio"
+              name="itemType"
+              value="todo"
+              checked={itemType === 'todo'}
+              onChange={() => setItemType('todo')}
+            />
+            Todo
+          </label>
+        </div>
+
+        {localEditing?.type === 'todo' && (
+          <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <input
+              type="checkbox"
+              checked={!!localEditing.completed}
+              onChange={(e) =>
+                setLocalEditing({
+                  ...localEditing,
+                  completed: e.target.checked ? 1 : 0,
+                })
+              }
+            />
+            Completed
+          </label>
+        )}
+
+        <input
+          type="text"
+          name="title"
+          required
+          defaultValue={localEditing?.title ?? ''}
+          key={localEditing?.id ?? 'new'}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Title"
+        />
+
+        <div>
+          <label className="block mb-1 text-sm font-medium text-gray-700">
+            {itemType === 'todo' ? 'Date' : 'From'}
+          </label>
           <div className="flex gap-2">
-            <button
-              className="flex-1 py-2 px-4 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 disabled:opacity-50"
-              disabled={deleteMutation.isPending}
-              onClick={() => deleteMutation.mutate(localEditing.id)}
-            >
-              {deleteMutation.isPending ? 'Deleting...' : 'Yes, delete'}
-            </button>
-            <button
-              className="flex-1 py-2 px-4 border rounded-md hover:bg-gray-50"
-              onClick={() => setConfirmDelete(false)}
-            >
-              Cancel
-            </button>
-          </div>
-        </>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <h3 className="text-lg font-semibold">
-            {localEditing
-              ? `Edit ${itemType === 'todo' ? 'Todo' : 'Event'}`
-              : 'Create'}
-          </h3>
-
-          <div className="flex gap-4">
-            <label className="flex items-center gap-1 text-sm cursor-pointer">
-              <input
-                type="radio"
-                name="itemType"
-                value="event"
-                checked={itemType === 'event'}
-                onChange={() => setItemType('event')}
-              />
-              Event
-            </label>
-            <label className="flex items-center gap-1 text-sm cursor-pointer">
-              <input
-                type="radio"
-                name="itemType"
-                value="todo"
-                checked={itemType === 'todo'}
-                onChange={() => setItemType('todo')}
-              />
-              Todo
-            </label>
-          </div>
-
-          {localEditing?.type === 'todo' && (
+            <input
+              type="date"
+              value={beginDate}
+              required
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              onChange={(e) => {
+                setBeginDate(e.target.value)
+                if (duration) {
+                  const { endDate: ed, endTime: et } = computeEnd(
+                    e.target.value,
+                    beginTime,
+                    allDay,
+                    duration,
+                  )
+                  setEndDate(ed)
+                  setEndTime(et)
+                }
+              }}
+            />
+            <input
+              ref={timeRef}
+              type="time"
+              value={beginTime}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              onChange={(e) => {
+                const t = e.target.value
+                setBeginTime(t)
+                if (t) {
+                  setAllDay(false)
+                  const dur = duration === '0' ? '30' : duration
+                  setDuration(dur)
+                  const { endDate: ed, endTime: et } = computeEnd(
+                    beginDate,
+                    t,
+                    false,
+                    dur,
+                  )
+                  setEndDate(ed)
+                  setEndTime(et)
+                }
+              }}
+            />
             <label className="flex items-center gap-2 text-sm cursor-pointer">
               <input
                 type="checkbox"
-                checked={!!localEditing.completed}
-                onChange={(e) =>
-                  setLocalEditing({
-                    ...localEditing,
-                    completed: e.target.checked ? 1 : 0,
-                  })
-                }
+                checked={allDay}
+                onChange={(e) => {
+                  const next = e.target.checked
+                  setAllDay(next)
+                  const bt = next ? '' : beginTime
+                  if (next) {
+                    setBeginTime('')
+                    setEndTime('')
+                  }
+                  const defaultDuration = next ? '0' : '30'
+                  setDuration(defaultDuration)
+                  const { endDate: ed, endTime: et } = computeEnd(
+                    beginDate,
+                    bt,
+                    next,
+                    defaultDuration,
+                  )
+                  setEndDate(ed)
+                  setEndTime(et)
+                }}
               />
-              Completed
+              All day
             </label>
-          )}
+          </div>
+        </div>
 
-          <input
-            type="text"
-            name="title"
-            required
-            defaultValue={localEditing?.title ?? ''}
-            key={localEditing?.id ?? 'new'}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Title"
-          />
-
+        {itemType !== 'todo' && (
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700">
-              {itemType === 'todo' ? 'Date' : 'From'}
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              To
             </label>
             <div className="flex gap-2">
               <input
                 type="date"
-                value={beginDate}
-                required
+                value={endDate}
+                required={itemType === 'event'}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 onChange={(e) => {
-                  setBeginDate(e.target.value)
-                  if (duration) {
-                    const { endDate: ed, endTime: et } = computeEnd(
-                      e.target.value,
-                      beginTime,
-                      allDay,
-                      duration,
-                    )
-                    setEndDate(ed)
-                    setEndTime(et)
-                  }
+                  setEndDate(e.target.value)
+                  setDuration('')
                 }}
               />
               <input
-                ref={timeRef}
                 type="time"
-                value={beginTime}
+                value={endTime}
+                required={itemType === 'event' && !allDay}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 onChange={(e) => {
-                  const t = e.target.value
-                  setBeginTime(t)
-                  if (t) {
-                    setAllDay(false)
-                    const dur = duration === '0' ? '30' : duration
-                    setDuration(dur)
+                  setEndTime(e.target.value)
+                  setDuration('')
+                }}
+              />
+              <select
+                value={duration}
+                className="px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                onChange={(e) => {
+                  const d = e.target.value
+                  setDuration(d)
+                  if (d) {
                     const { endDate: ed, endTime: et } = computeEnd(
                       beginDate,
-                      t,
-                      false,
-                      dur,
+                      beginTime,
+                      allDay,
+                      d,
                     )
                     setEndDate(ed)
                     setEndTime(et)
                   }
                 }}
-              />
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={allDay}
-                  onChange={(e) => {
-                    const next = e.target.checked
-                    setAllDay(next)
-                    const bt = next ? '' : beginTime
-                    if (next) {
-                      setBeginTime('')
-                      setEndTime('')
-                    }
-                    const defaultDuration = next ? '0' : '30'
-                    setDuration(defaultDuration)
-                    const { endDate: ed, endTime: et } = computeEnd(
-                      beginDate,
-                      bt,
-                      next,
-                      defaultDuration,
-                    )
-                    setEndDate(ed)
-                    setEndTime(et)
-                  }}
-                />
-                All day
-              </label>
+              >
+                <option value="">— manual —</option>
+                {allDay ? (
+                  <>
+                    <option value="0">1 day</option>
+                    <option value="1">2 days</option>
+                    <option value="2">3 days</option>
+                    <option value="6">1 week</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="15">15 min</option>
+                    <option value="30">30 min</option>
+                    <option value="60">1 hour</option>
+                  </>
+                )}
+              </select>
             </div>
           </div>
+        )}
 
-          {itemType !== 'todo' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                To
-              </label>
+        <textarea
+          name="detail"
+          rows={3}
+          defaultValue={localEditing?.detail ?? ''}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Description"
+        />
+
+        <button
+          type="submit"
+          disabled={isPending}
+          className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50"
+        >
+          {isPending
+            ? localEditing
+              ? 'Saving...'
+              : 'Creating...'
+            : localEditing
+              ? 'Save'
+              : `Create ${itemType === 'todo' ? 'Todo' : 'Event'}`}
+        </button>
+
+        {localEditing &&
+          (showDeleteConfirm ? (
+            <div className="pt-2">
+              <h3 className="text-lg font-semibold mb-2">
+                Delete {localEditing.type === 'todo' ? 'Todo' : 'Event'}?
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                "{localEditing.title}" will be permanently deleted.
+              </p>
               <div className="flex gap-2">
-                <input
-                  type="date"
-                  value={endDate}
-                  required={itemType === 'event'}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  onChange={(e) => {
-                    setEndDate(e.target.value)
-                    setDuration('')
-                  }}
-                />
-                <input
-                  type="time"
-                  value={endTime}
-                  required={itemType === 'event' && !allDay}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  onChange={(e) => {
-                    setEndTime(e.target.value)
-                    setDuration('')
-                  }}
-                />
-                <select
-                  value={duration}
-                  className="px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  onChange={(e) => {
-                    const d = e.target.value
-                    setDuration(d)
-                    if (d) {
-                      const { endDate: ed, endTime: et } = computeEnd(
-                        beginDate,
-                        beginTime,
-                        allDay,
-                        d,
-                      )
-                      setEndDate(ed)
-                      setEndTime(et)
-                    }
-                  }}
+                <button
+                  type="button"
+                  className="flex-1 py-2 px-4 border rounded-md hover:bg-gray-50"
+                  onClick={() => setShowDeleteConfirm(false)}
                 >
-                  <option value="">— manual —</option>
-                  {allDay ? (
-                    <>
-                      <option value="0">1 day</option>
-                      <option value="1">2 days</option>
-                      <option value="2">3 days</option>
-                      <option value="6">1 week</option>
-                    </>
-                  ) : (
-                    <>
-                      <option value="15">15 min</option>
-                      <option value="30">30 min</option>
-                      <option value="60">1 hour</option>
-                    </>
-                  )}
-                </select>
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="flex-1 py-2 px-4 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 disabled:opacity-50"
+                  disabled={deleteMutation.isPending}
+                  onClick={() => deleteMutation.mutate(localEditing.id)}
+                >
+                  {deleteMutation.isPending ? 'Deleting...' : 'Yes, delete'}
+                </button>
               </div>
             </div>
-          )}
-
-          <textarea
-            name="detail"
-            rows={3}
-            defaultValue={localEditing?.detail ?? ''}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Description"
-          />
-
-          <button
-            type="submit"
-            disabled={isPending}
-            className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50"
-          >
-            {isPending
-              ? localEditing
-                ? 'Saving...'
-                : 'Creating...'
-              : localEditing
-                ? 'Save'
-                : `Create ${itemType === 'todo' ? 'Todo' : 'Event'}`}
-          </button>
-
-          {localEditing && (
+          ) : (
             <button
               type="button"
               className="w-full py-2 px-4 bg-red-600 text-white font-medium rounded-md hover:bg-red-700"
-              onClick={() => setConfirmDelete(true)}
+              onClick={() => setShowDeleteConfirm(true)}
             >
               Delete
             </button>
-          )}
-        </form>
-      )}
+          ))}
+      </form>
     </Dialog>
   )
 }
