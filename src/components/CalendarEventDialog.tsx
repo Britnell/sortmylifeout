@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { UseMutationResult } from '@tanstack/react-query'
+import type { UseMutationResult } from '@tanstack/react-query'
 import Dialog from '@/components/Dialog'
 
 export interface CalendarEvent {
@@ -227,146 +227,144 @@ export default function CalendarEventDialog({
             placeholder="Title"
           />
 
-          {itemType !== 'todo' && (
-            <>
-              <div>
-                <label className="block mb-1 text-sm font-medium text-gray-700">
-                  From
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="date"
-                    value={beginDate}
-                    required
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    onChange={(e) => {
-                      setBeginDate(e.target.value)
-                      if (duration) {
-                        const { endDate: ed, endTime: et } = computeEnd(
-                          e.target.value,
-                          beginTime,
-                          allDay,
-                          duration,
-                        )
-                        setEndDate(ed)
-                        setEndTime(et)
-                      }
-                    }}
-                  />
-                  <input
-                    ref={timeRef}
-                    type="time"
-                    value={beginTime}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    onChange={(e) => {
-                      const t = e.target.value
-                      setBeginTime(t)
-                      if (t) {
-                        setAllDay(false)
-                        const dur = duration === '0' ? '30' : duration
-                        setDuration(dur)
-                        const { endDate: ed, endTime: et } = computeEnd(
-                          beginDate,
-                          t,
-                          false,
-                          dur,
-                        )
-                        setEndDate(ed)
-                        setEndTime(et)
-                      }
-                    }}
-                  />
-                  <label className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={allDay}
-                      onChange={(e) => {
-                        const next = e.target.checked
-                        setAllDay(next)
-                        const bt = next ? '' : beginTime
-                        if (next) {
-                          setBeginTime('')
-                          setEndTime('')
-                        }
-                        const defaultDuration = next ? '0' : '30'
-                        setDuration(defaultDuration)
-                        const { endDate: ed, endTime: et } = computeEnd(
-                          beginDate,
-                          bt,
-                          next,
-                          defaultDuration,
-                        )
-                        setEndDate(ed)
-                        setEndTime(et)
-                      }}
-                    />
-                    All day
-                  </label>
-                </div>
-              </div>
+          <div>
+            <label className="block mb-1 text-sm font-medium text-gray-700">
+              {itemType === 'todo' ? 'Date' : 'From'}
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={beginDate}
+                required
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                onChange={(e) => {
+                  setBeginDate(e.target.value)
+                  if (duration) {
+                    const { endDate: ed, endTime: et } = computeEnd(
+                      e.target.value,
+                      beginTime,
+                      allDay,
+                      duration,
+                    )
+                    setEndDate(ed)
+                    setEndTime(et)
+                  }
+                }}
+              />
+              <input
+                ref={timeRef}
+                type="time"
+                value={beginTime}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                onChange={(e) => {
+                  const t = e.target.value
+                  setBeginTime(t)
+                  if (t) {
+                    setAllDay(false)
+                    const dur = duration === '0' ? '30' : duration
+                    setDuration(dur)
+                    const { endDate: ed, endTime: et } = computeEnd(
+                      beginDate,
+                      t,
+                      false,
+                      dur,
+                    )
+                    setEndDate(ed)
+                    setEndTime(et)
+                  }
+                }}
+              />
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={allDay}
+                  onChange={(e) => {
+                    const next = e.target.checked
+                    setAllDay(next)
+                    const bt = next ? '' : beginTime
+                    if (next) {
+                      setBeginTime('')
+                      setEndTime('')
+                    }
+                    const defaultDuration = next ? '0' : '30'
+                    setDuration(defaultDuration)
+                    const { endDate: ed, endTime: et } = computeEnd(
+                      beginDate,
+                      bt,
+                      next,
+                      defaultDuration,
+                    )
+                    setEndDate(ed)
+                    setEndTime(et)
+                  }}
+                />
+                All day
+              </label>
+            </div>
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  To
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="date"
-                    value={endDate}
-                    required={itemType === 'event'}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    onChange={(e) => {
-                      setEndDate(e.target.value)
-                      setDuration('')
-                    }}
-                  />
-                  <input
-                    type="time"
-                    value={endTime}
-                    required={itemType === 'event' && !allDay}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    onChange={(e) => {
-                      setEndTime(e.target.value)
-                      setDuration('')
-                    }}
-                  />
-                  <select
-                    value={duration}
-                    className="px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    onChange={(e) => {
-                      const d = e.target.value
-                      setDuration(d)
-                      if (d) {
-                        const { endDate: ed, endTime: et } = computeEnd(
-                          beginDate,
-                          beginTime,
-                          allDay,
-                          d,
-                        )
-                        setEndDate(ed)
-                        setEndTime(et)
-                      }
-                    }}
-                  >
-                    <option value="">— manual —</option>
-                    {allDay ? (
-                      <>
-                        <option value="0">1 day</option>
-                        <option value="1">2 days</option>
-                        <option value="2">3 days</option>
-                        <option value="6">1 week</option>
-                      </>
-                    ) : (
-                      <>
-                        <option value="15">15 min</option>
-                        <option value="30">30 min</option>
-                        <option value="60">1 hour</option>
-                      </>
-                    )}
-                  </select>
-                </div>
+          {itemType !== 'todo' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                To
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  value={endDate}
+                  required={itemType === 'event'}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  onChange={(e) => {
+                    setEndDate(e.target.value)
+                    setDuration('')
+                  }}
+                />
+                <input
+                  type="time"
+                  value={endTime}
+                  required={itemType === 'event' && !allDay}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  onChange={(e) => {
+                    setEndTime(e.target.value)
+                    setDuration('')
+                  }}
+                />
+                <select
+                  value={duration}
+                  className="px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  onChange={(e) => {
+                    const d = e.target.value
+                    setDuration(d)
+                    if (d) {
+                      const { endDate: ed, endTime: et } = computeEnd(
+                        beginDate,
+                        beginTime,
+                        allDay,
+                        d,
+                      )
+                      setEndDate(ed)
+                      setEndTime(et)
+                    }
+                  }}
+                >
+                  <option value="">— manual —</option>
+                  {allDay ? (
+                    <>
+                      <option value="0">1 day</option>
+                      <option value="1">2 days</option>
+                      <option value="2">3 days</option>
+                      <option value="6">1 week</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="15">15 min</option>
+                      <option value="30">30 min</option>
+                      <option value="60">1 hour</option>
+                    </>
+                  )}
+                </select>
               </div>
-            </>
+            </div>
           )}
 
           <textarea

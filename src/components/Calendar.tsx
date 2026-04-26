@@ -6,7 +6,8 @@ import {
   updateEventFn,
   deleteEventFn,
 } from '@/serverFn/queries.functions'
-import CalendarEventDialog, { CalendarEvent } from '@/components/CalendarEventDialog'
+import CalendarEventDialog from '@/components/CalendarEventDialog'
+import type { CalendarEvent } from '@/components/CalendarEventDialog'
 
 const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
