@@ -1,6 +1,11 @@
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getCalendarFn, createEventFn, updateEventFn, toggleTodoDoneFn } from '@/serverFn/queries.functions'
+import {
+  getCalendarFn,
+  createEventFn,
+  updateEventFn,
+  toggleTodoDoneFn,
+} from '@/serverFn/queries.functions'
 import Dialog from '@/components/Dialog'
 
 interface CalendarEvent {
@@ -60,6 +65,7 @@ export default function Calendar() {
     queryFn: () => getCalendarFn(),
   })
 
+  console.log(events)
   const weekDays = useMemo(() => getWeekDays(weekOffset), [weekOffset])
 
   const eventsByDate = useMemo(() => {
@@ -73,18 +79,37 @@ export default function Calendar() {
     return map
   }, [events])
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['getCalendar'] })
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: ['getCalendar'] })
 
   const createMutation = useMutation({
-    mutationFn: (data: { date: string; time?: string; allDay: boolean; title: string; detail?: string; type?: string }) =>
-      createEventFn({ data }),
-    onSuccess: () => { invalidate(); setIsDialogOpen(false) },
+    mutationFn: (data: {
+      date: string
+      time?: string
+      allDay: boolean
+      title: string
+      detail?: string
+      type?: string
+    }) => createEventFn({ data }),
+    onSuccess: () => {
+      invalidate()
+      setIsDialogOpen(false)
+    },
   })
 
   const updateMutation = useMutation({
-    mutationFn: (data: { id: number; date: string; time?: string; allDay: boolean; title: string; detail?: string }) =>
-      updateEventFn({ data }),
-    onSuccess: () => { invalidate(); setEditingEvent(null) },
+    mutationFn: (data: {
+      id: number
+      date: string
+      time?: string
+      allDay: boolean
+      title: string
+      detail?: string
+    }) => updateEventFn({ data }),
+    onSuccess: () => {
+      invalidate()
+      setEditingEvent(null)
+    },
   })
 
   const toggleDoneMutation = useMutation({
@@ -126,7 +151,9 @@ export default function Calendar() {
     updateMutation.mutate({
       id: editingEvent.id,
       date: editingEvent.begin?.split('T')[0] ?? selectedDate!,
-      time: editAllDay ? undefined : (formData.get('time') as string) || undefined,
+      time: editAllDay
+        ? undefined
+        : (formData.get('time') as string) || undefined,
       allDay: editAllDay,
       title: formData.get('title') as string,
       detail: (formData.get('detail') as string) || undefined,
@@ -208,7 +235,10 @@ export default function Calendar() {
                         className="shrink-0"
                         onChange={(e) => {
                           e.stopPropagation()
-                          toggleDoneMutation.mutate({ id: ev.id, completed: e.target.checked })
+                          toggleDoneMutation.mutate({
+                            id: ev.id,
+                            completed: e.target.checked,
+                          })
                         }}
                         onClick={(e) => e.stopPropagation()}
                       />
@@ -220,7 +250,9 @@ export default function Calendar() {
                       className="text-xs bg-blue-100 text-blue-800 p-1 rounded truncate"
                     >
                       {!ev.all_day && ev.begin?.includes('T') && (
-                        <span className="opacity-70 mr-1">{ev.begin.split('T')[1]}</span>
+                        <span className="opacity-70 mr-1">
+                          {ev.begin.split('T')[1]}
+                        </span>
                       )}
                       {ev.title}
                     </div>
@@ -246,7 +278,10 @@ export default function Calendar() {
                     type="checkbox"
                     checked={!!editingEvent.completed}
                     onChange={(e) =>
-                      setEditingEvent({ ...editingEvent, completed: e.target.checked ? 1 : 0 })
+                      setEditingEvent({
+                        ...editingEvent,
+                        completed: e.target.checked ? 1 : 0,
+                      })
                     }
                   />
                   Completed
@@ -264,17 +299,25 @@ export default function Calendar() {
               )}
               {!editAllDay && editingEvent.type !== 'todo' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Time
+                  </label>
                   <input
                     type="time"
                     name="time"
-                    defaultValue={editingEvent.begin?.includes('T') ? editingEvent.begin.split('T')[1] : ''}
+                    defaultValue={
+                      editingEvent.begin?.includes('T')
+                        ? editingEvent.begin.split('T')[1]
+                        : ''
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Title
+                </label>
                 <input
                   type="text"
                   name="title"
@@ -284,7 +327,9 @@ export default function Calendar() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
                 <textarea
                   name="detail"
                   rows={3}
@@ -324,7 +369,10 @@ export default function Calendar() {
         {selectedDate && (eventsByDate.get(selectedDate) || []).length > 0 && (
           <div className="space-y-2 mb-4">
             {(eventsByDate.get(selectedDate) || []).map((ev) => (
-              <div key={ev.id} className="border p-3 rounded flex items-start justify-between gap-2">
+              <div
+                key={ev.id}
+                className="border p-3 rounded flex items-start justify-between gap-2"
+              >
                 <div className="flex-1 min-w-0">
                   {ev.type === 'todo' ? (
                     <div className="flex items-center gap-2">
@@ -332,10 +380,15 @@ export default function Calendar() {
                         type="checkbox"
                         checked={!!ev.completed}
                         onChange={(e) =>
-                          toggleDoneMutation.mutate({ id: ev.id, completed: e.target.checked })
+                          toggleDoneMutation.mutate({
+                            id: ev.id,
+                            completed: e.target.checked,
+                          })
                         }
                       />
-                      <h4 className={`font-medium ${ev.completed ? 'line-through text-gray-400' : ''}`}>
+                      <h4
+                        className={`font-medium ${ev.completed ? 'line-through text-gray-400' : ''}`}
+                      >
                         {ev.title}
                       </h4>
                     </div>
@@ -348,7 +401,10 @@ export default function Calendar() {
                 </div>
                 <button
                   className="text-xs text-gray-500 hover:text-gray-800 shrink-0"
-                  onClick={(e) => { handleEditClick(ev, e); setIsDialogOpen(false) }}
+                  onClick={(e) => {
+                    handleEditClick(ev, e)
+                    setIsDialogOpen(false)
+                  }}
                 >
                   Edit
                 </button>
@@ -429,7 +485,9 @@ export default function Calendar() {
               disabled={createMutation.isPending}
               className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
-              {createMutation.isPending ? 'Creating...' : `Create ${newItemType === 'todo' ? 'Todo' : 'Event'}`}
+              {createMutation.isPending
+                ? 'Creating...'
+                : `Create ${newItemType === 'todo' ? 'Todo' : 'Event'}`}
             </button>
           </form>
         </div>
