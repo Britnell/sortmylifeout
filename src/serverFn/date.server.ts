@@ -23,9 +23,9 @@ export async function getWeekEvents(userId: string, weekOffset: number) {
     .selectFrom('event')
     .selectAll()
     .where('user_id', '=', userId)
-    .where('date', '>=', fmt(monday))
-    .where('date', '<=', fmt(sunday))
-    .orderBy('date', 'asc')
+    .where('begin', '>=', fmt(monday))
+    .where('begin', '<=', fmt(sunday))
+    .orderBy('begin', 'asc')
     .execute()
 }
 
@@ -41,23 +41,40 @@ export async function getMonthEvents(userId: string) {
     .selectFrom('event')
     .selectAll()
     .where('user_id', '=', userId)
-    .where('date', '>=', startOfMonth)
-    .where('date', '<=', endOfMonth)
-    .orderBy('date', 'asc')
+    .where('begin', '>=', startOfMonth)
+    .where('begin', '<=', endOfMonth)
+    .orderBy('begin', 'asc')
+    .execute()
+}
+
+export async function getCalendarEvents(userId: string) {
+  const now = new Date()
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14)
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 14)
+
+  const db = getDb()
+  return db
+    .selectFrom('event')
+    .selectAll()
+    .where('user_id', '=', userId)
+    .where('begin', '>=', fmt(start))
+    .where('begin', '<=', fmt(end))
+    .orderBy('begin', 'asc')
     .execute()
 }
 
 export async function createEvent(
   userId: string,
-  data: { date: string; title: string; detail?: string; type?: string },
+  data: { begin: string; end?: string; title: string; detail?: string; type?: string },
 ) {
   const db = getDb()
   const result = await db
     .insertInto('event')
     .values({
       user_id: userId,
-      type: (data.type as 'event' | 'todo' | 'note') || 'event',
-      date: data.date,
+      type: (data.type as 'event' | 'todo' | 'reminder') || 'event',
+      begin: data.begin,
+      end: data.end || null,
       title: data.title,
       detail: data.detail || null,
     })

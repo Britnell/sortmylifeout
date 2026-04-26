@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getSessionUser } from '../lib/auth'
-import { createEvent, getMonthEvents, getWeekEvents } from './date.server'
+import { createEvent, getCalendarEvents, getMonthEvents, getWeekEvents } from './date.server'
 
 export const getSessionFn = createServerFn({ method: 'GET' }).handler(
   async () => {
@@ -32,5 +32,13 @@ export const getMonthFn = createServerFn({ method: 'GET' }).handler(
     const user = await getSessionUser()
     if (!user) return []
     return getMonthEvents(user.id)
+  },
+)
+
+export const getCalendarFn = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    const user = await getSessionUser()
+    if (!user) return []
+    return getCalendarEvents(user.id)
   },
 )

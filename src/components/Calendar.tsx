@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getMonthFn, createEventFn } from '@/serverFn/queries.functions'
+import { getCalendarFn, createEventFn } from '@/serverFn/queries.functions'
 import Dialog from '@/components/Dialog'
 
 interface CalendarEvent {
@@ -52,8 +52,8 @@ export default function Calendar() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   const { data: events = [] } = useQuery({
-    queryKey: ['getMonth'],
-    queryFn: () => getMonthFn(),
+    queryKey: ['getCalendar'],
+    queryFn: () => getCalendarFn(),
   })
 
   const weekDays = useMemo(() => getWeekDays(weekOffset), [weekOffset])
@@ -73,7 +73,7 @@ export default function Calendar() {
     mutationFn: (data: { date: string; title: string; detail?: string }) =>
       createEventFn({ data }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['getMonth'] })
+      queryClient.invalidateQueries({ queryKey: ['getCalendar'] })
       setIsDialogOpen(false)
     },
   })
