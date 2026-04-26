@@ -8,6 +8,7 @@ export function ChatPanel() {
   const [isListening, setIsListening] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const voiceBaseRef = useRef('')
 
   const stopListening = () => {
     recognitionRef.current?.stop()
@@ -27,24 +28,14 @@ export function ChatPanel() {
     recognition.interimResults = true
     recognition.lang = 'en-US'
 
-    let finalTranscript = ''
+    voiceBaseRef.current = input
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      let interimTranscript = ''
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript + ' '
-        } else {
-          interimTranscript += transcript
-        }
+      let transcript = ''
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript
       }
-      setInput((prev) => {
-        const base = prev
-          ? prev.replace(/\s*\.{3}$/, '')
-          : ''
-        return base + finalTranscript + interimTranscript
-      })
+      setInput(voiceBaseRef.current + transcript)
     }
 
     recognition.onerror = (event) => {
@@ -224,7 +215,6 @@ export function ChatPanel() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type a message..."
             className="flex-1 px-3 py-1.5 text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-
           />
           <button
             type="button"
