@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { createAuth } from '../lib/auth'
-import { getDb } from '../lib/db'
+import { createEvent, getMonthEvents, getWeekEvents } from './date.server'
 
 export const getSessionFn = createServerFn({ method: 'GET' }).handler(
   async () => {
@@ -21,35 +21,7 @@ export const getWeekFn = createServerFn({ method: 'GET' })
       headers: request.headers,
     })
     if (!session?.user?.id) return []
-
-    const now = new Date()
-    const dayOfWeek = now.getDay()
-    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
-    const monday = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate() + mondayOffset + data.weekOffset * 7,
-    )
-    const sunday = new Date(
-      monday.getFullYear(),
-      monday.getMonth(),
-      monday.getDate() + 6,
-    )
-
-    const fmt = (d: Date) =>
-      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-
-    const db = getDb()
-    const events = await db
-      .selectFrom('event')
-      .selectAll()
-      .where('user_id', '=', session.user.id)
-      .where('date', '>=', fmt(monday))
-      .where('date', '<=', fmt(sunday))
-      .orderBy('date', 'asc')
-      .execute()
-
-    return events
+    return getWeekEvents(session.user.id, data.weekOffset)
   })
 
 export const createEventFn = createServerFn({ method: 'POST' })
@@ -62,20 +34,7 @@ export const createEventFn = createServerFn({ method: 'POST' })
       headers: request.headers,
     })
     if (!session?.user?.id) throw new Error('Unauthorized')
-
-    const db = getDb()
-    const result = await db
-      .insertInto('event')
-      .values({
-        user_id: session.user.id,
-        type: (data.type as 'event' | 'todo' | 'note') || 'event',
-        date: data.date,
-        title: data.title,
-        detail: data.detail || null,
-      })
-      .execute()
-
-    return { id: Number(result[0].insertId) }
+    return createEvent(session.user.id, data)
   })
 
 export const getMonthFn = createServerFn({ method: 'GET' }).handler(
@@ -85,23 +44,6 @@ export const getMonthFn = createServerFn({ method: 'GET' }).handler(
       headers: request.headers,
     })
     if (!session?.user?.id) return []
-
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = now.getMonth()
-    const startOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-01`
-    const endOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-${String(new Date(year, month + 1, 0).getDate()).padStart(2, '0')}`
-
-    const db = getDb()
-    const events = await db
-      .selectFrom('event')
-      .selectAll()
-      .where('user_id', '=', session.user.id)
-      .where('date', '>=', startOfMonth)
-      .where('date', '<=', endOfMonth)
-      .orderBy('date', 'asc')
-      .execute()
-
-    return events
+    return getMonthEvents(session.user.id)
   },
 )
