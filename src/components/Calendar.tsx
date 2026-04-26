@@ -5,7 +5,6 @@ import {
   createEventFn,
   updateEventFn,
   deleteEventFn,
-  toggleTodoDoneFn,
 } from '@/serverFn/queries.functions'
 import Dialog from '@/components/Dialog'
 
@@ -154,6 +153,7 @@ export default function Calendar() {
       detail?: string
       type?: string
       end?: string
+      completed?: boolean
     }) => updateEventFn({ data }),
     onSuccess: () => {
       invalidate()
@@ -167,12 +167,6 @@ export default function Calendar() {
       invalidate()
       closeDialog()
     },
-  })
-
-  const toggleDoneMutation = useMutation({
-    mutationFn: (data: { id: number; completed: boolean }) =>
-      toggleTodoDoneFn({ data }),
-    onSuccess: invalidate,
   })
 
   const closeDialog = () => {
@@ -303,8 +297,13 @@ export default function Calendar() {
                           className="shrink-0"
                           onChange={(e) => {
                             e.stopPropagation()
-                            toggleDoneMutation.mutate({
+                            updateMutation.mutate({
                               id: ev.id,
+                              date: ev.begin?.split('T')[0] ?? '',
+                              time: ev.begin?.includes('T') ? ev.begin.split('T')[1] : undefined,
+                              allDay: !!ev.all_day,
+                              title: ev.title,
+                              detail: ev.detail ?? undefined,
                               completed: e.target.checked,
                             })
                           }}

@@ -1,52 +1,5 @@
 import { getDb } from '../lib/db'
 
-const fmt = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-
-export async function getWeekEvents(userId: string, weekOffset: number) {
-  const now = new Date()
-  const dayOfWeek = now.getDay()
-  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
-  const monday = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate() + mondayOffset + weekOffset * 7,
-  )
-  const sunday = new Date(
-    monday.getFullYear(),
-    monday.getMonth(),
-    monday.getDate() + 6,
-  )
-
-  const db = getDb()
-  return db
-    .selectFrom('event')
-    .selectAll()
-    .where('user_id', '=', userId)
-    .where('begin', '>=', fmt(monday))
-    .where('begin', '<=', fmt(sunday))
-    .orderBy('begin', 'asc')
-    .execute()
-}
-
-export async function getMonthEvents(userId: string) {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = now.getMonth()
-  const startOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-01`
-  const endOfMonth = `${year}-${String(month + 1).padStart(2, '0')}-${String(new Date(year, month + 1, 0).getDate()).padStart(2, '0')}`
-
-  const db = getDb()
-  return db
-    .selectFrom('event')
-    .selectAll()
-    .where('user_id', '=', userId)
-    .where('begin', '>=', startOfMonth)
-    .where('begin', '<=', endOfMonth)
-    .orderBy('begin', 'asc')
-    .execute()
-}
-
 export async function updateEvent(
   userId: string,
   id: number,
@@ -58,6 +11,7 @@ export async function updateEvent(
     detail?: string
     type?: string
     end?: string
+    completed?: boolean
   },
 ) {
   const begin = data.allDay ? data.date : `${data.date}T${data.time}`
@@ -71,21 +25,8 @@ export async function updateEvent(
       detail: data.detail || null,
       ...(data.type ? { type: data.type } : {}),
       ...(data.end !== undefined ? { end: data.end || null } : {}),
+      ...(data.completed !== undefined ? { completed: data.completed ? 1 : 0 } : {}),
     })
-    .where('id', '=', id)
-    .where('user_id', '=', userId)
-    .execute()
-}
-
-export async function toggleTodoDone(
-  userId: string,
-  id: number,
-  completed: boolean,
-) {
-  const db = getDb()
-  await db
-    .updateTable('event')
-    .set({ completed: completed ? 1 : 0 })
     .where('id', '=', id)
     .where('user_id', '=', userId)
     .execute()
