@@ -1,3 +1,4 @@
-in calendar.tsx - if i click on event i immediately open that for editing, atm it opens a weird dialog for creating and has editing option at the top of dialog - uegh
-and only clicking on the calendar day outside the event row opens that day for creating.
-calendar.tsx - always load entire weeks. so a week is mo-su - always load the current week as well as 1 week before and 1 week after, total of 3 weeks , and then in ui we always show three week rows above each each.
+
+- ai.ts - sql query safety checks. what if we first remove any text inside quotes '...' to remove potential words in string, so an event can be called 'drop table', and then we can easily filter by keywords left after?
+
+- ai.ts - read our prompts, we have events + todos, now we want a shopping list. i want users to say remind me to buy milk / flowers...  groceries. so probably a new type 'shopping' / groceries. shopping seems broader , groceriers implies just food. but its meant for things i want to be reminded of when im at the shop. not like 'buy new jeans when im in town'
