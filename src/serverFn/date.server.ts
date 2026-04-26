@@ -47,22 +47,6 @@ export async function getMonthEvents(userId: string) {
     .execute()
 }
 
-export async function getCalendarEvents(userId: string) {
-  const now = new Date()
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 14)
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 14)
-
-  const db = getDb()
-  return db
-    .selectFrom('event')
-    .selectAll()
-    .where('user_id', '=', userId)
-    .where('begin', '>=', fmt(start))
-    .where('begin', '<=', fmt(end))
-    .orderBy('begin', 'asc')
-    .execute()
-}
-
 export async function updateEvent(
   userId: string,
   id: number,
@@ -93,7 +77,11 @@ export async function updateEvent(
     .execute()
 }
 
-export async function toggleTodoDone(userId: string, id: number, completed: boolean) {
+export async function toggleTodoDone(
+  userId: string,
+  id: number,
+  completed: boolean,
+) {
   const db = getDb()
   await db
     .updateTable('event')
@@ -114,7 +102,12 @@ export async function deleteEvent(userId: string, id: number) {
 
 export async function searchEvents(
   userId: string,
-  filters: { type?: string; completed?: boolean; date_from?: string; date_to?: string },
+  filters: {
+    type?: string
+    completed?: boolean
+    date_from?: string
+    date_to?: string
+  },
 ) {
   const db = getDb()
   let query = db.selectFrom('event').selectAll().where('user_id', '=', userId)
@@ -127,7 +120,10 @@ export async function searchEvents(
     query = query
       .where('begin', '<=', filters.date_to + 'T99:99')
       .where((eb) =>
-        eb.or([eb('end', '>=', filters.date_from!), eb('begin', '>=', filters.date_from!)]),
+        eb.or([
+          eb('end', '>=', filters.date_from!),
+          eb('begin', '>=', filters.date_from!),
+        ]),
       )
   } else if (filters.date_from != null) {
     query = query
