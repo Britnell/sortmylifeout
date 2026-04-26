@@ -112,6 +112,32 @@ export async function deleteEvent(userId: string, id: number) {
     .execute()
 }
 
+export async function searchEvents(
+  userId: string,
+  filters: { type?: string; completed?: boolean; date_from?: string; date_to?: string },
+) {
+  const db = getDb()
+  let query = db.selectFrom('event').selectAll().where('user_id', '=', userId)
+
+  if (filters.type != null) query = query.where('type', '=', filters.type)
+  if (filters.completed != null)
+    query = query.where('completed', '=', filters.completed ? 1 : 0)
+
+  if (filters.date_from != null && filters.date_to != null) {
+    query = query
+      .where('begin', '<=', filters.date_to + 'T99:99')
+      .where((eb) =>
+        eb.or([eb('end', '>=', filters.date_from!), eb('begin', '>=', filters.date_from!)]),
+      )
+  } else if (filters.date_from != null) {
+    query = query
+      .where('begin', '>=', filters.date_from)
+      .where('begin', '<=', filters.date_from + 'T99:99')
+  }
+
+  return query.orderBy('begin', 'asc').execute()
+}
+
 export async function createEvent(
   userId: string,
   data: {

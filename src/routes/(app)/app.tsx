@@ -38,7 +38,10 @@ function RouteComponent() {
       setInput((prev) => (prev ? prev + ' ' + transcript : transcript))
     }
     recognition.onend = () => setIsListening(false)
-    recognition.onerror = () => setIsListening(false)
+    recognition.onerror = (e: any) => {
+      console.error('SpeechRecognition error:', e.error, e)
+      setIsListening(false)
+    }
 
     recognitionRef.current = recognition
     recognition.start()
@@ -52,7 +55,6 @@ function RouteComponent() {
     connection: fetchServerSentEvents('/api/chat'),
   })
 
-
   useEffect(() => {
     const lastMessage = messages[messages.length - 1]
     if (!lastMessage || lastMessage.role !== 'assistant') return
@@ -64,7 +66,9 @@ function RouteComponent() {
     if (toolCallId === lastRefetchedToolCallId.current) return
 
     const isCreateOrUpdate = lastMessage.parts.some(
-      (p) => p.type === 'tool-call' && p.id === toolCallId &&
+      (p) =>
+        p.type === 'tool-call' &&
+        p.id === toolCallId &&
         (p.name === 'create_event' || p.name === 'update_event'),
     )
     if (!isCreateOrUpdate) return
@@ -73,7 +77,6 @@ function RouteComponent() {
     queryClient.invalidateQueries({ queryKey: ['getCalendar'] })
   }, [messages])
 
-  console.log(messages)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (input.trim() && !isLoading) {

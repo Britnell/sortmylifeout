@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getSessionUser } from '../lib/auth'
-import { createEvent, deleteEvent, getCalendarEvents, getMonthEvents, getWeekEvents, updateEvent, toggleTodoDone } from './date.server'
+import { createEvent, deleteEvent, getMonthEvents, getWeekEvents, updateEvent, toggleTodoDone, searchEvents } from './date.server'
 
 export const getSessionFn = createServerFn({ method: 'GET' }).handler(
   async () => {
@@ -61,10 +61,12 @@ export const getMonthFn = createServerFn({ method: 'GET' }).handler(
   },
 )
 
-export const getCalendarFn = createServerFn({ method: 'GET' }).handler(
-  async () => {
+export const searchEventsFn = createServerFn({ method: 'GET' })
+  .inputValidator(
+    (d: { date_from?: string; date_to?: string; type?: string; completed?: boolean }) => d,
+  )
+  .handler(async ({ data }) => {
     const user = await getSessionUser()
     if (!user) return []
-    return getCalendarEvents(user.id)
-  },
-)
+    return searchEvents(user.id, data)
+  })

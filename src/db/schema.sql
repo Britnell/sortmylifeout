@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS event (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-  type TEXT NOT NULL CHECK(type IN ('event', 'todo')),
+  type TEXT NOT NULL CHECK(type IN ('event', 'todo','shopping')),
   title TEXT NOT NULL,
   detail TEXT,
   completed INTEGER,

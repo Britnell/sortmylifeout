@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  getCalendarFn,
+  searchEventsFn,
   createEventFn,
   updateEventFn,
   deleteEventFn,
@@ -95,11 +95,6 @@ export default function Calendar() {
   const [duration, setDuration] = useState<string>('0')
   const timeRef = useRef<HTMLInputElement>(null)
 
-  const { data: events = [] } = useQuery({
-    queryKey: ['getCalendar'],
-    queryFn: () => getCalendarFn(),
-  })
-
   const allWeekDays = useMemo(
     () => [
       getWeekDays(weekOffset - 1),
@@ -108,6 +103,14 @@ export default function Calendar() {
     ],
     [weekOffset],
   )
+
+  const date_from = fmtDate(allWeekDays[0][0])
+  const date_to = fmtDate(allWeekDays[2][6])
+
+  const { data: events = [] } = useQuery({
+    queryKey: ['searchEventsFn', date_from, date_to],
+    queryFn: () => searchEventsFn({ data: { date_from, date_to } }),
+  })
 
   const eventsByDate = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>()
@@ -121,7 +124,9 @@ export default function Calendar() {
   }, [events])
 
   const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: ['getCalendar'] })
+    queryClient.invalidateQueries({
+      queryKey: ['getCalendar', date_from, date_to],
+    })
 
   const createMutation = useMutation({
     mutationFn: (data: {

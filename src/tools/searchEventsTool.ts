@@ -1,7 +1,5 @@
 import { toolDefinition } from '@tanstack/ai'
-import { getDb } from '@/lib/db'
-
-const db = getDb()
+import { searchEvents } from '@/serverFn/date.server'
 
 export function createSearchEventsTool(userId: string) {
   return toolDefinition({
@@ -41,34 +39,7 @@ export function createSearchEventsTool(userId: string) {
       required: ['rows', 'rowCount'],
     },
   }).server(async (args) => {
-    const { type, completed, date_from, date_to } = args as {
-      type?: string
-      completed?: boolean
-      date_from?: string
-      date_to?: string
-    }
-
-    let query = db.selectFrom('event').selectAll().where('user_id', '=', userId)
-
-    if (type != null) query = query.where('type', '=', type)
-    if (completed != null)
-      query = query.where('completed', '=', completed ? 1 : 0)
-
-    if (date_from != null && date_to != null) {
-      query = query
-        .where('begin', '<=', date_to + 'T99:99')
-        .where((eb) =>
-          eb.or([eb('end', '>=', date_from), eb('begin', '>=', date_from)]),
-        )
-    } else if (date_from != null) {
-      query = query
-        .where('begin', '>=', date_from)
-        .where('begin', '<=', date_from + 'T99:99')
-    }
-
-    query = query.orderBy('begin', 'asc')
-
-    const rows = await query.execute()
+    const rows = await searchEvents(userId, args as { type?: string; completed?: boolean; date_from?: string; date_to?: string })
     return { rows, rowCount: rows.length }
   })
 }
