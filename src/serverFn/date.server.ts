@@ -72,6 +72,8 @@ export async function updateEvent(
     allDay: boolean
     title: string
     detail?: string
+    type?: string
+    end?: string
   },
 ) {
   const begin = data.allDay ? data.date : `${data.date}T${data.time}`
@@ -83,6 +85,8 @@ export async function updateEvent(
       begin,
       title: data.title,
       detail: data.detail || null,
+      ...(data.type ? { type: data.type } : {}),
+      ...(data.end !== undefined ? { end: data.end || null } : {}),
     })
     .where('id', '=', id)
     .where('user_id', '=', userId)
