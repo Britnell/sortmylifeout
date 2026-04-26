@@ -3,6 +3,7 @@ import { createOpenRouterText } from '@tanstack/ai-openrouter'
 import { sql } from 'kysely'
 import { getDb } from '@/lib/db'
 import { createEvent } from '@/serverFn/date.server'
+import schemaSQL from '@/db/schema.sql?raw'
 
 const models = {
   deepseek: 'deepseek/deepseek-v3.2',
@@ -77,27 +78,10 @@ Current user_id: ${userId} — always filter queries and set this on new events.
 `
 }
 
-const EVENT_SCHEMA = `
-CREATE TABLE IF NOT EXISTS event (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-  type TEXT NOT NULL CHECK(type IN ('event', 'todo')),
-  title TEXT NOT NULL,
-  detail TEXT,
-  completed INTEGER DEFAULT 0,
-  all_day INTEGER NOT NULL,
-  begin TEXT, -- date/datetime
-  end TEXT,   -- date/datetime
-  -- both begin + end date :
-  -- 'YYYY-MM-DD' : all_day=1,
-  -- 'YYYY-MM-DDTHH:MM' (local time, no TZ suffix) : all_day=0
-  created_at INTEGER NOT NULL DEFAULT (unixepoch())
-);
-`
-
 const sqlPrompt = `Run a read-only SELECT query against the database.
 Database: Cloudflare D1 (SQLite syntax).
-Schema:${EVENT_SCHEMA}`
+Schema:
+${schemaSQL}`
 
 const upsertPrompt = `Create or update a calendar event row.
 Omit 'id' to create. Include 'id' to update — only provided fields are updated.`
