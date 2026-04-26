@@ -19,7 +19,7 @@ export const getWeekFn = createServerFn({ method: 'GET' })
 
 export const createEventFn = createServerFn({ method: 'POST' })
   .inputValidator(
-    (d: { date: string; time?: string; allDay: boolean; title: string; detail?: string; type?: string }) => d,
+    (d: { date: string; time?: string; allDay: boolean; end?: string; title: string; detail?: string; type?: string }) => d,
   )
   .handler(async ({ data }) => {
     const user = await getSessionUser()

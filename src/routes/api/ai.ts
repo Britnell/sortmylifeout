@@ -40,37 +40,43 @@ function validateSelectOnly(query: string): void {
 export const SYSTEM_PROMPT = (userId: string) => {
   const d = new Date()
   return `You are my personal assistant - help me sort my life out by handling my calendar.
-We track events, todos and notes.
-Current date/time (UTC): ${d.toDateString()} ${d.toTimeString()}
-"This week" means the next 7 days / remainder of the current calendar week.
-Todos are events with type='todo' and no date set.
+
+'week' refers to a calendar week Mo - Su
+We track events & todos in sql calendar which you have access to
+all are are in 'events' table with different type
+
+- event - classic appointment / calendar entry w a start & end date/datetime. optionally with time or as all day
+- todo - type = 'todo' + 'completed' col. standard todo list by leaving date empty
+- todo - 'begin' date to mark date and/or time i want to get this done or be reminded of it
+
+Today: ${d.toDateString()} ${d.toTimeString()} (UTC)
 Current user_id: ${userId} — always filter queries and set this on new events.
 `
 }
 
 const EVENT_SCHEMA = `
-  CREATE TABLE IF NOT EXISTS event (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-    type TEXT NOT NULL CHECK(type IN ('event', 'todo', 'reminder')),
-    title TEXT NOT NULL,
-    detail TEXT,
-    completed INTEGER DEFAULT 0,
-    begin TEXT, -- date(time)
-    end TEXT,   -- date(time)
-    -- both begin + end :
-    -- 'YYYY-MM-DD' when all_day=1,
-    -- 'YYYY-MM-DDTHH:MM' (local time, no TZ suffix) when all_day=0
-    all_day INTEGER NOT NULL,
-    created_at INTEGER NOT NULL DEFAULT (unixepoch())
-  );
+CREATE TABLE IF NOT EXISTS event (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  type TEXT NOT NULL CHECK(type IN ('event', 'todo')),
+  title TEXT NOT NULL,
+  detail TEXT,
+  completed INTEGER DEFAULT 0,
+  all_day INTEGER NOT NULL,
+  begin TEXT, -- date/datetime
+  end TEXT,   -- date/datetime
+  -- both begin + end date :
+  -- 'YYYY-MM-DD' : all_day=1,
+  -- 'YYYY-MM-DDTHH:MM' (local time, no TZ suffix) : all_day=0
+  created_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
 `
 
 const sqlPrompt = `Run a read-only SELECT query against the database.
 Database: Cloudflare D1 (SQLite syntax).
 Schema:${EVENT_SCHEMA}`
 
-const upsertPrompt = `Create or update a calendar event, todo, or reminder.
+const upsertPrompt = `Create or update a calendar event row.
 Omit 'id' to create. Include 'id' to update — only provided fields are updated.`
 
 // --- query tool (read-only) ---
