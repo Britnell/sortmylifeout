@@ -48,35 +48,62 @@ all items have a 'title' + optional 'detail' col for extra info, address, links 
 
 ## type='event'
 - classic appointment / calendar entry
-- start & end required - both as date or datetime + all_day boolean col
-- all_day : begin date = end date
+- start & end required - both as date or datetime
+- all_day boolean col to indicate if date or datetime
+
+
+
+## type='todo'
+- 'completed' col required, boolean 0/1
+- 'begin' date optional
+  - no begin date: standard todo list of outstanding items
+  - 'begin' date/datetime: when the todo is due by / will be worked on / I want to be reminded of it
+
+
+## type='shopping'
+- same as todo: 'completed' col required & 'begin' date optional
+
 
 ### Example
-input: "(Fr 24.04.) "I have a dentist appointment on Wednesday at 4pm"
-Calendar:
+
+"a dentist appointment on Wednesday at 4pm"
 {
   type: 'event',
   title: 'Dentist appointment',
-  begin: '2024-04-24T16:00',
-  end: '2024-04-24T:17:00',
-  all_day: 0,
+  begin: '2024-04-29T16:00',
+  end: '2024-04-29T:17:00',
+  all_day: 0
 }
 
-## type='todo'
-- 'completed' col boolean (0/1)
-- 'begin' date optional
-- no begin date = standard todo list of outstanding items
-- 'begin' date and/or time : when the todo is due by / will be worked on / I want to be reminded of it
-- end date = null
+"meeting my friend George this Sunday"
+{
+  type: 'event',
+  title: 'George',
+  begin: '2024-04-26',
+  end: '2024-04-26',
+  all_day: 1
+}
 
+"Remind me to water the flowers this weekend" (Tu 21.04.)
+{
+  type: 'todo',
+  title: 'water flowers',
+  begin: '2024-04-25'
+}
 
+"Remind me to buy eggs when I'm at the shop"
+{
+  type: 'shopping',
+  title: 'eggs'
+}
 
-
-Today: ${d.toDateString()} ${d.toTimeString()} (UTC)
+## Information
+Today's date: ${d.toDateString()} ${d.toTimeString()} (UTC)
 'week' refers to a calendar week from Mo - Su
-Current user_id: ${userId} — always filter queries and set this on new events.
+Current user_id: ${userId} — always filter queries for the user_id and set this on new events.
 `
 }
+// TODO - i realise i cant give sql access or someone could read other peoples calendars ... we have to make this a function w search params
 
 const sqlPrompt = `Run a read-only SELECT query against the database.
 Database: Cloudflare D1 (SQLite syntax).
