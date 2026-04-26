@@ -239,6 +239,10 @@ export default function Calendar() {
                     <div
                       key={ev.id}
                       className="text-xs bg-gray-100 text-gray-800 p-1 rounded flex items-center gap-1"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleEditClick(ev, e)
+                      }}
                     >
                       <input
                         type="checkbox"
@@ -258,7 +262,11 @@ export default function Calendar() {
                   ) : (
                     <div
                       key={ev.id}
-                      className="text-xs bg-blue-100 text-blue-800 p-1 rounded truncate"
+                      className="text-xs bg-blue-100 text-blue-800 p-1 rounded truncate cursor-pointer hover:bg-blue-200"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleEditClick(ev, e)
+                      }}
                     >
                       {!ev.all_day && ev.begin?.includes('T') && (
                         <span className="opacity-70 mr-1">
@@ -382,159 +390,98 @@ export default function Calendar() {
             >
               Delete
             </button>
-            <button
-              className="mt-4 px-4 py-2 rounded"
-              onClick={() => setEditingEvent(null)}
-            >
-              Cancel
-            </button>
           </>
         )}
       </Dialog>
 
-      {/* Day dialog */}
+      {/* Create dialog */}
       <Dialog isOpen={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-        <h3 className="text-lg font-semibold mb-4">
+        <h3 className="text-lg font-semibold mb-1">Create</h3>
+        <p className="text-sm text-gray-500 mb-4">
           {selectedDate &&
             new Date(selectedDate + 'T00:00:00').toLocaleDateString('default', {
               weekday: 'long',
               month: 'long',
               day: 'numeric',
             })}
-        </h3>
+        </p>
 
-        {selectedDate && (eventsByDate.get(selectedDate) || []).length > 0 && (
-          <div className="space-y-2 mb-4">
-            {(eventsByDate.get(selectedDate) || []).map((ev) => (
-              <div
-                key={ev.id}
-                className="border p-3 rounded flex items-start justify-between gap-2"
-              >
-                <div className="flex-1 min-w-0">
-                  {ev.type === 'todo' ? (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={!!ev.completed}
-                        onChange={(e) =>
-                          toggleDoneMutation.mutate({
-                            id: ev.id,
-                            completed: e.target.checked,
-                          })
-                        }
-                      />
-                      <h4
-                        className={`font-medium ${ev.completed ? 'line-through text-gray-400' : ''}`}
-                      >
-                        {ev.title}
-                      </h4>
-                    </div>
-                  ) : (
-                    <h4 className="font-medium">{ev.title}</h4>
-                  )}
-                  {ev.detail && (
-                    <p className="text-sm text-gray-600">{ev.detail}</p>
-                  )}
-                </div>
-                <button
-                  className="text-xs text-gray-500 hover:text-gray-800 shrink-0"
-                  onClick={(e) => {
-                    handleEditClick(ev, e)
-                    setIsDialogOpen(false)
-                  }}
-                >
-                  Edit
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="mt-4">
-          <div className="flex gap-4 mb-3">
-            <label className="flex items-center gap-1 text-sm cursor-pointer">
-              <input
-                type="radio"
-                name="newItemType"
-                value="event"
-                checked={newItemType === 'event'}
-                onChange={() => setNewItemType('event')}
-              />
-              Event
-            </label>
-            <label className="flex items-center gap-1 text-sm cursor-pointer">
-              <input
-                type="radio"
-                name="newItemType"
-                value="todo"
-                checked={newItemType === 'todo'}
-                onChange={() => setNewItemType('todo')}
-              />
-              Todo
-            </label>
-          </div>
-          <form onSubmit={handleCreateSubmit} className="space-y-3">
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                checked={allDay}
-                onChange={(e) => setAllDay(e.target.checked)}
-              />
-              All day
-            </label>
-            {!allDay && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Time
-                </label>
-                <input
-                  type="time"
-                  name="time"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Title
-              </label>
-              <input
-                type="text"
-                name="title"
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Event title"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description
-              </label>
-              <textarea
-                name="detail"
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Event description"
-              ></textarea>
-            </div>
-            <button
-              type="submit"
-              disabled={createMutation.isPending}
-              className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50"
-            >
-              {createMutation.isPending
-                ? 'Creating...'
-                : `Create ${newItemType === 'todo' ? 'Todo' : 'Event'}`}
-            </button>
-          </form>
+        <div className="flex gap-4 mb-3">
+          <label className="flex items-center gap-1 text-sm cursor-pointer">
+            <input
+              type="radio"
+              name="newItemType"
+              value="event"
+              checked={newItemType === 'event'}
+              onChange={() => setNewItemType('event')}
+            />
+            Event
+          </label>
+          <label className="flex items-center gap-1 text-sm cursor-pointer">
+            <input
+              type="radio"
+              name="newItemType"
+              value="todo"
+              checked={newItemType === 'todo'}
+              onChange={() => setNewItemType('todo')}
+            />
+            Todo
+          </label>
         </div>
-
-        <button
-          className="mt-4 px-4 py-2  rounded "
-          onClick={() => setIsDialogOpen(false)}
-        >
-          Close
-        </button>
+        <form onSubmit={handleCreateSubmit} className="space-y-3">
+          <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <input
+              type="checkbox"
+              checked={allDay}
+              onChange={(e) => setAllDay(e.target.checked)}
+            />
+            All day
+          </label>
+          {!allDay && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Time
+              </label>
+              <input
+                type="time"
+                name="time"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Title
+            </label>
+            <input
+              type="text"
+              name="title"
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Title"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Description
+            </label>
+            <textarea
+              name="detail"
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Description"
+            ></textarea>
+          </div>
+          <button
+            type="submit"
+            disabled={createMutation.isPending}
+            className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50"
+          >
+            {createMutation.isPending
+              ? 'Creating...'
+              : `Create ${newItemType === 'todo' ? 'Todo' : 'Event'}`}
+          </button>
+        </form>
       </Dialog>
     </>
   )
