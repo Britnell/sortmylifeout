@@ -7,39 +7,66 @@ export function ChatPanel() {
   const [expanded, setExpanded] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null)
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
 
-  const toggleListening = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const stopListening = () => {
+    recognitionRef.current?.stop()
+    setIsListening(false)
+  }
+
+  const startListening = () => {
     const SpeechRecognition =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition
-    if (!SpeechRecognition) return
-
-    if (isListening) {
-      recognitionRef.current?.stop()
+      window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      console.error('SpeechRecognition not supported in this browser')
       return
     }
 
     const recognition = new SpeechRecognition()
-    recognition.continuous = false
-    recognition.interimResults = false
+    recognition.continuous = true
+    recognition.interimResults = true
     recognition.lang = 'en-US'
 
-    recognition.onresult = (e) => {
-      const transcript = e.results[0][0].transcript
-      setInput((prev) => (prev ? prev + ' ' + transcript : transcript))
+    let finalTranscript = ''
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      let interimTranscript = ''
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + ' '
+        } else {
+          interimTranscript += transcript
+        }
+      }
+      setInput((prev) => {
+        const base = prev
+          ? prev.replace(/\s*\.{3}$/, '')
+          : ''
+        return base + finalTranscript + interimTranscript
+      })
     }
-    recognition.onend = () => setIsListening(false)
-    recognition.onerror = (e: any) => {
-      console.error('SpeechRecognition error:', e.error, e)
+
+    recognition.onerror = (event) => {
+      console.error('SpeechRecognition error:', event.error, event.message)
+      setIsListening(false)
+    }
+
+    recognition.onend = () => {
       setIsListening(false)
     }
 
     recognitionRef.current = recognition
     recognition.start()
     setIsListening(true)
+  }
+
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening()
+    } else {
+      startListening()
+    }
   }
 
   const queryClient = useQueryClient()
