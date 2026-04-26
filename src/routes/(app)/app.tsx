@@ -12,7 +12,7 @@ function RouteComponent() {
   const [expanded, setExpanded] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const { messages, sendMessage, isLoading } = useChat({
+  const { messages, sendMessage, setMessages, isLoading } = useChat({
     connection: fetchServerSentEvents('/api/chat'),
   })
 
@@ -53,7 +53,14 @@ function RouteComponent() {
         {/* Messages — only shown when expanded */}
         {expanded && hasMessages && (
           <>
-            <div className="flex justify-end px-2 pt-2 bg-white dark:bg-gray-900">
+            <div className="flex justify-between px-2 pt-2 bg-white dark:bg-gray-900">
+              <button
+                onClick={() => { setMessages([]); setExpanded(false) }}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs px-1"
+                aria-label="New chat"
+              >
+                New chat
+              </button>
               <button
                 onClick={() => setExpanded(false)}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm px-1"
