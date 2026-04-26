@@ -3,11 +3,6 @@ import { createOpenRouterText } from '@tanstack/ai-openrouter'
 import { sql } from 'kysely'
 import { getDb } from '@/lib/db'
 
-/*
-  TODO: pass user_id from auth session into createChatStream so tools can
-  scope queries and mutations to the current user.
-*/
-
 const models = {
   deepseek: 'deepseek/deepseek-v3.2',
   gemma26: 'google/gemma-4-26b-a4b-it',
@@ -42,27 +37,30 @@ function validateSelectOnly(query: string): void {
 }
 
 const EVENT_SCHEMA = `
-  event (
+  CREATE TABLE IF NOT EXISTS event (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL,
-    type TEXT NOT NULL  -- 'event' | 'todo' | 'note'
-    date TEXT,          -- ISO-8601, null for todos with no date
-    end TEXT,           -- ISO-8601 end time, optional
+    user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+    type TEXT NOT NULL CHECK(type IN ('event', 'todo', 'reminder')),
     title TEXT NOT NULL,
     detail TEXT,
-    repeating TEXT,
-    done INTEGER DEFAULT 0,
-    created_at INTEGER,
-    updated_at INTEGER
-  )`
+    completed INTEGER DEFAULT 0,
+    begin TEXT, -- date(time)
+    end TEXT,   -- date(time)
+    -- both begin + end : 'YYYY-MM-DD' when all_day=1,
+    -- 'YYYY-MM-DDTHH:MM' (local time, no TZ suffix) when all_day=0
+    all_day INTEGER NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+`
 
-export const SYSTEM_PROMPT = () => {
+export const SYSTEM_PROMPT = (userId: string) => {
   const d = new Date()
   return `You are my personal assistant - help me sort my life out by handling my calendar.
 We track events, todos and notes.
 Current date/time (UTC): ${d.toDateString()} ${d.toTimeString()}
 "This week" means the next 7 days / remainder of the current calendar week.
 Todos are events with type='todo' and no date set.
+Current user_id: ${userId} — always filter queries and set this on new events.
 
 Use query_events to look things up.
 Use upsert_event to create or update an event (omit id to create, include id to update).
@@ -109,7 +107,7 @@ function q(s: string) {
   return `'${s.replace(/'/g, "''")}'`
 }
 
-function createUpsertEventTool() {
+function createUpsertEventTool(userId: string) {
   const db = getDb()
   return toolDefinition({
     name: 'upsert_event',
@@ -179,13 +177,7 @@ done: 1 = complete, 0 = incomplete.`,
         throw new Error('type and title are required when creating an event')
 
       const cols = ['user_id', 'type', 'title', 'created_at', 'updated_at']
-      const vals = [
-        `'TODO_USER_ID'`,
-        q(type),
-        q(title),
-        String(now),
-        String(now),
-      ]
+      const vals = [q(userId), q(type), q(title), String(now), String(now)]
 
       if (detail != null) {
         cols.push('detail')
@@ -222,12 +214,16 @@ done: 1 = complete, 0 = incomplete.`,
   })
 }
 
-export function createChatStream(messages: unknown[], conversationId?: string) {
+export function createChatStream(
+  messages: unknown[],
+  userId: string,
+  conversationId?: string,
+) {
   return chat({
     adapter: getAdapter(),
-    systemPrompts: [SYSTEM_PROMPT()],
+    systemPrompts: [SYSTEM_PROMPT(userId)],
     messages: messages as never,
     conversationId,
-    tools: [sqlQueryTool(), createUpsertEventTool()],
+    tools: [sqlQueryTool(), createUpsertEventTool(userId)],
   })
 }

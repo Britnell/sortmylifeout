@@ -1,5 +1,6 @@
 import { toServerSentEventsResponse } from '@tanstack/ai'
 import { createFileRoute } from '@tanstack/react-router'
+import { getSessionUser } from '@/lib/auth'
 import { createChatStream } from './ai'
 
 export const Route = createFileRoute('/api/chat')({
@@ -7,8 +8,10 @@ export const Route = createFileRoute('/api/chat')({
     handlers: {
       POST: async ({ request }) => {
         try {
+          const user = await getSessionUser()
+          if (!user) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
           const { messages, conversationId } = await request.json()
-          return toServerSentEventsResponse(createChatStream(messages, conversationId))
+          return toServerSentEventsResponse(createChatStream(messages, user.id, conversationId))
         } catch (error) {
           return new Response(
             JSON.stringify({

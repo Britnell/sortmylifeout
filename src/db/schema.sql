@@ -46,19 +46,18 @@ CREATE TABLE IF NOT EXISTS "verification" (
 );
 
 -- App tables
+
 CREATE TABLE IF NOT EXISTS event (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
   type TEXT NOT NULL CHECK(type IN ('event', 'todo', 'reminder')),
-
   title TEXT NOT NULL,
   detail TEXT,
   completed INTEGER DEFAULT 0,
-
-  -- 'YYYY-MM-DD' when all_day=1, 'YYYY-MM-DDTHH:MM' (local time, no TZ suffix) when all_day=0
-  begin TEXT,
-  end TEXT,
+  begin TEXT, -- date(time)
+  end TEXT,   -- date(time)
+  -- both begin + end : 'YYYY-MM-DD' when all_day=1,
+  -- 'YYYY-MM-DDTHH:MM' (local time, no TZ suffix) when all_day=0
   all_day INTEGER NOT NULL,
-
   created_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
