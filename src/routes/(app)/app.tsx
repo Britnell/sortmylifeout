@@ -22,7 +22,6 @@ function RouteComponent() {
     }
   }
 
-  console.log(messages)
   return (
     <div className="max-w-5xl mx-auto p-4">
       <Calendar />
@@ -74,11 +73,13 @@ function RouteComponent() {
                         <pre className="mt-1 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs overflow-auto">
                           <div>
                             <strong>Args:</strong>{' '}
-                            {JSON.stringify(
-                              JSON.parse(part.arguments),
-                              null,
-                              2,
-                            )}
+                            {(() => {
+                              try {
+                                return JSON.stringify(JSON.parse(part.arguments), null, 2)
+                              } catch {
+                                return part.arguments
+                              }
+                            })()}
                           </div>
                           {part.output !== undefined && (
                             <div className="mt-1">

@@ -49,17 +49,15 @@ CREATE TABLE IF NOT EXISTS "verification" (
 CREATE TABLE IF NOT EXISTS event (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-  type TEXT NOT NULL CHECK(type IN ('event', 'todo', 'note')),
+  type TEXT NOT NULL CHECK(type IN ('event', 'todo', 'reminder')),
 
-  date TEXT,
+  begin TEXT,
   end TEXT,
 
   title TEXT NOT NULL,
   detail TEXT,
 
-  repeating TEXT,
-  done INTEGER DEFAULT 0,
+  completed INTEGER DEFAULT 0,
 
-  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-  updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+  created_at INTEGER NOT NULL DEFAULT (unixepoch())
 );

@@ -3,7 +3,28 @@ import { createOpenRouterText } from '@tanstack/ai-openrouter'
 import { sql } from 'kysely'
 import { getDb } from '@/lib/db'
 
-export const MODEL = 'deepseek/deepseek-v3.2'
+/*
+ tweak prompt
+ send +-1w automatically always, so only sql for inserting & further queries / searches
+ tweak sql schema for better names,
+ define schema of different types + what date means in each case
+ repeating?
+ protect users table
+ only allow select + separate tool for creating / updating?
+ pass user_id
+*/
+
+/*
+  todos - view + create in ui
+*/
+
+const models = {
+  deepseek: 'deepseek/deepseek-v3.2',
+  gemma26: 'google/gemma-4-26b-a4b-it',
+  gemma31: 'google/gemma-4-31b-it',
+} as const
+
+export const MODEL = models.gemma31
 
 export function getAdapter() {
   const apiKey = process.env.OPENROUTER_API_KEY
@@ -11,20 +32,16 @@ export function getAdapter() {
   return createOpenRouterText(MODEL, apiKey)
 }
 
-export const SYSTEM_PROMPT = ``
-
-// --- Tools ---
-
-const ALLOWED_STATEMENT_TYPES = /^\s*(select|insert)\s/i
-const FORBIDDEN_KEYWORDS =
-  /\b(drop|delete|truncate|alter|create|replace|update|attach|detach|pragma|vacuum|reindex)\b/i
-
 function stripStringLiterals(sql: string): string {
   // Replace single-quoted strings (handling escaped quotes via '')
   return sql.replace(/'(?:[^']|'')*'/g, "''")
 }
 
 function validateSql(query: string): void {
+  const ALLOWED_STATEMENT_TYPES = /^\s*(select|insert)\s/i
+  const FORBIDDEN_KEYWORDS =
+    /\b(drop|delete|truncate|alter|create|replace|update|attach|detach|pragma|vacuum|reindex)\b/i
+
   if (!ALLOWED_STATEMENT_TYPES.test(query)) {
     throw new Error('Only SELECT and INSERT queries are permitted')
   }
@@ -37,27 +54,42 @@ function validateSql(query: string): void {
   }
 }
 
+export const SYSTEM_PROMPT = () => {
+  const d = new Date()
+  return `You are my personal assistant - help me sort my life out by handling my calendar
+we are tracking events, todos and remindes / notes
+Current date/time (UTC): ${d.toDateString()} ${d.toTimeString()}
+When i say speak about this week in future terms,
+i mean the next 7 days / remainder of the current calendar week
+
+my todo list is events type='todo' with no date set
+`
+}
+
 function getSqlToolDescription() {
-  const now = new Date().toISOString()
   return `Execute a SQL SELECT or INSERT query against the application database.
 
-Database: Cloudflare D1 (SQLite-compatible). Use SQLite syntax only.
-Current date/time (UTC): ${now}
+Database: Cloudflare D1 - Use SQLite syntax only.
 
 Schema:
-  event (
+-- App tables
+  CREATE TABLE IF NOT EXISTS event (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL,
-    type TEXT NOT NULL -- 'event' | 'todo' | 'note'
-    date TEXT,         -- ISO date string, nullable
-    end TEXT,          -- ISO date string, nullable
+    user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+    type TEXT NOT NULL CHECK(type IN ('event', 'todo', 'note')),
+
+    date TEXT,
+    end TEXT,
+
     title TEXT NOT NULL,
     detail TEXT,
     repeating TEXT,
     done INTEGER DEFAULT 0,
-    created_at INTEGER NOT NULL, -- unix epoch
-    updated_at INTEGER NOT NULL  -- unix epoch
-  )`
+
+    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+`
 }
 
 const inputSchema = {
@@ -99,7 +131,7 @@ function createSqlQueryTool() {
 export function createChatStream(messages: unknown[], conversationId?: string) {
   return chat({
     adapter: getAdapter(),
-    systemPrompts: [SYSTEM_PROMPT],
+    systemPrompts: [SYSTEM_PROMPT()],
     messages: messages as never,
     conversationId,
     tools: [createSqlQueryTool()],

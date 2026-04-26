@@ -6,7 +6,9 @@ import { getDb } from '../lib/db'
 export const getSessionFn = createServerFn({ method: 'GET' }).handler(
   async () => {
     const request = getRequest()
-    const session = await createAuth().api.getSession({ headers: request.headers })
+    const session = await createAuth().api.getSession({
+      headers: request.headers,
+    })
     return session?.user?.id ?? null
   },
 )
@@ -15,16 +17,27 @@ export const getWeekFn = createServerFn({ method: 'GET' })
   .inputValidator((d: { weekOffset: number }) => d)
   .handler(async ({ data }) => {
     const request = getRequest()
-    const session = await createAuth().api.getSession({ headers: request.headers })
+    const session = await createAuth().api.getSession({
+      headers: request.headers,
+    })
     if (!session?.user?.id) return []
 
     const now = new Date()
     const dayOfWeek = now.getDay()
     const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
-    const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset + data.weekOffset * 7)
-    const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6)
+    const monday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + mondayOffset + data.weekOffset * 7,
+    )
+    const sunday = new Date(
+      monday.getFullYear(),
+      monday.getMonth(),
+      monday.getDate() + 6,
+    )
 
-    const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    const fmt = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
     const db = getDb()
     const events = await db
@@ -40,10 +53,14 @@ export const getWeekFn = createServerFn({ method: 'GET' })
   })
 
 export const createEventFn = createServerFn({ method: 'POST' })
-  .inputValidator((d: { date: string; title: string; detail?: string; type?: string }) => d)
+  .inputValidator(
+    (d: { date: string; title: string; detail?: string; type?: string }) => d,
+  )
   .handler(async ({ data }) => {
     const request = getRequest()
-    const session = await createAuth().api.getSession({ headers: request.headers })
+    const session = await createAuth().api.getSession({
+      headers: request.headers,
+    })
     if (!session?.user?.id) throw new Error('Unauthorized')
 
     const db = getDb()
@@ -61,9 +78,12 @@ export const createEventFn = createServerFn({ method: 'POST' })
     return { id: Number(result[0].insertId) }
   })
 
-export const getMonthFn = createServerFn({ method: 'GET' }).handler(async () => {
+export const getMonthFn = createServerFn({ method: 'GET' }).handler(
+  async () => {
     const request = getRequest()
-    const session = await createAuth().api.getSession({ headers: request.headers })
+    const session = await createAuth().api.getSession({
+      headers: request.headers,
+    })
     if (!session?.user?.id) return []
 
     const now = new Date()
