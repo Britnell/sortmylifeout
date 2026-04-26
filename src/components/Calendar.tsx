@@ -4,6 +4,7 @@ import {
   getCalendarFn,
   createEventFn,
   updateEventFn,
+  deleteEventFn,
   toggleTodoDoneFn,
 } from '@/serverFn/queries.functions'
 import Dialog from '@/components/Dialog'
@@ -59,6 +60,7 @@ export default function Calendar() {
   const [allDay, setAllDay] = useState(true)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [editAllDay, setEditAllDay] = useState(true)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const { data: events = [] } = useQuery({
     queryKey: ['getCalendar'],
@@ -109,6 +111,15 @@ export default function Calendar() {
     onSuccess: () => {
       invalidate()
       setEditingEvent(null)
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => deleteEventFn({ data: { id } }),
+    onSuccess: () => {
+      invalidate()
+      setEditingEvent(null)
+      setConfirmDelete(false)
     },
   })
 
@@ -265,8 +276,28 @@ export default function Calendar() {
       </div>
 
       {/* Edit event dialog */}
-      <Dialog isOpen={!!editingEvent} onClose={() => setEditingEvent(null)}>
-        {editingEvent && (
+      <Dialog isOpen={!!editingEvent} onClose={() => { setEditingEvent(null); setConfirmDelete(false) }}>
+        {editingEvent && confirmDelete ? (
+          <>
+            <h3 className="text-lg font-semibold mb-2">Delete {editingEvent.type === 'todo' ? 'Todo' : 'Event'}?</h3>
+            <p className="text-sm text-gray-600 mb-4">"{editingEvent.title}" will be permanently deleted.</p>
+            <div className="flex gap-2">
+              <button
+                className="flex-1 py-2 px-4 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 disabled:opacity-50"
+                disabled={deleteMutation.isPending}
+                onClick={() => deleteMutation.mutate(editingEvent.id)}
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Yes, delete'}
+              </button>
+              <button
+                className="flex-1 py-2 px-4 border rounded-md hover:bg-gray-50"
+                onClick={() => setConfirmDelete(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </>
+        ) : editingEvent && (
           <>
             <h3 className="text-lg font-semibold mb-4">
               Edit {editingEvent.type === 'todo' ? 'Todo' : 'Event'}
@@ -345,6 +376,12 @@ export default function Calendar() {
                 {updateMutation.isPending ? 'Saving...' : 'Save'}
               </button>
             </form>
+            <button
+              className="mt-3 w-full py-2 px-4 bg-red-600 text-white font-medium rounded-md hover:bg-red-700"
+              onClick={() => setConfirmDelete(true)}
+            >
+              Delete
+            </button>
             <button
               className="mt-4 px-4 py-2 rounded"
               onClick={() => setEditingEvent(null)}

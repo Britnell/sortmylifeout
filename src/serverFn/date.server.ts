@@ -99,6 +99,15 @@ export async function toggleTodoDone(userId: string, id: number, completed: bool
     .execute()
 }
 
+export async function deleteEvent(userId: string, id: number) {
+  const db = getDb()
+  await db
+    .deleteFrom('event')
+    .where('id', '=', id)
+    .where('user_id', '=', userId)
+    .execute()
+}
+
 export async function createEvent(
   userId: string,
   data: {

@@ -10,7 +10,37 @@ export const Route = createFileRoute('/(app)/app')({
 function RouteComponent() {
   const [input, setInput] = useState('')
   const [expanded, setExpanded] = useState(false)
+  const [isListening, setIsListening] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null)
+
+  const toggleListening = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SpeechRecognition) return
+
+    if (isListening) {
+      recognitionRef.current?.stop()
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognition.continuous = false
+    recognition.interimResults = false
+    recognition.lang = 'en-US'
+
+    recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript
+      setInput((prev) => (prev ? prev + ' ' + transcript : transcript))
+    }
+    recognition.onend = () => setIsListening(false)
+    recognition.onerror = () => setIsListening(false)
+
+    recognitionRef.current = recognition
+    recognition.start()
+    setIsListening(true)
+  }
 
   const { messages, sendMessage, setMessages, isLoading } = useChat({
     connection: fetchServerSentEvents('/api/chat'),
@@ -137,6 +167,14 @@ function RouteComponent() {
               className="flex-1 px-3 py-1.5 text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isLoading}
             />
+            <button
+              type="button"
+              onClick={toggleListening}
+              className={`px-2 py-1.5 text-sm rounded-lg transition-colors ${isListening ? 'bg-red-500 text-white hover:bg-red-600' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}
+              aria-label={isListening ? 'Stop listening' : 'Start voice input'}
+            >
+              🎤
+            </button>
             <button
               type="submit"
               disabled={!input.trim() || isLoading}

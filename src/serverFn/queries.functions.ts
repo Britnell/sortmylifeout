@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getSessionUser } from '../lib/auth'
-import { createEvent, getCalendarEvents, getMonthEvents, getWeekEvents, updateEvent, toggleTodoDone } from './date.server'
+import { createEvent, deleteEvent, getCalendarEvents, getMonthEvents, getWeekEvents, updateEvent, toggleTodoDone } from './date.server'
 
 export const getSessionFn = createServerFn({ method: 'GET' }).handler(
   async () => {
@@ -43,6 +43,14 @@ export const toggleTodoDoneFn = createServerFn({ method: 'POST' })
     const user = await getSessionUser()
     if (!user) throw new Error('Unauthorized')
     return toggleTodoDone(user.id, data.id, data.completed)
+  })
+
+export const deleteEventFn = createServerFn({ method: 'POST' })
+  .inputValidator((d: { id: number }) => d)
+  .handler(async ({ data }) => {
+    const user = await getSessionUser()
+    if (!user) throw new Error('Unauthorized')
+    return deleteEvent(user.id, data.id)
   })
 
 export const getMonthFn = createServerFn({ method: 'GET' }).handler(
