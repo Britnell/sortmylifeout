@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth'
 import { kyselyAdapter } from '@better-auth/kysely-adapter'
 import { env } from 'cloudflare:workers'
+import { getRequest } from '@tanstack/react-start/server'
 import { getDb } from './db'
 
 export function createAuth() {
@@ -15,3 +16,11 @@ export function createAuth() {
 }
 
 export type Auth = ReturnType<typeof createAuth>
+
+export async function getSessionUser() {
+  const request = getRequest()
+  const session = await createAuth().api.getSession({
+    headers: request.headers,
+  })
+  return session?.user ?? null
+}
