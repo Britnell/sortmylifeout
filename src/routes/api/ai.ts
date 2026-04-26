@@ -158,7 +158,7 @@ function createSearchEventsTool(userId: string) {
   })
 }
 
-// --- upsert tool ---
+// --- create / update tools ---
 
 function parseIsoDate(date: string): {
   date: string
@@ -172,94 +172,123 @@ function parseIsoDate(date: string): {
   return { date, allDay: true }
 }
 
-function createUpsertEventTool(userId: string) {
-  const db = getDb()
+const dateDescription = "'YYYY-MM-DD' (all-day) or 'YYYY-MM-DDTHH:MM' (timed, local time)"
+
+function createCreateEventTool(userId: string) {
   return toolDefinition({
-    name: 'upsert_event',
-    description: `Create or update a calendar event row.
-    Omit 'id' to create. Include 'id' to update — only provided fields are updated.`,
+    name: 'create_event',
+    description: 'Insert a new calendar row (event, todo, or shopping item).',
     inputSchema: {
       type: 'object' as const,
       properties: {
-        id: {
-          type: 'number',
-          description: 'Existing event id (omit to create)',
-        },
-        type: { type: 'string', enum: ['event', 'todo', 'reminder'] },
-        title: { type: 'string' },
-        detail: { type: 'string' },
-        date: {
+        type: {
           type: 'string',
-          description: "'YYYY-MM-DD' or 'YYYY-MM-DDTHH:MM' (local time)",
+          enum: ['event', 'todo', 'shopping'],
+          description: 'Row type — required',
+        },
+        title: { type: 'string', description: 'Title — required' },
+        detail: { type: 'string', description: 'Optional extra info' },
+        begin: {
+          type: 'string',
+          description: `${dateDescription}. Required for type='event'. Optional for todo/shopping.`,
         },
         end: {
           type: 'string',
-          description: "'YYYY-MM-DD' or 'YYYY-MM-DDTHH:MM' (local time)",
+          description: `${dateDescription}. Required for type='event'.`,
         },
-        completed: { type: 'boolean' },
+        completed: {
+          type: 'boolean',
+          description: "Required for todo/shopping (default false). Omit for events.",
+        },
       },
-      required: [],
+      required: ['type', 'title'],
     },
     outputSchema: {
       type: 'object' as const,
-      properties: {
-        id: { type: 'number' },
-        created: { type: 'boolean' },
-      },
-      required: ['id', 'created'],
+      properties: { id: { type: 'number' } },
+      required: ['id'],
     },
   }).server(async (args) => {
-    const { id, type, title, detail, date, end, completed } = args as {
-      id?: number
-      type?: string
-      title?: string
+    const { type, title, detail, begin, end, completed } = args as {
+      type: string
+      title: string
       detail?: string
-      date?: string
+      begin?: string
       end?: string
       completed?: boolean
     }
 
-    if (id != null) {
-      const updates: Record<string, unknown> = {}
-      if (type != null) updates.type = type
-      if (title != null) updates.title = title
-      if (detail != null) updates.detail = detail
-      if (end != null) updates.end = end
-      if (completed != null) updates.completed = completed ? 1 : 0
-      if (date != null) {
-        const parsed = parseIsoDate(date)
-        updates.begin = parsed.allDay
-          ? parsed.date
-          : `${parsed.date}T${parsed.time}`
-        updates.all_day = parsed.allDay ? 1 : 0
-      }
+    const parsed = begin
+      ? parseIsoDate(begin)
+      : { date: undefined, time: undefined, allDay: true }
 
-      await db
-        .updateTable('event')
-        .set(updates)
-        .where('id', '=', id)
-        .where('user_id', '=', userId)
-        .execute()
-      return { id, created: false }
-    } else {
-      if (!type || !title)
-        throw new Error('type and title are required when creating an event')
+    const result = await createEvent(userId, {
+      type,
+      title,
+      detail,
+      date: parsed.date,
+      time: parsed.time,
+      allDay: parsed.allDay,
+      end,
+      completed: completed ?? false,
+    })
+    return { id: result.id }
+  })
+}
 
-      const parsed = date
-        ? parseIsoDate(date)
-        : { date: undefined, time: undefined, allDay: true }
-      const result = await createEvent(userId, {
-        type,
-        title,
-        detail,
-        date: parsed.date,
-        time: parsed.time,
-        allDay: parsed.allDay,
-        end,
-        completed: completed ?? false,
-      })
-      return { id: result.id, created: true }
+function createUpdateEventTool(userId: string) {
+  const db = getDb()
+  return toolDefinition({
+    name: 'update_event',
+    description: 'Update fields on an existing calendar row. Only provided fields are changed.',
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        id: { type: 'number', description: 'ID of the row to update — required' },
+        type: { type: 'string', enum: ['event', 'todo', 'shopping'] },
+        title: { type: 'string' },
+        detail: { type: 'string' },
+        begin: { type: 'string', description: dateDescription },
+        end: { type: 'string', description: dateDescription },
+        completed: { type: 'boolean' },
+      },
+      required: ['id'],
+    },
+    outputSchema: {
+      type: 'object' as const,
+      properties: { id: { type: 'number' } },
+      required: ['id'],
+    },
+  }).server(async (args) => {
+    const { id, type, title, detail, begin, end, completed } = args as {
+      id: number
+      type?: string
+      title?: string
+      detail?: string
+      begin?: string
+      end?: string
+      completed?: boolean
     }
+
+    const updates: Record<string, unknown> = {}
+    if (type != null) updates.type = type
+    if (title != null) updates.title = title
+    if (detail != null) updates.detail = detail
+    if (end != null) updates.end = end
+    if (completed != null) updates.completed = completed ? 1 : 0
+    if (begin != null) {
+      const parsed = parseIsoDate(begin)
+      updates.begin = parsed.allDay ? parsed.date : `${parsed.date}T${parsed.time}`
+      updates.all_day = parsed.allDay ? 1 : 0
+    }
+
+    await db
+      .updateTable('event')
+      .set(updates)
+      .where('id', '=', id)
+      .where('user_id', '=', userId)
+      .execute()
+    return { id }
   })
 }
 
@@ -273,6 +302,6 @@ export function createChatStream(
     systemPrompts: [SYSTEM_PROMPT(userId)],
     messages: messages as never,
     conversationId,
-    tools: [createSearchEventsTool(userId), createUpsertEventTool(userId)],
+    tools: [createSearchEventsTool(userId), createCreateEventTool(userId), createUpdateEventTool(userId)],
   })
 }
