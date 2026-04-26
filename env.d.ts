@@ -4,5 +4,6 @@
 declare namespace Cloudflare {
   interface Env {
     sortinglifedb: D1Database;
+    AI: Ai;
   }
 }

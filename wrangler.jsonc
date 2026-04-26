@@ -7,6 +7,9 @@
   "vars": {
     "BETTER_AUTH_URL": "http://localhost:3000",
   },
+  "ai": {
+    "binding": "AI"
+  },
   "d1_databases": [
     {
       "binding": "sortinglifedb",

@@ -1,21 +1,28 @@
 import { chat } from '@tanstack/ai'
-import { createOpenRouterText } from '@tanstack/ai-openrouter'
+import { createWorkersAiChat } from '@cloudflare/tanstack-ai'
+// import { createOpenRouterText } from '@tanstack/ai-openrouter'
+import { env } from 'cloudflare:workers'
 import { createSearchEventsTool } from '@/tools/searchEventsTool'
 import { createCreateEventTool } from '@/tools/createEventTool'
 import { createUpdateEventTool } from '@/tools/updateEventTool'
 
+// -- Providers --
 const models = {
-  deepseek: 'deepseek/deepseek-v3.2',
-  gemma26: 'google/gemma-4-26b-a4b-it',
-  gemma31: 'google/gemma-4-31b-it',
+  cloudflare: {
+    gemma: '@cf/google/gemma-4-26b-a4b-it',
+  },
+  openrouter: {
+    deepseek: 'deepseek/deepseek-v3.2',
+    gemma26: 'google/gemma-4-26b-a4b-it',
+    gemma31: 'google/gemma-4-31b-it',
+  },
 } as const
 
-export const MODEL = models.gemma31
+export const MODEL = models.cloudflare.gemma
 
 export function getAdapter() {
-  const apiKey = process.env.OPENROUTER_API_KEY
-  if (!apiKey) throw new Error('OPENROUTER_API_KEY not configured')
-  return createOpenRouterText(MODEL, apiKey)
+  // return createOpenRouterText(models.openrouter.gemma31, process.env.OPENROUTER_API_KEY!)
+  return createWorkersAiChat(MODEL, { binding: env.AI })
 }
 
 export const SYSTEM_PROMPT = (userId: string) => {
