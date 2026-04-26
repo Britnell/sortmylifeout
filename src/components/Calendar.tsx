@@ -50,6 +50,7 @@ export default function Calendar() {
   const [weekOffset, setWeekOffset] = useState(0)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [newItemType, setNewItemType] = useState<'event' | 'todo'>('event')
 
   const { data: events = [] } = useQuery({
     queryKey: ['getCalendar'],
@@ -91,6 +92,7 @@ export default function Calendar() {
       date: selectedDate!,
       title: formData.get('title') as string,
       detail: (formData.get('detail') as string) || undefined,
+      type: newItemType,
     })
   }
 
@@ -157,14 +159,24 @@ export default function Calendar() {
                 {day.getDate()}
               </div>
               <div className="mt-1 space-y-1">
-                {dayEvents.map((ev) => (
-                  <div
-                    key={ev.id}
-                    className="text-xs bg-blue-100 text-blue-800 p-1 rounded truncate"
-                  >
-                    {ev.title}
-                  </div>
-                ))}
+                {dayEvents.map((ev) =>
+                  ev.type === 'todo' ? (
+                    <div
+                      key={ev.id}
+                      className="text-xs bg-gray-100 text-gray-800 p-1 rounded flex items-center gap-1"
+                    >
+                      <input type="checkbox" readOnly checked={!!ev.done} className="pointer-events-none shrink-0" />
+                      <span className="truncate">{ev.title}</span>
+                    </div>
+                  ) : (
+                    <div
+                      key={ev.id}
+                      className="text-xs bg-blue-100 text-blue-800 p-1 rounded truncate"
+                    >
+                      {ev.title}
+                    </div>
+                  ),
+                )}
               </div>
             </div>
           )
@@ -185,7 +197,14 @@ export default function Calendar() {
           <div className="space-y-2 mb-4">
             {(eventsByDate.get(selectedDate) || []).map((ev) => (
               <div key={ev.id} className="border p-3 rounded">
-                <h4 className="font-medium">{ev.title}</h4>
+                {ev.type === 'todo' ? (
+                  <div className="flex items-center gap-2">
+                    <input type="checkbox" readOnly checked={!!ev.done} className="pointer-events-none" />
+                    <h4 className="font-medium">{ev.title}</h4>
+                  </div>
+                ) : (
+                  <h4 className="font-medium">{ev.title}</h4>
+                )}
                 {ev.detail && (
                   <p className="text-sm text-gray-600">{ev.detail}</p>
                 )}
@@ -195,7 +214,28 @@ export default function Calendar() {
         )}
 
         <div className="mt-4">
-          <h4 className="font-medium mb-2">Create Event</h4>
+          <div className="flex gap-4 mb-3">
+            <label className="flex items-center gap-1 text-sm cursor-pointer">
+              <input
+                type="radio"
+                name="newItemType"
+                value="event"
+                checked={newItemType === 'event'}
+                onChange={() => setNewItemType('event')}
+              />
+              Event
+            </label>
+            <label className="flex items-center gap-1 text-sm cursor-pointer">
+              <input
+                type="radio"
+                name="newItemType"
+                value="todo"
+                checked={newItemType === 'todo'}
+                onChange={() => setNewItemType('todo')}
+              />
+              Todo
+            </label>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -225,7 +265,7 @@ export default function Calendar() {
               disabled={createMutation.isPending}
               className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
-              {createMutation.isPending ? 'Creating...' : 'Create Event'}
+              {createMutation.isPending ? 'Creating...' : `Create ${newItemType === 'todo' ? 'Todo' : 'Event'}`}
             </button>
           </form>
         </div>
