@@ -1,4 +1,9 @@
-import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  Link,
+  Outlet,
+  useNavigate,
+} from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { authClient } from '../../lib/auth-client'
 import { ChatPanel } from '@/components/ChatPanel'
@@ -21,7 +26,17 @@ function RouteComponent() {
     <>
       <div className=" px-4">
         <header className="py-1 flex justify-between">
-          App!
+          <span className="x">App!</span>
+          <nav>
+            <ul className="flex gap-4">
+              <li>
+                <Link to="/app">App</Link>
+              </li>
+              <li>
+                <Link to="/todo">Todo</Link>
+              </li>
+            </ul>
+          </nav>
           <button onClick={() => authClient.signOut()}>Logout</button>
         </header>
         {data && <Outlet />}
