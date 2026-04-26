@@ -152,7 +152,7 @@ export default function CalendarEventDialog({
   const isPending = createMutation.isPending || updateMutation.isPending
 
   return (
-    <Dialog isOpen={isOpen} onClose={handleClose}>
+    <Dialog isOpen={isOpen} onClose={handleClose} closeOnOutsideClick>
       <form onSubmit={handleSubmit} className="space-y-3">
         <h3 className="text-lg font-semibold">
           {localEditing
@@ -161,7 +161,9 @@ export default function CalendarEventDialog({
         </h3>
 
         <div className="flex gap-0 border border-gray-300 rounded-md overflow-hidden">
-          <label className={`flex-1 py-2 px-4 text-sm cursor-pointer text-center font-medium transition-colors ${itemType === 'event' ? 'bg-blue-50 border-r border-gray-300 text-blue-700' : 'border-r border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
+          <label
+            className={`flex-1 py-2 px-4 text-sm cursor-pointer text-center font-medium transition-colors ${itemType === 'event' ? 'bg-blue-50 border-r border-gray-300 text-blue-700' : 'border-r border-gray-300 text-gray-600 '}`}
+          >
             <input
               type="radio"
               name="itemType"
@@ -172,7 +174,9 @@ export default function CalendarEventDialog({
             />
             Event
           </label>
-          <label className={`flex-1 py-2 px-4 text-sm cursor-pointer text-center font-medium transition-colors ${itemType === 'todo' ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50'}`}>
+          <label
+            className={`flex-1 py-2 px-4 text-sm cursor-pointer text-center font-medium transition-colors ${itemType === 'todo' ? 'bg-blue-50 text-blue-700' : 'text-gray-600 '}`}
+          >
             <input
               type="radio"
               name="itemType"
@@ -213,7 +217,7 @@ export default function CalendarEventDialog({
 
         <div>
           <label className="block mb-1 text-sm font-medium text-gray-700">
-            {itemType === 'todo' ? 'Date' : 'From'}
+            {itemType === 'todo' ? 'Date' : 'Start'}
           </label>
           {itemType === 'todo' && !beginDate ? (
             <button
@@ -228,12 +232,12 @@ export default function CalendarEventDialog({
               + Add date
             </button>
           ) : (
-            <div className="flex gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <input
                 type="date"
                 value={beginDate}
                 required={itemType === 'event'}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 onChange={(e) => {
                   setBeginDate(e.target.value)
                   if (duration) {
@@ -252,7 +256,7 @@ export default function CalendarEventDialog({
                 ref={timeRef}
                 type="time"
                 value={beginTime}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 onChange={(e) => {
                   const t = e.target.value
                   setBeginTime(t)
@@ -321,14 +325,14 @@ export default function CalendarEventDialog({
         {itemType !== 'todo' && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              To
+              End
             </label>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <input
                 type="date"
                 value={endDate}
                 required={itemType === 'event'}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 onChange={(e) => {
                   setEndDate(e.target.value)
                   setDuration('')
@@ -338,7 +342,7 @@ export default function CalendarEventDialog({
                 type="time"
                 value={endTime}
                 required={itemType === 'event' && !allDay}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 onChange={(e) => {
                   setEndTime(e.target.value)
                   setDuration('')
@@ -346,7 +350,7 @@ export default function CalendarEventDialog({
               />
               <select
                 value={duration}
-                className="px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="w-full px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 onChange={(e) => {
                   const d = e.target.value
                   setDuration(d)

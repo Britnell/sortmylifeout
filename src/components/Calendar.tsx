@@ -94,7 +94,10 @@ export default function Calendar() {
       detail?: string
       type?: string
     }) => createEventFn({ data }),
-    onSuccess: () => { invalidate(); closeDialog() },
+    onSuccess: () => {
+      invalidate()
+      closeDialog()
+    },
   })
 
   const updateMutation = useMutation({
@@ -109,12 +112,18 @@ export default function Calendar() {
       end?: string
       completed?: boolean
     }) => updateEventFn({ data }),
-    onSuccess: () => { invalidate(); closeDialog() },
+    onSuccess: () => {
+      invalidate()
+      closeDialog()
+    },
   })
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteEventFn({ data: { id } }),
-    onSuccess: () => { invalidate(); closeDialog() },
+    onSuccess: () => {
+      invalidate()
+      closeDialog()
+    },
   })
 
   const openCreate = (dateStr: string) => {
@@ -187,7 +196,9 @@ export default function Calendar() {
                             updateMutation.mutate({
                               id: ev.id,
                               date: ev.begin?.split('T')[0] ?? '',
-                              time: ev.begin?.includes('T') ? ev.begin.split('T')[1] : undefined,
+                              time: ev.begin?.includes('T')
+                                ? ev.begin.split('T')[1]
+                                : undefined,
                               allDay: !!ev.all_day,
                               title: ev.title,
                               detail: ev.detail ?? undefined,
