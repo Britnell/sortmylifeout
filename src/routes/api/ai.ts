@@ -36,6 +36,21 @@ function validateSelectOnly(query: string): void {
   }
 }
 
+export const SYSTEM_PROMPT = (userId: string) => {
+  const d = new Date()
+  return `You are my personal assistant - help me sort my life out by handling my calendar.
+We track events, todos and notes.
+Current date/time (UTC): ${d.toDateString()} ${d.toTimeString()}
+"This week" means the next 7 days / remainder of the current calendar week.
+Todos are events with type='todo' and no date set.
+Current user_id: ${userId} — always filter queries and set this on new events.
+
+Use query_events to look things up.
+Use upsert_event to create or update an event (omit id to create, include id to update).
+Use set_event_done to mark a todo as done or not done.
+`
+}
+
 const EVENT_SCHEMA = `
   CREATE TABLE IF NOT EXISTS event (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -53,20 +68,15 @@ const EVENT_SCHEMA = `
   );
 `
 
-export const SYSTEM_PROMPT = (userId: string) => {
-  const d = new Date()
-  return `You are my personal assistant - help me sort my life out by handling my calendar.
-We track events, todos and notes.
-Current date/time (UTC): ${d.toDateString()} ${d.toTimeString()}
-"This week" means the next 7 days / remainder of the current calendar week.
-Todos are events with type='todo' and no date set.
-Current user_id: ${userId} — always filter queries and set this on new events.
+const sqlPrompt = `Run a read-only SELECT query against the database.
+Database: Cloudflare D1 (SQLite syntax).
+Schema:${EVENT_SCHEMA}`
 
-Use query_events to look things up.
-Use upsert_event to create or update an event (omit id to create, include id to update).
-Use set_event_done to mark a todo as done or not done.
-`
-}
+const upsertPrompt = `Create or update a calendar event, todo, or note.
+Omit 'id' to create. Include 'id' to update — only provided fields are changed.
+type: 'event' | 'todo' | 'note'.
+date / end: ISO-8601. Omit date for a todo with no scheduled date.
+done: 1 = complete, 0 = incomplete.`
 
 // --- query tool (read-only) ---
 
@@ -74,9 +84,7 @@ function sqlQueryTool() {
   const db = getDb()
   return toolDefinition({
     name: 'query_events',
-    description: `Run a read-only SELECT query against the database.
-Database: Cloudflare D1 (SQLite syntax).
-Schema:${EVENT_SCHEMA}`,
+    description: sqlPrompt,
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -111,11 +119,7 @@ function createUpsertEventTool(userId: string) {
   const db = getDb()
   return toolDefinition({
     name: 'upsert_event',
-    description: `Create or update a calendar event, todo, or note.
-Omit 'id' to create. Include 'id' to update — only provided fields are changed.
-type: 'event' | 'todo' | 'note'.
-date / end: ISO-8601. Omit date for a todo with no scheduled date.
-done: 1 = complete, 0 = incomplete.`,
+    description: upsertPrompt,
     inputSchema: {
       type: 'object' as const,
       properties: {
