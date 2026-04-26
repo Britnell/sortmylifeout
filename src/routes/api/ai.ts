@@ -17,7 +17,6 @@ export function getAdapter() {
   return createOpenRouterText(MODEL, apiKey)
 }
 
-
 export const SYSTEM_PROMPT = (userId: string) => {
   const d = new Date()
   return `You are my personal assistant - help me sort my life out. You have full access to my calendar sql table
@@ -84,9 +83,6 @@ Current user_id: ${userId} — always filter queries for the user_id and set thi
 `
 }
 
-const upsertPrompt = `Create or update a calendar event row.
-Omit 'id' to create. Include 'id' to update — only provided fields are updated.`
-
 // --- search tool (read-only, safe) ---
 
 function createSearchEventsTool(userId: string) {
@@ -135,10 +131,7 @@ function createSearchEventsTool(userId: string) {
       date_to?: string
     }
 
-    let query = db
-      .selectFrom('event')
-      .selectAll()
-      .where('user_id', '=', userId)
+    let query = db.selectFrom('event').selectAll().where('user_id', '=', userId)
 
     if (type != null) query = query.where('type', '=', type)
     if (completed != null)
@@ -150,10 +143,7 @@ function createSearchEventsTool(userId: string) {
       query = query
         .where('begin', '<=', date_to + 'T99:99')
         .where((eb) =>
-          eb.or([
-            eb('end', '>=', date_from),
-            eb('begin', '>=', date_from),
-          ]),
+          eb.or([eb('end', '>=', date_from), eb('begin', '>=', date_from)]),
         )
     } else if (date_from != null) {
       query = query
@@ -186,7 +176,8 @@ function createUpsertEventTool(userId: string) {
   const db = getDb()
   return toolDefinition({
     name: 'upsert_event',
-    description: upsertPrompt,
+    description: `Create or update a calendar event row.
+    Omit 'id' to create. Include 'id' to update — only provided fields are updated.`,
     inputSchema: {
       type: 'object' as const,
       properties: {
