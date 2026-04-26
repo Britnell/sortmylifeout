@@ -2,6 +2,7 @@ import { chat, toolDefinition } from '@tanstack/ai'
 import { createOpenRouterText } from '@tanstack/ai-openrouter'
 import { sql } from 'kysely'
 import { getDb } from '@/lib/db'
+import { createEvent } from '@/serverFn/date.server'
 
 const models = {
   deepseek: 'deepseek/deepseek-v3.2',
@@ -111,8 +112,12 @@ function sqlQueryTool() {
 
 // --- upsert tool ---
 
-function q(s: string) {
-  return `'${s.replace(/'/g, "''")}'`
+function parseIsoDate(date: string): { date: string; time?: string; allDay: boolean } {
+  if (date.includes('T')) {
+    const [d, time] = date.split('T')
+    return { date: d, time, allDay: false }
+  }
+  return { date, allDay: true }
 }
 
 function createUpsertEventTool(userId: string) {
@@ -127,12 +132,11 @@ function createUpsertEventTool(userId: string) {
           type: 'number',
           description: 'Existing event id (omit to create)',
         },
-        type: { type: 'string', enum: ['event', 'todo', 'note'] },
+        type: { type: 'string', enum: ['event', 'todo', 'reminder'] },
         title: { type: 'string' },
         detail: { type: 'string' },
-        date: { type: 'string', description: 'ISO-8601 start date/time' },
-        end: { type: 'string', description: 'ISO-8601 end date/time' },
-        repeating: { type: 'string' },
+        date: { type: 'string', description: 'ISO-8601 start date/datetime' },
+        end: { type: 'string', description: 'ISO-8601 end date/datetime' },
         done: { type: 'number', enum: [0, 1] },
       },
       required: [],
@@ -146,74 +150,52 @@ function createUpsertEventTool(userId: string) {
       required: ['id', 'created'],
     },
   }).server(async (args) => {
-    const { id, type, title, detail, date, end, repeating, done } = args as {
+    const { id, type, title, detail, date, end, done } = args as {
       id?: number
       type?: string
       title?: string
       detail?: string
       date?: string
       end?: string
-      repeating?: string
       done?: number
     }
 
-    const now = Math.floor(Date.now() / 1000)
-
     if (id != null) {
-      const sets: string[] = []
-      if (type != null) sets.push(`type = ${q(type)}`)
-      if (title != null) sets.push(`title = ${q(title)}`)
-      if (detail != null) sets.push(`detail = ${q(detail)}`)
-      if (date != null) sets.push(`date = ${q(date)}`)
-      if (end != null) sets.push(`end = ${q(end)}`)
-      if (repeating != null) sets.push(`repeating = ${q(repeating)}`)
-      if (done != null) sets.push(`done = ${done}`)
-      sets.push(`updated_at = ${now}`)
+      const updates: Record<string, unknown> = {}
+      if (type != null) updates.type = type
+      if (title != null) updates.title = title
+      if (detail != null) updates.detail = detail
+      if (end != null) updates.end = end
+      if (done != null) updates.completed = done
+      if (date != null) {
+        const parsed = parseIsoDate(date)
+        updates.begin = parsed.allDay ? parsed.date : `${parsed.date}T${parsed.time}`
+        updates.all_day = parsed.allDay ? 1 : 0
+      }
 
-      await db.executeQuery(
-        sql
-          .raw(`UPDATE event SET ${sets.join(', ')} WHERE id = ${id}`)
-          .compile(db as never),
-      )
+      await db
+        .updateTable('event')
+        .set(updates)
+        .where('id', '=', id)
+        .where('user_id', '=', userId)
+        .execute()
       return { id, created: false }
     } else {
       if (!type || !title)
         throw new Error('type and title are required when creating an event')
 
-      const cols = ['user_id', 'type', 'title', 'created_at', 'updated_at']
-      const vals = [q(userId), q(type), q(title), String(now), String(now)]
-
-      if (detail != null) {
-        cols.push('detail')
-        vals.push(q(detail))
-      }
-      if (date != null) {
-        cols.push('date')
-        vals.push(q(date))
-      }
-      if (end != null) {
-        cols.push('end')
-        vals.push(q(end))
-      }
-      if (repeating != null) {
-        cols.push('repeating')
-        vals.push(q(repeating))
-      }
-      if (done != null) {
-        cols.push('done')
-        vals.push(String(done))
-      }
-
-      const result = await db.executeQuery(
-        sql
-          .raw(
-            `INSERT INTO event (${cols.join(', ')}) VALUES (${vals.join(', ')})`,
-          )
-          .compile(db as never),
-      )
-      const newId = (result as unknown as { insertId?: number | bigint })
-        ?.insertId
-      return { id: Number(newId ?? 0), created: true }
+      const parsed = date ? parseIsoDate(date) : { date: undefined, time: undefined, allDay: true }
+      const result = await createEvent(userId, {
+        type,
+        title,
+        detail,
+        date: parsed.date,
+        time: parsed.time,
+        allDay: parsed.allDay,
+        end,
+        completed: done === 1,
+      })
+      return { id: result.id, created: true }
     }
   })
 }

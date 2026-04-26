@@ -102,16 +102,21 @@ export async function toggleTodoDone(userId: string, id: number, completed: bool
 export async function createEvent(
   userId: string,
   data: {
-    date: string
+    date?: string
     time?: string
     allDay: boolean
     end?: string
     title: string
     detail?: string
     type?: string
+    completed?: boolean
   },
 ) {
-  const begin = data.allDay ? data.date : `${data.date}T${data.time}`
+  const begin = data.date
+    ? data.allDay
+      ? data.date
+      : `${data.date}T${data.time}`
+    : null
   const db = getDb()
   const result = await db
     .insertInto('event')
@@ -119,10 +124,11 @@ export async function createEvent(
       user_id: userId,
       type: (data.type as 'event' | 'todo' | 'reminder') || 'event',
       all_day: data.allDay ? 1 : 0,
-      begin,
+      begin: begin,
       end: data.end || null,
       title: data.title,
       detail: data.detail || null,
+      completed: data.completed ? 1 : 0,
     })
     .execute()
 
