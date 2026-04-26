@@ -1,9 +1,7 @@
 import { chat, toolDefinition } from '@tanstack/ai'
 import { createOpenRouterText } from '@tanstack/ai-openrouter'
-import { sql } from 'kysely'
 import { getDb } from '@/lib/db'
 import { createEvent } from '@/serverFn/date.server'
-import schemaSQL from '@/db/schema.sql?raw'
 
 const models = {
   deepseek: 'deepseek/deepseek-v3.2',
@@ -19,24 +17,6 @@ export function getAdapter() {
   return createOpenRouterText(MODEL, apiKey)
 }
 
-function stripStringLiterals(query: string): string {
-  return query.replace(/'(?:[^']|'')*'/g, "''")
-}
-
-function validateSelectOnly(query: string): void {
-  if (!/^\s*select\s/i.test(query)) {
-    throw new Error('Only SELECT queries are permitted')
-  }
-  const stripped = stripStringLiterals(query)
-  const forbidden =
-    /\b(drop|delete|truncate|alter|create|insert|replace|update|attach|detach|pragma|vacuum|reindex)\b/i
-  const match = stripped.match(forbidden)
-  if (match) {
-    throw new Error(
-      `Query contains forbidden keyword: ${match[0].toUpperCase()}`,
-    )
-  }
-}
 
 export const SYSTEM_PROMPT = (userId: string) => {
   const d = new Date()
@@ -103,29 +83,41 @@ Today's date: ${d.toDateString()} ${d.toTimeString()} (UTC)
 Current user_id: ${userId} — always filter queries for the user_id and set this on new events.
 `
 }
-// TODO - i realise i cant give sql access or someone could read other peoples calendars ... we have to make this a function w search params
-
-const sqlPrompt = `Run a read-only SELECT query against the database.
-Database: Cloudflare D1 (SQLite syntax).
-Schema:
-${schemaSQL}`
 
 const upsertPrompt = `Create or update a calendar event row.
 Omit 'id' to create. Include 'id' to update — only provided fields are updated.`
 
-// --- query tool (read-only) ---
+// --- search tool (read-only, safe) ---
 
-function sqlQueryTool() {
+function createSearchEventsTool(userId: string) {
   const db = getDb()
   return toolDefinition({
-    name: 'query_events',
-    description: sqlPrompt,
+    name: 'search_events',
+    description: `Search your calendar events/todos/shopping items. All filters are optional and combined with AND. Results are always sorted by begin date.`,
     inputSchema: {
       type: 'object' as const,
       properties: {
-        query: { type: 'string', description: 'A SELECT statement' },
+        type: {
+          type: 'string',
+          enum: ['event', 'todo', 'shopping'],
+          description: 'Filter by item type',
+        },
+        completed: {
+          type: 'boolean',
+          description: 'Filter todos/shopping by completed status',
+        },
+        date_from: {
+          type: 'string',
+          description:
+            'Search window start date YYYY-MM-DD. Returns all items whose begin or end falls within [date_from, date_to].',
+        },
+        date_to: {
+          type: 'string',
+          description:
+            'Search window end date YYYY-MM-DD. Set same as date_from to search a single day.',
+        },
       },
-      required: ['query'],
+      required: [],
     },
     outputSchema: {
       type: 'object' as const,
@@ -136,10 +128,42 @@ function sqlQueryTool() {
       required: ['rows', 'rowCount'],
     },
   }).server(async (args) => {
-    const { query } = args as { query: string }
-    validateSelectOnly(query)
-    const result = await db.executeQuery(sql.raw(query).compile(db as never))
-    const rows = (result.rows as Array<Record<string, unknown>>) ?? []
+    const { type, completed, date_from, date_to } = args as {
+      type?: string
+      completed?: boolean
+      date_from?: string
+      date_to?: string
+    }
+
+    let query = db
+      .selectFrom('event')
+      .selectAll()
+      .where('user_id', '=', userId)
+
+    if (type != null) query = query.where('type', '=', type)
+    if (completed != null)
+      query = query.where('completed', '=', completed ? 1 : 0)
+
+    if (date_from != null && date_to != null) {
+      // Items that overlap the search window:
+      // begin <= date_to AND (end >= date_from OR begin >= date_from)
+      query = query
+        .where('begin', '<=', date_to + 'T99:99')
+        .where((eb) =>
+          eb.or([
+            eb('end', '>=', date_from),
+            eb('begin', '>=', date_from),
+          ]),
+        )
+    } else if (date_from != null) {
+      query = query
+        .where('begin', '>=', date_from)
+        .where('begin', '<=', date_from + 'T99:99')
+    }
+
+    query = query.orderBy('begin', 'asc')
+
+    const rows = await query.execute()
     return { rows, rowCount: rows.length }
   })
 }
@@ -258,6 +282,6 @@ export function createChatStream(
     systemPrompts: [SYSTEM_PROMPT(userId)],
     messages: messages as never,
     conversationId,
-    tools: [sqlQueryTool(), createUpsertEventTool(userId)],
+    tools: [createSearchEventsTool(userId), createUpsertEventTool(userId)],
   })
 }
