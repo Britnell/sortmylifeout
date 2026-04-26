@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getSessionUser } from '../lib/auth'
-import { createEvent, getCalendarEvents, getMonthEvents, getWeekEvents } from './date.server'
+import { createEvent, getCalendarEvents, getMonthEvents, getWeekEvents, updateEvent, toggleTodoDone } from './date.server'
 
 export const getSessionFn = createServerFn({ method: 'GET' }).handler(
   async () => {
@@ -19,12 +19,30 @@ export const getWeekFn = createServerFn({ method: 'GET' })
 
 export const createEventFn = createServerFn({ method: 'POST' })
   .inputValidator(
-    (d: { date: string; title: string; detail?: string; type?: string }) => d,
+    (d: { date: string; time?: string; allDay: boolean; title: string; detail?: string; type?: string }) => d,
   )
   .handler(async ({ data }) => {
     const user = await getSessionUser()
     if (!user) throw new Error('Unauthorized')
     return createEvent(user.id, data)
+  })
+
+export const updateEventFn = createServerFn({ method: 'POST' })
+  .inputValidator(
+    (d: { id: number; date: string; time?: string; allDay: boolean; title: string; detail?: string }) => d,
+  )
+  .handler(async ({ data }) => {
+    const user = await getSessionUser()
+    if (!user) throw new Error('Unauthorized')
+    return updateEvent(user.id, data.id, data)
+  })
+
+export const toggleTodoDoneFn = createServerFn({ method: 'POST' })
+  .inputValidator((d: { id: number; completed: boolean }) => d)
+  .handler(async ({ data }) => {
+    const user = await getSessionUser()
+    if (!user) throw new Error('Unauthorized')
+    return toggleTodoDone(user.id, data.id, data.completed)
   })
 
 export const getMonthFn = createServerFn({ method: 'GET' }).handler(

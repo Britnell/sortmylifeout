@@ -1,18 +1,18 @@
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getCalendarFn, createEventFn } from '@/serverFn/queries.functions'
+import { getCalendarFn, createEventFn, updateEventFn, toggleTodoDoneFn } from '@/serverFn/queries.functions'
 import Dialog from '@/components/Dialog'
 
 interface CalendarEvent {
   id: number
   user_id: string
   type: string
-  date: string
+  all_day: number
+  begin: string | null
   end: string | null
   title: string
   detail: string | null
-  repeating: string | null
-  done: number
+  completed: number
 }
 
 const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -51,6 +51,9 @@ export default function Calendar() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [newItemType, setNewItemType] = useState<'event' | 'todo'>('event')
+  const [allDay, setAllDay] = useState(true)
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
+  const [editAllDay, setEditAllDay] = useState(true)
 
   const { data: events = [] } = useQuery({
     queryKey: ['getCalendar'],
@@ -62,7 +65,7 @@ export default function Calendar() {
   const eventsByDate = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>()
     ;(events as CalendarEvent[]).forEach((ev) => {
-      const dateKey = ev.date?.split('T')[0]
+      const dateKey = ev.begin?.split('T')[0]
       if (!dateKey) return
       if (!map.has(dateKey)) map.set(dateKey, [])
       map.get(dateKey)!.push(ev)
@@ -70,13 +73,24 @@ export default function Calendar() {
     return map
   }, [events])
 
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['getCalendar'] })
+
   const createMutation = useMutation({
-    mutationFn: (data: { date: string; title: string; detail?: string }) =>
+    mutationFn: (data: { date: string; time?: string; allDay: boolean; title: string; detail?: string; type?: string }) =>
       createEventFn({ data }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['getCalendar'] })
-      setIsDialogOpen(false)
-    },
+    onSuccess: () => { invalidate(); setIsDialogOpen(false) },
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: (data: { id: number; date: string; time?: string; allDay: boolean; title: string; detail?: string }) =>
+      updateEventFn({ data }),
+    onSuccess: () => { invalidate(); setEditingEvent(null) },
+  })
+
+  const toggleDoneMutation = useMutation({
+    mutationFn: (data: { id: number; completed: boolean }) =>
+      toggleTodoDoneFn({ data }),
+    onSuccess: invalidate,
   })
 
   const handleDayClick = (dateStr: string) => {
@@ -84,15 +98,38 @@ export default function Calendar() {
     setIsDialogOpen(true)
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCreateSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const form = e.currentTarget
     const formData = new FormData(form)
     createMutation.mutate({
       date: selectedDate!,
+      time: allDay ? undefined : (formData.get('time') as string) || undefined,
+      allDay,
       title: formData.get('title') as string,
       detail: (formData.get('detail') as string) || undefined,
       type: newItemType,
+    })
+  }
+
+  const handleEditClick = (ev: CalendarEvent, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setEditAllDay(!!ev.all_day)
+    setEditingEvent(ev)
+  }
+
+  const handleEditSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!editingEvent) return
+    const form = e.currentTarget
+    const formData = new FormData(form)
+    updateMutation.mutate({
+      id: editingEvent.id,
+      date: editingEvent.begin?.split('T')[0] ?? selectedDate!,
+      time: editAllDay ? undefined : (formData.get('time') as string) || undefined,
+      allDay: editAllDay,
+      title: formData.get('title') as string,
+      detail: (formData.get('detail') as string) || undefined,
     })
   }
 
@@ -165,7 +202,16 @@ export default function Calendar() {
                       key={ev.id}
                       className="text-xs bg-gray-100 text-gray-800 p-1 rounded flex items-center gap-1"
                     >
-                      <input type="checkbox" readOnly checked={!!ev.done} className="pointer-events-none shrink-0" />
+                      <input
+                        type="checkbox"
+                        checked={!!ev.completed}
+                        className="shrink-0"
+                        onChange={(e) => {
+                          e.stopPropagation()
+                          toggleDoneMutation.mutate({ id: ev.id, completed: e.target.checked })
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
                       <span className="truncate">{ev.title}</span>
                     </div>
                   ) : (
@@ -173,6 +219,9 @@ export default function Calendar() {
                       key={ev.id}
                       className="text-xs bg-blue-100 text-blue-800 p-1 rounded truncate"
                     >
+                      {!ev.all_day && ev.begin?.includes('T') && (
+                        <span className="opacity-70 mr-1">{ev.begin.split('T')[1]}</span>
+                      )}
                       {ev.title}
                     </div>
                   ),
@@ -183,6 +232,85 @@ export default function Calendar() {
         })}
       </div>
 
+      {/* Edit event dialog */}
+      <Dialog isOpen={!!editingEvent} onClose={() => setEditingEvent(null)}>
+        {editingEvent && (
+          <>
+            <h3 className="text-lg font-semibold mb-4">
+              Edit {editingEvent.type === 'todo' ? 'Todo' : 'Event'}
+            </h3>
+            <form onSubmit={handleEditSubmit} className="space-y-3">
+              {editingEvent.type === 'todo' && (
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={!!editingEvent.completed}
+                    onChange={(e) =>
+                      setEditingEvent({ ...editingEvent, completed: e.target.checked ? 1 : 0 })
+                    }
+                  />
+                  Completed
+                </label>
+              )}
+              {editingEvent.type !== 'todo' && (
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editAllDay}
+                    onChange={(e) => setEditAllDay(e.target.checked)}
+                  />
+                  All day
+                </label>
+              )}
+              {!editAllDay && editingEvent.type !== 'todo' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                  <input
+                    type="time"
+                    name="time"
+                    defaultValue={editingEvent.begin?.includes('T') ? editingEvent.begin.split('T')[1] : ''}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input
+                  type="text"
+                  name="title"
+                  required
+                  defaultValue={editingEvent.title}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  name="detail"
+                  rows={3}
+                  defaultValue={editingEvent.detail ?? ''}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={updateMutation.isPending}
+                className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50"
+              >
+                {updateMutation.isPending ? 'Saving...' : 'Save'}
+              </button>
+            </form>
+            <button
+              className="mt-4 px-4 py-2 rounded"
+              onClick={() => setEditingEvent(null)}
+            >
+              Cancel
+            </button>
+          </>
+        )}
+      </Dialog>
+
+      {/* Day dialog */}
       <Dialog isOpen={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
         <h3 className="text-lg font-semibold mb-4">
           {selectedDate &&
@@ -196,18 +324,34 @@ export default function Calendar() {
         {selectedDate && (eventsByDate.get(selectedDate) || []).length > 0 && (
           <div className="space-y-2 mb-4">
             {(eventsByDate.get(selectedDate) || []).map((ev) => (
-              <div key={ev.id} className="border p-3 rounded">
-                {ev.type === 'todo' ? (
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" readOnly checked={!!ev.done} className="pointer-events-none" />
+              <div key={ev.id} className="border p-3 rounded flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  {ev.type === 'todo' ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={!!ev.completed}
+                        onChange={(e) =>
+                          toggleDoneMutation.mutate({ id: ev.id, completed: e.target.checked })
+                        }
+                      />
+                      <h4 className={`font-medium ${ev.completed ? 'line-through text-gray-400' : ''}`}>
+                        {ev.title}
+                      </h4>
+                    </div>
+                  ) : (
                     <h4 className="font-medium">{ev.title}</h4>
-                  </div>
-                ) : (
-                  <h4 className="font-medium">{ev.title}</h4>
-                )}
-                {ev.detail && (
-                  <p className="text-sm text-gray-600">{ev.detail}</p>
-                )}
+                  )}
+                  {ev.detail && (
+                    <p className="text-sm text-gray-600">{ev.detail}</p>
+                  )}
+                </div>
+                <button
+                  className="text-xs text-gray-500 hover:text-gray-800 shrink-0"
+                  onClick={(e) => { handleEditClick(ev, e); setIsDialogOpen(false) }}
+                >
+                  Edit
+                </button>
               </div>
             ))}
           </div>
@@ -236,7 +380,27 @@ export default function Calendar() {
               Todo
             </label>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleCreateSubmit} className="space-y-3">
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={allDay}
+                onChange={(e) => setAllDay(e.target.checked)}
+              />
+              All day
+            </label>
+            {!allDay && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Time
+                </label>
+                <input
+                  type="time"
+                  name="time"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Title

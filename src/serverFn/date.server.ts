@@ -63,17 +63,63 @@ export async function getCalendarEvents(userId: string) {
     .execute()
 }
 
+export async function updateEvent(
+  userId: string,
+  id: number,
+  data: {
+    date: string
+    time?: string
+    allDay: boolean
+    title: string
+    detail?: string
+  },
+) {
+  const begin = data.allDay ? data.date : `${data.date}T${data.time}`
+  const db = getDb()
+  await db
+    .updateTable('event')
+    .set({
+      all_day: data.allDay ? 1 : 0,
+      begin,
+      title: data.title,
+      detail: data.detail || null,
+    })
+    .where('id', '=', id)
+    .where('user_id', '=', userId)
+    .execute()
+}
+
+export async function toggleTodoDone(userId: string, id: number, completed: boolean) {
+  const db = getDb()
+  await db
+    .updateTable('event')
+    .set({ completed: completed ? 1 : 0 })
+    .where('id', '=', id)
+    .where('user_id', '=', userId)
+    .execute()
+}
+
 export async function createEvent(
   userId: string,
-  data: { begin: string; end?: string; title: string; detail?: string; type?: string },
+  data: {
+    date: string
+    time?: string
+    allDay: boolean
+    end?: string
+    title: string
+    detail?: string
+    type?: string
+  },
 ) {
+  const begin = data.allDay ? data.date : `${data.date}T${data.time}`
   const db = getDb()
   const result = await db
     .insertInto('event')
     .values({
       user_id: userId,
       type: (data.type as 'event' | 'todo' | 'reminder') || 'event',
-      begin: data.begin,
+      all_day: data.allDay ? 1 : 0,
+      begin,
       end: data.end || null,
       title: data.title,
       detail: data.detail || null,
