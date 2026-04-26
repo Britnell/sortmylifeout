@@ -4,18 +4,8 @@ import { sql } from 'kysely'
 import { getDb } from '@/lib/db'
 
 /*
- tweak prompt
- send +-1w automatically always, so only sql for inserting & further queries / searches
- tweak sql schema for better names,
- define schema of different types + what date means in each case
- repeating?
- protect users table
- only allow select + separate tool for creating / updating?
- pass user_id
-*/
-
-/*
-  todos - view + create in ui
+  TODO: pass user_id from auth session into createChatStream so tools can
+  scope queries and mutations to the current user.
 */
 
 const models = {
@@ -32,21 +22,18 @@ export function getAdapter() {
   return createOpenRouterText(MODEL, apiKey)
 }
 
-function stripStringLiterals(sql: string): string {
-  // Replace single-quoted strings (handling escaped quotes via '')
-  return sql.replace(/'(?:[^']|'')*'/g, "''")
+function stripStringLiterals(query: string): string {
+  return query.replace(/'(?:[^']|'')*'/g, "''")
 }
 
-function validateSql(query: string): void {
-  const ALLOWED_STATEMENT_TYPES = /^\s*(select|insert)\s/i
-  const FORBIDDEN_KEYWORDS =
-    /\b(drop|delete|truncate|alter|create|replace|update|attach|detach|pragma|vacuum|reindex)\b/i
-
-  if (!ALLOWED_STATEMENT_TYPES.test(query)) {
-    throw new Error('Only SELECT and INSERT queries are permitted')
+function validateSelectOnly(query: string): void {
+  if (!/^\s*select\s/i.test(query)) {
+    throw new Error('Only SELECT queries are permitted')
   }
   const stripped = stripStringLiterals(query)
-  const match = stripped.match(FORBIDDEN_KEYWORDS)
+  const forbidden =
+    /\b(drop|delete|truncate|alter|create|insert|replace|update|attach|detach|pragma|vacuum|reindex)\b/i
+  const match = stripped.match(forbidden)
   if (match) {
     throw new Error(
       `Query contains forbidden keyword: ${match[0].toUpperCase()}`,
@@ -54,77 +41,184 @@ function validateSql(query: string): void {
   }
 }
 
-export const SYSTEM_PROMPT = () => {
-  const d = new Date()
-  return `You are my personal assistant - help me sort my life out by handling my calendar
-we are tracking events, todos and remindes / notes
-Current date/time (UTC): ${d.toDateString()} ${d.toTimeString()}
-When i say speak about this week in future terms,
-i mean the next 7 days / remainder of the current calendar week
-
-my todo list is events type='todo' with no date set
-`
-}
-
-function getSqlToolDescription() {
-  return `Execute a SQL SELECT or INSERT query against the application database.
-
-Database: Cloudflare D1 - Use SQLite syntax only.
-
-Schema:
--- App tables
-  CREATE TABLE IF NOT EXISTS event (
+const EVENT_SCHEMA = `
+  event (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-    type TEXT NOT NULL CHECK(type IN ('event', 'todo', 'note')),
-
-    date TEXT,
-    end TEXT,
-
+    user_id TEXT NOT NULL,
+    type TEXT NOT NULL  -- 'event' | 'todo' | 'note'
+    date TEXT,          -- ISO-8601, null for todos with no date
+    end TEXT,           -- ISO-8601 end time, optional
     title TEXT NOT NULL,
     detail TEXT,
     repeating TEXT,
     done INTEGER DEFAULT 0,
+    created_at INTEGER,
+    updated_at INTEGER
+  )`
 
-    created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-    updated_at INTEGER NOT NULL DEFAULT (unixepoch())
-  );
+export const SYSTEM_PROMPT = () => {
+  const d = new Date()
+  return `You are my personal assistant - help me sort my life out by handling my calendar.
+We track events, todos and notes.
+Current date/time (UTC): ${d.toDateString()} ${d.toTimeString()}
+"This week" means the next 7 days / remainder of the current calendar week.
+Todos are events with type='todo' and no date set.
+
+Use query_events to look things up.
+Use upsert_event to create or update an event (omit id to create, include id to update).
+Use set_event_done to mark a todo as done or not done.
 `
 }
 
-const inputSchema = {
-  type: 'object' as const,
-  properties: {
-    query: {
-      type: 'string',
-      description: 'The SQL SELECT or INSERT query to execute',
-    },
-  },
-  required: ['query'],
-}
+// --- query tool (read-only) ---
 
-const outputSchema = {
-  type: 'object' as const,
-  properties: {
-    rows: { type: 'array', items: { type: 'object' } },
-    rowCount: { type: 'number' },
-  },
-  required: ['rows', 'rowCount'],
-}
-
-function createSqlQueryTool() {
+function sqlQueryTool() {
   const db = getDb()
   return toolDefinition({
-    name: 'sql_query',
-    description: getSqlToolDescription(),
-    inputSchema,
-    outputSchema,
+    name: 'query_events',
+    description: `Run a read-only SELECT query against the database.
+Database: Cloudflare D1 (SQLite syntax).
+Schema:${EVENT_SCHEMA}`,
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        query: { type: 'string', description: 'A SELECT statement' },
+      },
+      required: ['query'],
+    },
+    outputSchema: {
+      type: 'object' as const,
+      properties: {
+        rows: { type: 'array', items: { type: 'object' } },
+        rowCount: { type: 'number' },
+      },
+      required: ['rows', 'rowCount'],
+    },
   }).server(async (args) => {
     const { query } = args as { query: string }
-    validateSql(query)
+    validateSelectOnly(query)
     const result = await db.executeQuery(sql.raw(query).compile(db as never))
     const rows = (result.rows as Array<Record<string, unknown>>) ?? []
     return { rows, rowCount: rows.length }
+  })
+}
+
+// --- upsert tool ---
+
+function q(s: string) {
+  return `'${s.replace(/'/g, "''")}'`
+}
+
+function createUpsertEventTool() {
+  const db = getDb()
+  return toolDefinition({
+    name: 'upsert_event',
+    description: `Create or update a calendar event, todo, or note.
+Omit 'id' to create. Include 'id' to update — only provided fields are changed.
+type: 'event' | 'todo' | 'note'.
+date / end: ISO-8601. Omit date for a todo with no scheduled date.
+done: 1 = complete, 0 = incomplete.`,
+    inputSchema: {
+      type: 'object' as const,
+      properties: {
+        id: {
+          type: 'number',
+          description: 'Existing event id (omit to create)',
+        },
+        type: { type: 'string', enum: ['event', 'todo', 'note'] },
+        title: { type: 'string' },
+        detail: { type: 'string' },
+        date: { type: 'string', description: 'ISO-8601 start date/time' },
+        end: { type: 'string', description: 'ISO-8601 end date/time' },
+        repeating: { type: 'string' },
+        done: { type: 'number', enum: [0, 1] },
+      },
+      required: [],
+    },
+    outputSchema: {
+      type: 'object' as const,
+      properties: {
+        id: { type: 'number' },
+        created: { type: 'boolean' },
+      },
+      required: ['id', 'created'],
+    },
+  }).server(async (args) => {
+    const { id, type, title, detail, date, end, repeating, done } = args as {
+      id?: number
+      type?: string
+      title?: string
+      detail?: string
+      date?: string
+      end?: string
+      repeating?: string
+      done?: number
+    }
+
+    const now = Math.floor(Date.now() / 1000)
+
+    if (id != null) {
+      const sets: string[] = []
+      if (type != null) sets.push(`type = ${q(type)}`)
+      if (title != null) sets.push(`title = ${q(title)}`)
+      if (detail != null) sets.push(`detail = ${q(detail)}`)
+      if (date != null) sets.push(`date = ${q(date)}`)
+      if (end != null) sets.push(`end = ${q(end)}`)
+      if (repeating != null) sets.push(`repeating = ${q(repeating)}`)
+      if (done != null) sets.push(`done = ${done}`)
+      sets.push(`updated_at = ${now}`)
+
+      await db.executeQuery(
+        sql
+          .raw(`UPDATE event SET ${sets.join(', ')} WHERE id = ${id}`)
+          .compile(db as never),
+      )
+      return { id, created: false }
+    } else {
+      if (!type || !title)
+        throw new Error('type and title are required when creating an event')
+
+      const cols = ['user_id', 'type', 'title', 'created_at', 'updated_at']
+      const vals = [
+        `'TODO_USER_ID'`,
+        q(type),
+        q(title),
+        String(now),
+        String(now),
+      ]
+
+      if (detail != null) {
+        cols.push('detail')
+        vals.push(q(detail))
+      }
+      if (date != null) {
+        cols.push('date')
+        vals.push(q(date))
+      }
+      if (end != null) {
+        cols.push('end')
+        vals.push(q(end))
+      }
+      if (repeating != null) {
+        cols.push('repeating')
+        vals.push(q(repeating))
+      }
+      if (done != null) {
+        cols.push('done')
+        vals.push(String(done))
+      }
+
+      const result = await db.executeQuery(
+        sql
+          .raw(
+            `INSERT INTO event (${cols.join(', ')}) VALUES (${vals.join(', ')})`,
+          )
+          .compile(db as never),
+      )
+      const newId = (result as unknown as { insertId?: number | bigint })
+        ?.insertId
+      return { id: Number(newId ?? 0), created: true }
+    }
   })
 }
 
@@ -134,6 +228,6 @@ export function createChatStream(messages: unknown[], conversationId?: string) {
     systemPrompts: [SYSTEM_PROMPT()],
     messages: messages as never,
     conversationId,
-    tools: [createSqlQueryTool()],
+    tools: [sqlQueryTool(), createUpsertEventTool()],
   })
 }
