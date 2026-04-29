@@ -31,7 +31,8 @@ export default function ShoppingList() {
 
   const { data: unscheduled = [] } = useQuery({
     queryKey: ['shopping', 'unscheduled'],
-    queryFn: () => searchEventsFn({ data: { type: 'shopping', completed: false } }),
+    queryFn: () =>
+      searchEventsFn({ data: { type: 'shopping', completed: false } }),
   })
 
   const { data: upcoming = [] } = useQuery({
@@ -136,13 +137,13 @@ export default function ShoppingList() {
             onClick={() => setTab('unscheduled')}
             className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'unscheduled' ? 'bg-gray-100 text-gray-600 ' : 'bg-gray-900 text-white'}`}
           >
-            Unscheduled
+            Todo
           </button>
           <button
             onClick={() => setTab('upcoming')}
             className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'upcoming' ? 'bg-gray-100 text-gray-600 ' : 'bg-gray-900 text-white'}`}
           >
-            Upcoming
+            Planned
           </button>
         </div>
         <button

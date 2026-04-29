@@ -24,7 +24,9 @@ const today = new Date().toISOString().split('T')[0]
 
 export default function TodoList() {
   const queryClient = useQueryClient()
-  const [tab, setTab] = useState<'unscheduled' | 'upcoming'>('unscheduled')
+  const [tab, setTab] = useState<'unscheduled' | 'upcoming' | 'done'>(
+    'unscheduled',
+  )
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -42,16 +44,24 @@ export default function TodoList() {
       }),
   })
 
+  const { data: done = [] } = useQuery({
+    queryKey: ['todos', 'done'],
+    queryFn: () => searchEventsFn({ data: { type: 'todo', completed: true } }),
+  })
+
   const todos =
     tab === 'unscheduled'
       ? (unscheduled as CalendarEvent[]).filter((ev) => !ev.begin)
-      : [...(upcoming as CalendarEvent[])].sort((a, b) =>
-          (a.begin ?? '').localeCompare(b.begin ?? ''),
-        )
+      : tab === 'upcoming'
+        ? [...(upcoming as CalendarEvent[])].sort((a, b) =>
+            (a.begin ?? '').localeCompare(b.begin ?? ''),
+          )
+        : (done as CalendarEvent[])
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['todos', 'unscheduled'] })
     queryClient.invalidateQueries({ queryKey: ['todos', 'upcoming'] })
+    queryClient.invalidateQueries({ queryKey: ['todos', 'done'] })
   }
 
   const createMutation = useMutation({
@@ -136,13 +146,19 @@ export default function TodoList() {
             onClick={() => setTab('unscheduled')}
             className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'unscheduled' ? 'bg-gray-100 text-gray-600 ' : 'bg-gray-900 text-white'}`}
           >
-            Unscheduled
+            Todos
           </button>
           <button
             onClick={() => setTab('upcoming')}
             className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'upcoming' ? 'bg-gray-100 text-gray-600 ' : 'bg-gray-900 text-white'}`}
           >
-            Upcoming
+            Scheduled
+          </button>
+          <button
+            onClick={() => setTab('done')}
+            className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'done' ? 'bg-gray-100 text-gray-600 ' : 'bg-gray-900 text-white'}`}
+          >
+            Finished
           </button>
         </div>
         <button
@@ -158,7 +174,9 @@ export default function TodoList() {
           <p className="text-gray-500 text-sm">
             {tab === 'upcoming'
               ? 'No upcoming todos.'
-              : 'No outstanding todos.'}
+              : tab === 'done'
+                ? 'No completed todos.'
+                : 'No outstanding todos.'}
           </p>
         )}
         {(todos as CalendarEvent[]).map((ev) => (

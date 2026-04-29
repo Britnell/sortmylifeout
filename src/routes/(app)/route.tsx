@@ -30,7 +30,7 @@ function RouteComponent() {
           <nav>
             <ul className="flex gap-4">
               <li>
-                <Link to="/app">App</Link>
+                <Link to="/app">Calendar</Link>
               </li>
               <li>
                 <Link to="/todo">Todo</Link>
