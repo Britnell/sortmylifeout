@@ -20,36 +20,72 @@ interface CalendarEvent {
   completed: number
 }
 
-const QUERY_KEY = ['todos', { type: 'todo', completed: false }]
+const today = new Date().toISOString().split('T')[0]
 
 export default function TodoList() {
   const queryClient = useQueryClient()
+  const [tab, setTab] = useState<'unscheduled' | 'upcoming'>('unscheduled')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
-  const { data: todos = [] } = useQuery({
-    queryKey: QUERY_KEY,
+  const { data: unscheduled = [] } = useQuery({
+    queryKey: ['todos', 'unscheduled'],
     queryFn: () => searchEventsFn({ data: { type: 'todo', completed: false } }),
   })
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: QUERY_KEY })
+  const { data: upcoming = [] } = useQuery({
+    queryKey: ['todos', 'upcoming', today],
+    queryFn: () =>
+      searchEventsFn({
+        data: { type: 'todo', completed: false, date_from: today },
+      }),
+  })
+
+  const todos =
+    tab === 'unscheduled'
+      ? (unscheduled as CalendarEvent[]).filter((ev) => !ev.begin)
+      : [...(upcoming as CalendarEvent[])].sort((a, b) =>
+          (a.begin ?? '').localeCompare(b.begin ?? ''),
+        )
+
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ['todos', 'unscheduled'] })
+    queryClient.invalidateQueries({ queryKey: ['todos', 'upcoming'] })
+  }
 
   const createMutation = useMutation({
     mutationFn: (data: { title: string; detail?: string }) =>
-      createEventFn({ data: { ...data, type: 'todo', allDay: true, date: '' } }),
-    onSuccess: () => { invalidate(); closeDialog() },
+      createEventFn({
+        data: { ...data, type: 'todo', allDay: true, date: '' },
+      }),
+    onSuccess: () => {
+      invalidate()
+      closeDialog()
+    },
   })
 
   const updateMutation = useMutation({
-    mutationFn: (data: { id: number; title: string; detail?: string; completed?: boolean; date: string; allDay: boolean }) =>
-      updateEventFn({ data }),
-    onSuccess: () => { invalidate(); closeDialog() },
+    mutationFn: (data: {
+      id: number
+      title: string
+      detail?: string
+      completed?: boolean
+      date: string
+      allDay: boolean
+    }) => updateEventFn({ data }),
+    onSuccess: () => {
+      invalidate()
+      closeDialog()
+    },
   })
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteEventFn({ data: { id } }),
-    onSuccess: () => { invalidate(); closeDialog() },
+    onSuccess: () => {
+      invalidate()
+      closeDialog()
+    },
   })
 
   const closeDialog = () => {
@@ -95,10 +131,23 @@ export default function TodoList() {
   return (
     <>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Todos</h2>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setTab('unscheduled')}
+            className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'unscheduled' ? 'bg-gray-100 text-gray-600 ' : 'bg-gray-900 text-white'}`}
+          >
+            Unscheduled
+          </button>
+          <button
+            onClick={() => setTab('upcoming')}
+            className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'upcoming' ? 'bg-gray-100 text-gray-600 ' : 'bg-gray-900 text-white'}`}
+          >
+            Upcoming
+          </button>
+        </div>
         <button
           onClick={openCreate}
-          className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
+          className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md "
         >
           + New Todo
         </button>
@@ -106,12 +155,16 @@ export default function TodoList() {
 
       <div className="space-y-2">
         {(todos as CalendarEvent[]).length === 0 && (
-          <p className="text-gray-500 text-sm">No outstanding todos.</p>
+          <p className="text-gray-500 text-sm">
+            {tab === 'upcoming'
+              ? 'No upcoming todos.'
+              : 'No outstanding todos.'}
+          </p>
         )}
         {(todos as CalendarEvent[]).map((ev) => (
           <div
             key={ev.id}
-            className="flex items-start gap-3 p-3 border rounded-md cursor-pointer hover:bg-gray-50"
+            className="flex items-start gap-3 p-3 border rounded-md cursor-pointer "
             onClick={() => openEdit(ev)}
           >
             <input
@@ -134,11 +187,19 @@ export default function TodoList() {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium">{ev.title}</p>
               {ev.detail && (
-                <p className="text-xs text-gray-500 mt-0.5 truncate">{ev.detail}</p>
+                <p className="text-xs text-gray-500 mt-0.5 truncate">
+                  {ev.detail}
+                </p>
               )}
             </div>
           </div>
         ))}
+        <button
+          onClick={openCreate}
+          className="w-full mt-2 py-2 text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-md border border-dashed border-gray-200 hover:border-gray-300"
+        >
+          + New Todo
+        </button>
       </div>
 
       <Dialog isOpen={dialogOpen} onClose={closeDialog}>
@@ -150,14 +211,14 @@ export default function TodoList() {
             </p>
             <div className="flex gap-2">
               <button
-                className="flex-1 py-2 px-4 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 disabled:opacity-50"
+                className="flex-1 py-2 px-4 bg-red-600 text-white font-medium rounded-md  disabled:opacity-50"
                 disabled={deleteMutation.isPending}
                 onClick={() => deleteMutation.mutate(editingEvent.id)}
               >
                 {deleteMutation.isPending ? 'Deleting...' : 'Yes, delete'}
               </button>
               <button
-                className="flex-1 py-2 px-4 border rounded-md hover:bg-gray-50"
+                className="flex-1 py-2 px-4 border rounded-md "
                 onClick={() => setConfirmDelete(false)}
               >
                 Cancel
@@ -176,7 +237,10 @@ export default function TodoList() {
                   type="checkbox"
                   checked={!!editingEvent.completed}
                   onChange={(e) =>
-                    setEditingEvent({ ...editingEvent, completed: e.target.checked ? 1 : 0 })
+                    setEditingEvent({
+                      ...editingEvent,
+                      completed: e.target.checked ? 1 : 0,
+                    })
                   }
                 />
                 Completed
@@ -204,15 +268,21 @@ export default function TodoList() {
             <button
               type="submit"
               disabled={isPending}
-              className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50"
+              className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md  disabled:opacity-50"
             >
-              {isPending ? (editingEvent ? 'Saving...' : 'Creating...') : editingEvent ? 'Save' : 'Create Todo'}
+              {isPending
+                ? editingEvent
+                  ? 'Saving...'
+                  : 'Creating...'
+                : editingEvent
+                  ? 'Save'
+                  : 'Create Todo'}
             </button>
 
             {editingEvent && (
               <button
                 type="button"
-                className="w-full py-2 px-4 bg-red-600 text-white font-medium rounded-md hover:bg-red-700"
+                className="w-full py-2 px-4 bg-red-600 text-white font-medium rounded-md "
                 onClick={() => setConfirmDelete(true)}
               >
                 Delete

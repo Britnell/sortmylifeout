@@ -1,10 +1,10 @@
 import { chat } from '@tanstack/ai'
-import { createWorkersAiChat } from '@cloudflare/tanstack-ai'
 import { createOpenRouterText } from '@tanstack/ai-openrouter'
-import { env } from 'cloudflare:workers'
 import { createSearchEventsTool } from '@/tools/searchEventsTool'
 import { createCreateEventTool } from '@/tools/createEventTool'
 import { createUpdateEventTool } from '@/tools/updateEventTool'
+// import { createWorkersAiChat } from '@cloudflare/tanstack-ai'
+// import { env } from 'cloudflare:workers'
 
 // -- Providers --
 const models = {
@@ -40,8 +40,6 @@ all items have a 'title' + optional 'detail' col for extra info, address, links 
 - classic appointment / calendar entry
 - start & end required - both as date or datetime
 - all_day boolean col to indicate if date or datetime
-
-
 
 ## type='todo'
 - 'completed' col required, boolean 0/1

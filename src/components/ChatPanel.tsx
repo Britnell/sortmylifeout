@@ -20,6 +20,8 @@ export function ChatPanel() {
     connection: fetchServerSentEvents('/api/chat'),
   })
 
+  // !isLoading && console.log(messages)
+
   useEffect(() => {
     const lastMessage = messages[messages.length - 1]
     if (!lastMessage || lastMessage.role !== 'assistant') return
