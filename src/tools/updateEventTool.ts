@@ -23,7 +23,17 @@ export function createUpdateEventTool(userId: string) {
     },
     outputSchema: {
       type: 'object' as const,
-      properties: { id: { type: 'number' } },
+      properties: {
+        id: { type: 'number' },
+        user_id: { type: 'string' },
+        type: { type: 'string' },
+        title: { type: 'string' },
+        detail: { type: 'string' },
+        begin: { type: 'string' },
+        end: { type: 'string' },
+        all_day: { type: 'number' },
+        completed: { type: 'number' },
+      },
       required: ['id'],
     },
   }).server(async (args) => {
@@ -55,6 +65,13 @@ export function createUpdateEventTool(userId: string) {
       .where('id', '=', id)
       .where('user_id', '=', userId)
       .execute()
-    return { id }
+
+    const row = await db
+      .selectFrom('event')
+      .selectAll()
+      .where('id', '=', id)
+      .where('user_id', '=', userId)
+      .executeTakeFirstOrThrow()
+    return row
   })
 }

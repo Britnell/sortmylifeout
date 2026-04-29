@@ -33,7 +33,17 @@ export function createCreateEventTool(userId: string) {
     },
     outputSchema: {
       type: 'object' as const,
-      properties: { id: { type: 'number' } },
+      properties: {
+        id: { type: 'number' },
+        user_id: { type: 'string' },
+        type: { type: 'string' },
+        title: { type: 'string' },
+        detail: { type: 'string' },
+        begin: { type: 'string' },
+        end: { type: 'string' },
+        all_day: { type: 'number' },
+        completed: { type: 'number' },
+      },
       required: ['id'],
     },
   }).server(async (args) => {
@@ -50,7 +60,7 @@ export function createCreateEventTool(userId: string) {
       ? parseIsoDate(begin)
       : { date: undefined, time: undefined, allDay: true }
 
-    const result = await createEvent(userId, {
+    const { id } = await createEvent(userId, {
       type,
       title,
       detail,
@@ -60,6 +70,13 @@ export function createCreateEventTool(userId: string) {
       end,
       completed: completed ?? false,
     })
-    return { id: result.id }
+
+    const { getDb } = await import('@/lib/db')
+    const row = await getDb()
+      .selectFrom('event')
+      .selectAll()
+      .where('id', '=', id)
+      .executeTakeFirstOrThrow()
+    return row
   })
 }
