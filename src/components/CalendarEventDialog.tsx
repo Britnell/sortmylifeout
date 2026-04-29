@@ -124,11 +124,18 @@ export default function CalendarEventDialog({
       end = allDay ? endDate : endTime ? `${endDate}T${endTime}` : undefined
     }
 
+    const begin = beginDate
+      ? allDay
+        ? beginDate
+        : beginTime
+          ? `${beginDate}T${beginTime}`
+          : beginDate
+      : undefined
+
     if (localEditing) {
       updateMutation.mutate({
         id: localEditing.id,
-        date: beginDate,
-        time: allDay ? undefined : beginTime || undefined,
+        begin: begin ?? localEditing.begin ?? '',
         allDay,
         title,
         detail,
@@ -138,8 +145,7 @@ export default function CalendarEventDialog({
       })
     } else {
       createMutation.mutate({
-        date: beginDate,
-        time: allDay ? undefined : beginTime || undefined,
+        begin,
         allDay,
         end,
         title,

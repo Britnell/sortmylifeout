@@ -1,6 +1,6 @@
 import { toolDefinition } from '@tanstack/ai'
 import { createEvent } from '@/serverFn/date.server'
-import { parseIsoDate, dateDescription } from './dateUtils'
+import { dateDescription } from './dateUtils'
 
 export function createCreateEventTool(userId: string) {
   return toolDefinition({
@@ -56,17 +56,12 @@ export function createCreateEventTool(userId: string) {
       completed?: boolean
     }
 
-    const parsed = begin
-      ? parseIsoDate(begin)
-      : { date: undefined, time: undefined, allDay: true }
-
     const { id } = await createEvent(userId, {
       type,
       title,
       detail,
-      date: parsed.date,
-      time: parsed.time,
-      allDay: parsed.allDay,
+      begin,
+      allDay: !begin || !begin.includes('T'),
       end,
       completed: completed ?? false,
     })

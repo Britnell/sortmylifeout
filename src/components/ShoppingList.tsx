@@ -58,7 +58,7 @@ export default function ShoppingList() {
   const createMutation = useMutation({
     mutationFn: (data: { title: string; detail?: string }) =>
       createEventFn({
-        data: { ...data, type: 'shopping', allDay: true, date: '' },
+        data: { ...data, type: 'shopping', allDay: true },
       }),
     onSuccess: () => {
       invalidate()
@@ -72,7 +72,7 @@ export default function ShoppingList() {
       title: string
       detail?: string
       completed?: boolean
-      date: string
+      begin: string
       allDay: boolean
     }) => updateEventFn({ data }),
     onSuccess: () => {
@@ -118,7 +118,7 @@ export default function ShoppingList() {
         id: editingEvent.id,
         title,
         detail,
-        date: editingEvent.begin?.split('T')[0] ?? '',
+        begin: editingEvent.begin ?? '',
         allDay: !!editingEvent.all_day,
         completed: !!editingEvent.completed,
       })
@@ -178,7 +178,7 @@ export default function ShoppingList() {
                   id: ev.id,
                   title: ev.title,
                   detail: ev.detail ?? undefined,
-                  date: ev.begin?.split('T')[0] ?? '',
+                  begin: ev.begin ?? '',
                   allDay: !!ev.all_day,
                   completed: e.target.checked,
                 })

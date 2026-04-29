@@ -1,6 +1,6 @@
 import { toolDefinition } from '@tanstack/ai'
 import { getDb } from '@/lib/db'
-import { parseIsoDate, dateDescription } from './dateUtils'
+import { dateDescription } from './dateUtils'
 
 const db = getDb()
 
@@ -54,9 +54,8 @@ export function createUpdateEventTool(userId: string) {
     if (end != null) updates.end = end
     if (completed != null) updates.completed = completed ? 1 : 0
     if (begin != null) {
-      const parsed = parseIsoDate(begin)
-      updates.begin = parsed.allDay ? parsed.date : `${parsed.date}T${parsed.time}`
-      updates.all_day = parsed.allDay ? 1 : 0
+      updates.begin = begin
+      updates.all_day = begin.includes('T') ? 0 : 1
     }
 
     await db

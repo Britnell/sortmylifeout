@@ -57,8 +57,7 @@ export default function Calendar() {
 
   const createMutation = useMutation({
     mutationFn: (data: {
-      date: string
-      time?: string
+      begin?: string
       allDay: boolean
       end?: string
       title: string
@@ -74,13 +73,12 @@ export default function Calendar() {
   const updateMutation = useMutation({
     mutationFn: (data: {
       id: number
-      date: string
-      time?: string
+      begin: string
       allDay: boolean
+      end?: string
       title: string
       detail?: string
       type?: string
-      end?: string
       completed?: boolean
     }) => updateEventFn({ data }),
     onSuccess: () => {
@@ -175,8 +173,8 @@ export default function Calendar() {
                             e.stopPropagation()
                             updateMutation.mutate({
                               id: ev.id,
-                              date: ev.begin?.split('T')[0] ?? '',
-                              allDay: true,
+                              begin: ev.begin ?? '',
+                              allDay: !ev.begin?.includes('T'),
                               title: ev.title,
                               detail: ev.detail ?? undefined,
                               completed: e.target.checked,

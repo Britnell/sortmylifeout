@@ -22,13 +22,7 @@ function formatIssues(issues: v.BaseIssue<unknown>[]): string {
 
 const UpdateEventSchema = v.pipe(
   v.object({
-    date: v.pipe(
-      v.string(),
-      v.regex(/^\d{4}-\d{2}-\d{2}$/, "date must be 'YYYY-MM-DD'"),
-    ),
-    time: v.optional(
-      v.pipe(v.string(), v.regex(/^\d{2}:\d{2}$/, "time must be 'HH:MM'")),
-    ),
+    begin: DateString,
     allDay: v.boolean(),
     title: v.pipe(v.string(), v.minLength(1, 'title must not be empty')),
     detail: v.optional(v.string()),
@@ -39,16 +33,16 @@ const UpdateEventSchema = v.pipe(
     completed: v.optional(v.boolean()),
   }),
   v.check(
-    (d) => (d.allDay ? d.time == null : d.time != null),
+    (d) => (d.allDay ? !d.begin.includes('T') : d.begin.includes('T')),
     "allDay events must not have a time; timed events must have a time",
   ),
 )
+
 export async function updateEvent(
   userId: string,
   id: number,
   data: {
-    date: string
-    time?: string
+    begin: string
     allDay: boolean
     title: string
     detail?: string
@@ -63,13 +57,12 @@ export async function updateEvent(
       `updateEvent validation failed — ${formatIssues(parsed.issues)}`,
     )
 
-  const begin = data.allDay ? data.date : `${data.date}T${data.time}`
   const db = getDb()
   await db
     .updateTable('event')
     .set({
       all_day: data.allDay ? 1 : 0,
-      begin,
+      begin: data.begin,
       title: data.title,
       detail: data.detail || null,
       ...(data.type ? { type: data.type } : {}),
@@ -147,15 +140,7 @@ export async function searchEvents(
 
 const CreateEventSchema = v.pipe(
   v.object({
-    date: v.optional(
-      v.pipe(
-        v.string(),
-        v.regex(/^\d{4}-\d{2}-\d{2}$/, "date must be 'YYYY-MM-DD'"),
-      ),
-    ),
-    time: v.optional(
-      v.pipe(v.string(), v.regex(/^\d{2}:\d{2}$/, "time must be 'HH:MM'")),
-    ),
+    begin: v.optional(DateString),
     allDay: v.boolean(),
     end: v.optional(v.nullable(DateString)),
     title: v.pipe(v.string(), v.minLength(1, 'title must not be empty')),
@@ -166,7 +151,9 @@ const CreateEventSchema = v.pipe(
     completed: v.optional(v.boolean()),
   }),
   v.check(
-    (d) => (d.date == null ? true : d.allDay ? d.time == null : d.time != null),
+    (d) =>
+      d.begin == null ||
+      (d.allDay ? !d.begin.includes('T') : d.begin.includes('T')),
     "allDay events must not have a time; timed events must have a time",
   ),
 )
@@ -174,8 +161,7 @@ const CreateEventSchema = v.pipe(
 export async function createEvent(
   userId: string,
   data: {
-    date?: string
-    time?: string
+    begin?: string
     allDay: boolean
     end?: string
     title: string
@@ -190,19 +176,15 @@ export async function createEvent(
       `createEvent validation failed — ${formatIssues(parsed.issues)}`,
     )
 
-  const begin = data.date
-    ? data.allDay
-      ? data.date
-      : `${data.date}T${data.time}`
-    : null
+  const allDay = data.allDay
   const db = getDb()
   const result = await db
     .insertInto('event')
     .values({
       user_id: userId,
       type: (data.type as 'event' | 'todo' | 'reminder') || 'event',
-      all_day: data.allDay ? 1 : 0,
-      begin: begin,
+      all_day: allDay ? 1 : 0,
+      begin: data.begin ?? null,
       end: data.end || null,
       title: data.title,
       detail: data.detail || null,
