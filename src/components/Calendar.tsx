@@ -202,7 +202,11 @@ export default function Calendar() {
                       {allDayEvs.map(renderAllDay)}
                       {timedEvs.map((ev) => (
                         <div key={ev.id}>
-                          <div className="border-t border-gray-300 mt-1" />
+                          <div
+                            className="text-[10px] text-gray-500 leading-tight px-1 pt-1"
+                          >
+                            {ev.begin!.split('T')[1].slice(0, 5)}
+                          </div>
                           <div
                             className={`text-xs p-1 rounded cursor-pointer overflow-hidden ${ev.type === 'todo' ? 'bg-gray-100 text-gray-800 hover:bg-gray-200' : 'bg-blue-100 text-blue-800 hover:bg-blue-200'}`}
                             onClick={(e) => {
@@ -210,9 +214,6 @@ export default function Calendar() {
                               openEdit(ev, e)
                             }}
                           >
-                            <div className="opacity-60 text-[10px] leading-tight">
-                              {ev.begin!.split('T')[1].slice(0, 5)}
-                            </div>
                             <div className="truncate">{ev.title}</div>
                           </div>
                         </div>
