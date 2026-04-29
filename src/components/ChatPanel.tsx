@@ -3,6 +3,47 @@ import { useChat, fetchServerSentEvents } from '@tanstack/ai-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSpeechRecognition } from '../lib/useSpeechRecognition'
 
+type EventRow = {
+  id: number
+  type: 'event' | 'todo' | 'shopping'
+  begin?: string | null
+  [key: string]: unknown
+}
+
+// Maps event row type → query key prefixes that hold those rows
+const TYPE_TO_QUERY_PREFIXES: Record<string, string[]> = {
+  event: ['searchEventsFn'],
+  todo: ['todos'],
+  shopping: ['shopping'],
+}
+
+function applyToolResultToCache(
+  queryClient: ReturnType<typeof useQueryClient>,
+  toolName: string,
+  output: unknown,
+) {
+  if (toolName === 'create_event' || toolName === 'update_event') {
+    const row = output as EventRow
+    const prefixes = TYPE_TO_QUERY_PREFIXES[row.type]
+    if (!prefixes) return
+
+    for (const prefix of prefixes) {
+      queryClient.setQueriesData<EventRow[]>({ queryKey: [prefix] }, (old) => {
+        if (!old) return old
+        if (toolName === 'create_event') {
+          return [...old, row]
+        }
+        // update_event: replace by id
+        return old.map((item) => (item.id === row.id ? row : item))
+      })
+    }
+    return
+  }
+
+  // Fallback for unknown tool names
+  queryClient.invalidateQueries()
+}
+
 export function ChatPanel() {
   const [input, setInput] = useState('')
   const [expanded, setExpanded] = useState(false)
@@ -14,7 +55,7 @@ export function ChatPanel() {
   )
 
   const queryClient = useQueryClient()
-  const lastRefetchedToolCallId = useRef<string | null>(null)
+  const lastHandledToolCallId = useRef<string | null>(null)
 
   const { messages, sendMessage, setMessages, isLoading, stop } = useChat({
     connection: fetchServerSentEvents('/api/chat'),
@@ -30,18 +71,16 @@ export function ChatPanel() {
     if (!lastPart || lastPart.type !== 'tool-result') return
 
     const { toolCallId } = lastPart
-    if (toolCallId === lastRefetchedToolCallId.current) return
+    if (toolCallId === lastHandledToolCallId.current) return
 
-    const isCreateOrUpdate = lastMessage.parts.some(
-      (p) =>
-        p.type === 'tool-call' &&
-        p.id === toolCallId &&
-        (p.name === 'create_event' || p.name === 'update_event'),
+    const toolCallPart = lastMessage.parts.find(
+      (p) => p.type === 'tool-call' && p.id === toolCallId,
     )
-    if (!isCreateOrUpdate) return
+    if (!toolCallPart || toolCallPart.type !== 'tool-call') return
+    if (toolCallPart.output === undefined) return
 
-    lastRefetchedToolCallId.current = toolCallId
-    queryClient.invalidateQueries({ queryKey: ['getCalendar'] })
+    lastHandledToolCallId.current = toolCallId
+    applyToolResultToCache(queryClient, toolCallPart.name, toolCallPart.output)
   }, [messages, queryClient])
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -82,7 +121,7 @@ export function ChatPanel() {
               onClick={() => {
                 setMessages([])
                 setExpanded(false)
-                lastRefetchedToolCallId.current = null
+                lastHandledToolCallId.current = null
               }}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs px-1"
               aria-label="New chat"
