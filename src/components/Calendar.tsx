@@ -8,36 +8,7 @@ import {
 } from '@/serverFn/queries.functions'
 import CalendarEventDialog from '@/components/CalendarEventDialog'
 import type { CalendarEvent } from '@/components/CalendarEventDialog'
-
-const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-
-function getWeekDays(weekOffset: number): Date[] {
-  const now = new Date()
-  const dayOfWeek = now.getDay()
-  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
-  const monday = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate() + mondayOffset + weekOffset * 7,
-  )
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday)
-    d.setDate(d.getDate() + i)
-    return d
-  })
-}
-
-function fmtDate(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  )
-}
+import { fmtDate, getWeekDays, isSameDay, weekdays } from '#/lib/date'
 
 export default function Calendar() {
   const queryClient = useQueryClient()
@@ -58,7 +29,7 @@ export default function Calendar() {
   const date_from = fmtDate(allWeekDays[0][0])
   const date_to = fmtDate(allWeekDays[2][6])
 
-  const { data: events = [] } = useQuery({
+  const { data: events = [], refetch: invalidate } = useQuery({
     queryKey: ['searchEventsFn', date_from, date_to],
     queryFn: () => searchEventsFn({ data: { date_from, date_to } }),
   })
@@ -74,10 +45,10 @@ export default function Calendar() {
     return map
   }, [events])
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({
-      queryKey: ['getCalendar', date_from, date_to],
-    })
+  // const invalidate = () =>
+  //   queryClient.invalidateQueries({
+  //     queryKey: ['getCalendar', date_from, date_to],
+  //   })
 
   const closeDialog = () => {
     setDialogOpen(false)
