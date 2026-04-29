@@ -20,23 +20,29 @@ function formatIssues(issues: v.BaseIssue<unknown>[]): string {
     .join('; ')
 }
 
-const UpdateEventSchema = v.object({
-  date: v.pipe(
-    v.string(),
-    v.regex(/^\d{4}-\d{2}-\d{2}$/, "date must be 'YYYY-MM-DD'"),
+const UpdateEventSchema = v.pipe(
+  v.object({
+    date: v.pipe(
+      v.string(),
+      v.regex(/^\d{4}-\d{2}-\d{2}$/, "date must be 'YYYY-MM-DD'"),
+    ),
+    time: v.optional(
+      v.pipe(v.string(), v.regex(/^\d{2}:\d{2}$/, "time must be 'HH:MM'")),
+    ),
+    allDay: v.boolean(),
+    title: v.pipe(v.string(), v.minLength(1, 'title must not be empty')),
+    detail: v.optional(v.string()),
+    type: v.optional(
+      v.picklist(EVENT_TYPES, `type must be one of: ${EVENT_TYPES.join(', ')}`),
+    ),
+    end: v.optional(v.nullable(DateString)),
+    completed: v.optional(v.boolean()),
+  }),
+  v.check(
+    (d) => (d.allDay ? d.time == null : d.time != null),
+    "allDay events must not have a time; timed events must have a time",
   ),
-  time: v.optional(
-    v.pipe(v.string(), v.regex(/^\d{2}:\d{2}$/, "time must be 'HH:MM'")),
-  ),
-  allDay: v.boolean(),
-  title: v.pipe(v.string(), v.minLength(1, 'title must not be empty')),
-  detail: v.optional(v.string()),
-  type: v.optional(
-    v.picklist(EVENT_TYPES, `type must be one of: ${EVENT_TYPES.join(', ')}`),
-  ),
-  end: v.optional(v.nullable(DateString)),
-  completed: v.optional(v.boolean()),
-})
+)
 export async function updateEvent(
   userId: string,
   id: number,
@@ -139,25 +145,31 @@ export async function searchEvents(
   return query.orderBy('begin', 'asc').execute()
 }
 
-const CreateEventSchema = v.object({
-  date: v.optional(
-    v.pipe(
-      v.string(),
-      v.regex(/^\d{4}-\d{2}-\d{2}$/, "date must be 'YYYY-MM-DD'"),
+const CreateEventSchema = v.pipe(
+  v.object({
+    date: v.optional(
+      v.pipe(
+        v.string(),
+        v.regex(/^\d{4}-\d{2}-\d{2}$/, "date must be 'YYYY-MM-DD'"),
+      ),
     ),
+    time: v.optional(
+      v.pipe(v.string(), v.regex(/^\d{2}:\d{2}$/, "time must be 'HH:MM'")),
+    ),
+    allDay: v.boolean(),
+    end: v.optional(v.nullable(DateString)),
+    title: v.pipe(v.string(), v.minLength(1, 'title must not be empty')),
+    detail: v.optional(v.string()),
+    type: v.optional(
+      v.picklist(EVENT_TYPES, `type must be one of: ${EVENT_TYPES.join(', ')}`),
+    ),
+    completed: v.optional(v.boolean()),
+  }),
+  v.check(
+    (d) => (d.date == null ? true : d.allDay ? d.time == null : d.time != null),
+    "allDay events must not have a time; timed events must have a time",
   ),
-  time: v.optional(
-    v.pipe(v.string(), v.regex(/^\d{2}:\d{2}$/, "time must be 'HH:MM'")),
-  ),
-  allDay: v.boolean(),
-  end: v.optional(v.nullable(DateString)),
-  title: v.pipe(v.string(), v.minLength(1, 'title must not be empty')),
-  detail: v.optional(v.string()),
-  type: v.optional(
-    v.picklist(EVENT_TYPES, `type must be one of: ${EVENT_TYPES.join(', ')}`),
-  ),
-  completed: v.optional(v.boolean()),
-})
+)
 
 export async function createEvent(
   userId: string,
