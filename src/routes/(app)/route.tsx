@@ -35,6 +35,9 @@ function RouteComponent() {
               <li>
                 <Link to="/todo">Todo</Link>
               </li>
+              <li>
+                <Link to="/shopping">Shopping</Link>
+              </li>
             </ul>
           </nav>
           <button onClick={() => authClient.signOut()}>Logout</button>

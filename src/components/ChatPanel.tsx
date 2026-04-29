@@ -20,7 +20,7 @@ export function ChatPanel() {
     connection: fetchServerSentEvents('/api/chat'),
   })
 
-  // !isLoading && console.log(messages)
+  if (!isLoading && messages?.length > 0) console.log(messages)
 
   useEffect(() => {
     const lastMessage = messages[messages.length - 1]
