@@ -1,5 +1,42 @@
+import * as v from 'valibot'
 import { getDb } from '../lib/db'
 
+const EVENT_TYPES = ['event', 'todo', 'shopping'] as const
+
+// YYYY-MM-DD or YYYY-MM-DDTHH:MM
+const DateString = v.pipe(
+  v.string(),
+  v.regex(
+    /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/,
+    "Date must be 'YYYY-MM-DD' (all-day) or 'YYYY-MM-DDTHH:MM' (timed). Example: '2025-06-15' or '2025-06-15T09:30'",
+  ),
+)
+
+function formatIssues(issues: v.BaseIssue<unknown>[]): string {
+  return issues
+    .map(
+      (i) => `${i.path?.map((p) => p.key).join('.') ?? 'input'}: ${i.message}`,
+    )
+    .join('; ')
+}
+
+const UpdateEventSchema = v.object({
+  date: v.pipe(
+    v.string(),
+    v.regex(/^\d{4}-\d{2}-\d{2}$/, "date must be 'YYYY-MM-DD'"),
+  ),
+  time: v.optional(
+    v.pipe(v.string(), v.regex(/^\d{2}:\d{2}$/, "time must be 'HH:MM'")),
+  ),
+  allDay: v.boolean(),
+  title: v.pipe(v.string(), v.minLength(1, 'title must not be empty')),
+  detail: v.optional(v.string()),
+  type: v.optional(
+    v.picklist(EVENT_TYPES, `type must be one of: ${EVENT_TYPES.join(', ')}`),
+  ),
+  end: v.optional(v.nullable(DateString)),
+  completed: v.optional(v.boolean()),
+})
 export async function updateEvent(
   userId: string,
   id: number,
@@ -14,6 +51,12 @@ export async function updateEvent(
     completed?: boolean
   },
 ) {
+  const parsed = v.safeParse(UpdateEventSchema, data)
+  if (!parsed.success)
+    throw new Error(
+      `updateEvent validation failed — ${formatIssues(parsed.issues)}`,
+    )
+
   const begin = data.allDay ? data.date : `${data.date}T${data.time}`
   const db = getDb()
   await db
@@ -25,7 +68,9 @@ export async function updateEvent(
       detail: data.detail || null,
       ...(data.type ? { type: data.type } : {}),
       ...(data.end !== undefined ? { end: data.end || null } : {}),
-      ...(data.completed !== undefined ? { completed: data.completed ? 1 : 0 } : {}),
+      ...(data.completed !== undefined
+        ? { completed: data.completed ? 1 : 0 }
+        : {}),
     })
     .where('id', '=', id)
     .where('user_id', '=', userId)
@@ -33,6 +78,10 @@ export async function updateEvent(
 }
 
 export async function deleteEvent(userId: string, id: number) {
+  if (typeof id !== 'number' || !Number.isInteger(id) || id <= 0)
+    throw new Error(
+      `deleteEvent validation failed — id must be a positive integer, got: ${id}`,
+    )
   const db = getDb()
   await db
     .deleteFrom('event')
@@ -40,6 +89,15 @@ export async function deleteEvent(userId: string, id: number) {
     .where('user_id', '=', userId)
     .execute()
 }
+
+const SearchFiltersSchema = v.object({
+  type: v.optional(
+    v.picklist(EVENT_TYPES, `type must be one of: ${EVENT_TYPES.join(', ')}`),
+  ),
+  completed: v.optional(v.boolean()),
+  date_from: v.optional(DateString),
+  date_to: v.optional(DateString),
+})
 
 export async function searchEvents(
   userId: string,
@@ -50,6 +108,12 @@ export async function searchEvents(
     date_to?: string
   },
 ) {
+  const parsed = v.safeParse(SearchFiltersSchema, filters)
+  if (!parsed.success)
+    throw new Error(
+      `searchEvents validation failed — ${formatIssues(parsed.issues)}`,
+    )
+
   const db = getDb()
   let query = db.selectFrom('event').selectAll().where('user_id', '=', userId)
 
@@ -75,6 +139,26 @@ export async function searchEvents(
   return query.orderBy('begin', 'asc').execute()
 }
 
+const CreateEventSchema = v.object({
+  date: v.optional(
+    v.pipe(
+      v.string(),
+      v.regex(/^\d{4}-\d{2}-\d{2}$/, "date must be 'YYYY-MM-DD'"),
+    ),
+  ),
+  time: v.optional(
+    v.pipe(v.string(), v.regex(/^\d{2}:\d{2}$/, "time must be 'HH:MM'")),
+  ),
+  allDay: v.boolean(),
+  end: v.optional(v.nullable(DateString)),
+  title: v.pipe(v.string(), v.minLength(1, 'title must not be empty')),
+  detail: v.optional(v.string()),
+  type: v.optional(
+    v.picklist(EVENT_TYPES, `type must be one of: ${EVENT_TYPES.join(', ')}`),
+  ),
+  completed: v.optional(v.boolean()),
+})
+
 export async function createEvent(
   userId: string,
   data: {
@@ -88,6 +172,12 @@ export async function createEvent(
     completed?: boolean
   },
 ) {
+  const parsed = v.safeParse(CreateEventSchema, data)
+  if (!parsed.success)
+    throw new Error(
+      `createEvent validation failed — ${formatIssues(parsed.issues)}`,
+    )
+
   const begin = data.date
     ? data.allDay
       ? data.date
