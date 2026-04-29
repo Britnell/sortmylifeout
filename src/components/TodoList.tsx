@@ -192,6 +192,16 @@ export default function TodoList() {
                 </p>
               )}
             </div>
+            <button
+              className="shrink-0 text-gray-300 hover:text-red-500 text-lg leading-none"
+              onClick={(e) => {
+                e.stopPropagation()
+                deleteMutation.mutate(ev.id)
+              }}
+              aria-label="Delete todo"
+            >
+              ×
+            </button>
           </div>
         ))}
         <button
