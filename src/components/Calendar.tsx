@@ -147,8 +147,17 @@ export default function Calendar() {
                 >
                   {day.getDate()}
                 </div>
-                <div className="mt-1 space-y-1">
-                  {dayEvents.map((ev) =>
+                {(() => {
+                  const allDayEvs = dayEvents.filter(
+                    (ev) => ev.all_day || !ev.begin?.includes('T'),
+                  )
+                  const timedEvs = dayEvents
+                    .filter((ev) => !ev.all_day && ev.begin?.includes('T'))
+                    .sort((a, b) =>
+                      (a.begin ?? '').localeCompare(b.begin ?? ''),
+                    )
+
+                  const renderAllDay = (ev: CalendarEvent) =>
                     ev.type === 'todo' ? (
                       <div
                         key={ev.id}
@@ -167,10 +176,7 @@ export default function Calendar() {
                             updateMutation.mutate({
                               id: ev.id,
                               date: ev.begin?.split('T')[0] ?? '',
-                              time: ev.begin?.includes('T')
-                                ? ev.begin.split('T')[1]
-                                : undefined,
-                              allDay: !!ev.all_day,
+                              allDay: true,
                               title: ev.title,
                               detail: ev.detail ?? undefined,
                               completed: e.target.checked,
@@ -189,16 +195,33 @@ export default function Calendar() {
                           openEdit(ev, e)
                         }}
                       >
-                        {!ev.all_day && ev.begin?.includes('T') && (
-                          <span className="opacity-70 mr-1">
-                            {ev.begin.split('T')[1]}
-                          </span>
-                        )}
                         {ev.title}
                       </div>
-                    ),
-                  )}
-                </div>
+                    )
+
+                  return (
+                    <div className="mt-1 space-y-1">
+                      {allDayEvs.map(renderAllDay)}
+                      {timedEvs.map((ev) => (
+                        <div key={ev.id}>
+                          <div className="border-t border-gray-300 mt-1" />
+                          <div
+                            className={`text-xs p-1 rounded cursor-pointer overflow-hidden ${ev.type === 'todo' ? 'bg-gray-100 text-gray-800 hover:bg-gray-200' : 'bg-blue-100 text-blue-800 hover:bg-blue-200'}`}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              openEdit(ev, e)
+                            }}
+                          >
+                            <div className="opacity-60 text-[10px] leading-tight">
+                              {ev.begin!.split('T')[1].slice(0, 5)}
+                            </div>
+                            <div className="truncate">{ev.title}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                })()}
               </div>
             )
           }),

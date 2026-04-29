@@ -152,7 +152,7 @@ export default function TodoList() {
             onClick={() => setTab('upcoming')}
             className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'upcoming' ? 'bg-gray-100 text-gray-600 ' : 'bg-gray-900 text-white'}`}
           >
-            Scheduled
+            Planned
           </button>
           <button
             onClick={() => setTab('done')}
