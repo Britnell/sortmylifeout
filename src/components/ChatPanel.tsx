@@ -1,64 +1,17 @@
 import { useState, useRef, useEffect } from 'react'
 import { useChat, fetchServerSentEvents } from '@tanstack/ai-react'
 import { useQueryClient } from '@tanstack/react-query'
+import { useSpeechRecognition } from '../lib/useSpeechRecognition'
 
 export function ChatPanel() {
   const [input, setInput] = useState('')
   const [expanded, setExpanded] = useState(false)
-  const [isListening, setIsListening] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
-  const voiceBaseRef = useRef('')
 
-  const stopListening = () => {
-    recognitionRef.current?.stop()
-    setIsListening(false)
-  }
-
-  const startListening = () => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SpeechRecognition) {
-      console.error('SpeechRecognition not supported in this browser')
-      return
-    }
-
-    const recognition = new SpeechRecognition()
-    recognition.continuous = true
-    recognition.interimResults = true
-    recognition.lang = 'en-US'
-
-    voiceBaseRef.current = input
-
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      let transcript = ''
-      for (let i = 0; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript
-      }
-      setInput(voiceBaseRef.current + transcript)
-    }
-
-    recognition.onerror = (event) => {
-      console.error('SpeechRecognition error:', event.error, event.message)
-      setIsListening(false)
-    }
-
-    recognition.onend = () => {
-      setIsListening(false)
-    }
-
-    recognitionRef.current = recognition
-    recognition.start()
-    setIsListening(true)
-  }
-
-  const toggleListening = () => {
-    if (isListening) {
-      stopListening()
-    } else {
-      startListening()
-    }
-  }
+  const { isListening, toggleListening } = useSpeechRecognition(
+    () => input,
+    setInput,
+  )
 
   const queryClient = useQueryClient()
   const lastRefetchedToolCallId = useRef<string | null>(null)
