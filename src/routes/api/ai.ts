@@ -1,6 +1,6 @@
 import { chat } from '@tanstack/ai'
 import { createWorkersAiChat } from '@cloudflare/tanstack-ai'
-// import { createOpenRouterText } from '@tanstack/ai-openrouter'
+import { createOpenRouterText } from '@tanstack/ai-openrouter'
 import { env } from 'cloudflare:workers'
 import { createSearchEventsTool } from '@/tools/searchEventsTool'
 import { createCreateEventTool } from '@/tools/createEventTool'
@@ -18,11 +18,14 @@ const models = {
   },
 } as const
 
-export const MODEL = models.cloudflare.gemma
+export const MODEL = models.cloudflare.gemma31
 
 function getAdapter() {
-  // return createOpenRouterText(models.openrouter.gemma31, process.env.OPENROUTER_API_KEY!)
-  return createWorkersAiChat(MODEL, { binding: env.AI })
+  return createOpenRouterText(
+    models.openrouter.gemma31,
+    process.env.OPENROUTER_API_KEY!,
+  )
+  // return createWorkersAiChat(MODEL, { binding: env.AI })
 }
 
 export const SYSTEM_PROMPT = (userId: string) => {
