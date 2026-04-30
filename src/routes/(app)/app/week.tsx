@@ -265,6 +265,12 @@ function RouteComponent() {
             Week
           </Link>
           <Link
+            to="/app/schedule"
+            className="px-4 py-2 text-sm font-medium transition-colors border-l border-gray-300 text-gray-600 hover:bg-gray-50"
+          >
+            Schedule
+          </Link>
+          <Link
             to="/app/day"
             className="px-4 py-2 text-sm font-medium transition-colors border-l border-gray-300 text-gray-600 hover:bg-gray-50"
           >

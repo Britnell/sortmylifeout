@@ -15,11 +15,19 @@ export const Route = createFileRoute('/(app)/app/day')({
   component: RouteComponent,
 })
 
-const DAY_RANGE = 60
+const SLOT_HEIGHT = 28 // px per 30-min slot
+const SLOTS_PER_HOUR = 2
+const TOTAL_SLOTS = 24 * SLOTS_PER_HOUR // 48
 
-function getDayDate(dayOffset: number): Date {
-  const now = new Date()
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset)
+function toDateOnly(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+}
+
+function fmtDateLocal(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
 }
 
 function getDayLabel(d: Date, today: Date): string {
@@ -31,44 +39,48 @@ function getDayLabel(d: Date, today: Date): string {
   yesterday.setDate(yesterday.getDate() - 1)
   if (isSameDay(d, yesterday)) return 'Yesterday'
   return d.toLocaleDateString('default', {
-    weekday: 'short',
+    weekday: 'long',
     month: 'short',
     day: 'numeric',
   })
 }
 
-function parseDate(dateStr: string): Date {
-  const [y, m, d] = dateStr.split('-').map(Number)
-  return new Date(y, m - 1, d)
+// Round a time string "HH:MM" to nearest 30-min slot index (0 = 00:00, 1 = 00:30, ...)
+function timeToSlot(timeStr: string): number {
+  const [h, m] = timeStr.split(':').map(Number)
+  const totalMins = h * 60 + m
+  return Math.round(totalMins / 30)
 }
 
 function RouteComponent() {
-  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const today = useMemo(() => toDateOnly(new Date()), [])
+  const [currentDate, setCurrentDate] = useState<Date>(today)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
-  const today = new Date()
-
-  const dayFrom = getDayDate(-DAY_RANGE)
-  const dayTo = getDayDate(DAY_RANGE)
-  const date_from = fmtDate(dayFrom)
-  const date_to = fmtDate(dayTo)
+  const dateStr = fmtDateLocal(currentDate)
 
   const { data: events = [], refetch: invalidate } = useQuery({
-    queryKey: ['searchEventsFn', date_from, date_to],
-    queryFn: () => searchEventsFn({ data: { date_from, date_to } }),
+    queryKey: ['searchEventsFn', dateStr, dateStr],
+    queryFn: () => searchEventsFn({ data: { date_from: dateStr, date_to: dateStr } }),
   })
 
-  const sortedDates = useMemo(() => {
-    const map = new Map<string, CalendarEvent[]>()
-    ;(events as CalendarEvent[]).forEach((ev) => {
-      const dateKey = ev.begin?.split('T')[0]
-      if (!dateKey) return
-      if (!map.has(dateKey)) map.set(dateKey, [])
-      map.get(dateKey)!.push(ev)
-    })
-    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b))
-  }, [events])
+  const allDayEvs = useMemo(
+    () =>
+      (events as CalendarEvent[]).filter(
+        (ev) => ev.all_day || !ev.begin?.includes('T'),
+      ),
+    [events],
+  )
+
+  const timedEvs = useMemo(
+    () =>
+      (events as CalendarEvent[])
+        .filter((ev) => !ev.all_day && ev.begin?.includes('T'))
+        .sort((a, b) => (a.begin ?? '').localeCompare(b.begin ?? '')),
+    [events],
+  )
 
   const closeDialog = () => {
     setDialogOpen(false)
@@ -84,10 +96,7 @@ function RouteComponent() {
       detail?: string
       type?: string
     }) => createEventFn({ data }),
-    onSuccess: () => {
-      invalidate()
-      closeDialog()
-    },
+    onSuccess: () => { invalidate(); closeDialog() },
   })
 
   const updateMutation = useMutation({
@@ -101,24 +110,20 @@ function RouteComponent() {
       type?: string
       completed?: boolean
     }) => updateEventFn({ data }),
-    onSuccess: () => {
-      invalidate()
-      closeDialog()
-    },
+    onSuccess: () => { invalidate(); closeDialog() },
   })
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteEventFn({ data: { id } }),
-    onSuccess: () => {
-      invalidate()
-      closeDialog()
-    },
+    onSuccess: () => { invalidate(); closeDialog() },
   })
 
-  const openCreate = () => {
-    setSelectedDate(null)
-    setEditingEvent(null)
-    setDialogOpen(true)
+  const goDay = (delta: number) => {
+    setCurrentDate((d) => {
+      const next = new Date(d)
+      next.setDate(next.getDate() + delta)
+      return next
+    })
   }
 
   const openEdit = (ev: CalendarEvent, e: React.MouseEvent) => {
@@ -127,54 +132,18 @@ function RouteComponent() {
     setDialogOpen(true)
   }
 
-  const renderEvent = (ev: CalendarEvent) =>
-    ev.type === 'todo' ? (
-      <div
-        key={ev.id}
-        className="text-sm bg-gray-100 text-gray-800 p-2 rounded flex items-center gap-2"
-      >
-        <input
-          type="checkbox"
-          checked={!!ev.completed}
-          className="shrink-0"
-          onChange={(e) => {
-            updateMutation.mutate({
-              id: ev.id,
-              begin: ev.begin ?? '',
-              allDay: !ev.begin?.includes('T'),
-              title: ev.title,
-              detail: ev.detail ?? undefined,
-              completed: e.target.checked,
-            })
-          }}
-          onClick={(e) => e.stopPropagation()}
-        />
-        <span
-          className="cursor-pointer hover:underline"
-          onClick={(e) => openEdit(ev, e)}
-        >
-          {ev.title}
-        </span>
-      </div>
-    ) : (
-      <div
-        key={ev.id}
-        className="text-sm bg-blue-100 text-blue-800 p-2 rounded cursor-pointer hover:bg-blue-200"
-        onClick={(e) => openEdit(ev, e)}
-      >
-        <div className="font-medium">{ev.title}</div>
-        {ev.begin?.includes('T') && (
-          <div className="text-xs text-blue-600">
-            {ev.begin.split('T')[1].slice(0, 5)}
-            {ev.end?.includes('T') && ` - ${ev.end.split('T')[1].slice(0, 5)}`}
-          </div>
-        )}
-      </div>
-    )
+  const openCreate = () => {
+    setSelectedDate(dateStr)
+    setEditingEvent(null)
+    setDialogOpen(true)
+  }
+
+  const hours = Array.from({ length: 24 }, (_, i) => i)
 
   return (
-    <div className="">
-      <div className="flex items-center justify-between mb-4">
+    <div className="flex flex-col h-[calc(100vh-120px)]">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3 shrink-0">
         <div className="flex border border-gray-300 rounded-md overflow-hidden">
           <Link
             to="/app/week"
@@ -183,12 +152,42 @@ function RouteComponent() {
             Week
           </Link>
           <Link
+            to="/app/schedule"
+            className="px-4 py-2 text-sm font-medium transition-colors border-l border-gray-300 text-gray-600 hover:bg-gray-50"
+          >
+            Schedule
+          </Link>
+          <Link
             to="/app/day"
             className="px-4 py-2 text-sm font-medium transition-colors border-l border-gray-300 bg-blue-600 text-white"
           >
             Day
           </Link>
         </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            className="p-1 rounded hover:bg-gray-100 text-gray-600"
+            onClick={() => goDay(-1)}
+          >
+            ‹
+          </button>
+          <div className="text-center min-w-32">
+            <div className={`text-sm font-semibold ${isSameDay(currentDate, today) ? 'text-blue-600' : 'text-gray-900'}`}>
+              {getDayLabel(currentDate, today)}
+            </div>
+            <div className="text-xs text-gray-400">
+              {currentDate.toLocaleDateString('default', { weekday: 'short', month: 'short', day: 'numeric' })}
+            </div>
+          </div>
+          <button
+            className="p-1 rounded hover:bg-gray-100 text-gray-600"
+            onClick={() => goDay(1)}
+          >
+            ›
+          </button>
+        </div>
+
         <button
           className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700"
           onClick={openCreate}
@@ -197,94 +196,118 @@ function RouteComponent() {
         </button>
       </div>
 
-      <div className="h-[calc(100vh-180px)] overflow-y-auto scroll-smooth">
-        {sortedDates.length === 0 && (
-          <div className="text-sm text-gray-400 text-center py-8">
-            No events in range
-          </div>
-        )}
-        {sortedDates.map(([dateStr, dayEvents]) => {
-          const d = parseDate(dateStr)
-          const isToday = isSameDay(d, today)
-          const allDayEvs = dayEvents.filter(
-            (ev) => ev.all_day || !ev.begin?.includes('T'),
-          )
-          const timedEvs = dayEvents
-            .filter((ev) => !ev.all_day && ev.begin?.includes('T'))
-            .sort((a, b) => (a.begin ?? '').localeCompare(b.begin ?? ''))
+      {/* All-day events */}
+      {allDayEvs.length > 0 && (
+        <div className="shrink-0 mb-2 pl-12 space-y-1">
+          {allDayEvs.map((ev) =>
+            ev.type === 'todo' ? (
+              <div
+                key={ev.id}
+                className="text-sm bg-gray-100 text-gray-800 px-2 py-1 rounded flex items-center gap-2"
+              >
+                <input
+                  type="checkbox"
+                  checked={!!ev.completed}
+                  className="shrink-0"
+                  onChange={(e) =>
+                    updateMutation.mutate({
+                      id: ev.id,
+                      begin: ev.begin ?? '',
+                      allDay: true,
+                      title: ev.title,
+                      detail: ev.detail ?? undefined,
+                      completed: e.target.checked,
+                    })
+                  }
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <span className="cursor-pointer hover:underline" onClick={(e) => openEdit(ev, e)}>
+                  {ev.title}
+                </span>
+              </div>
+            ) : (
+              <div
+                key={ev.id}
+                className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded cursor-pointer hover:bg-blue-200"
+                onClick={(e) => openEdit(ev, e)}
+              >
+                {ev.title}
+              </div>
+            ),
+          )}
+        </div>
+      )}
 
-          return (
-            <div
-              key={dateStr}
-              className={`border-b py-3 px-2 ${isToday ? 'bg-blue-50/50' : ''}`}
-            >
-              <div className="flex items-center mb-2">
-                <span
-                  className={`text-sm font-semibold ${isToday ? 'text-blue-600' : 'text-gray-900'}`}
+      {/* Timeline */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="relative flex">
+          {/* Hour labels */}
+          <div className="shrink-0 w-10 select-none">
+            {hours.map((h) => (
+              <div
+                key={h}
+                style={{ height: SLOT_HEIGHT * SLOTS_PER_HOUR }}
+                className="flex items-start justify-end pr-2 pt-0.5"
+              >
+                <span className="text-xs text-gray-400 leading-none">
+                  {String(h).padStart(2, '0')}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Grid + events */}
+          <div
+            className="flex-1 relative border-l border-gray-200"
+            style={{ height: TOTAL_SLOTS * SLOT_HEIGHT }}
+          >
+            {/* Hour lines */}
+            {hours.map((h) => (
+              <div
+                key={h}
+                className="absolute left-0 right-0 border-t border-gray-200"
+                style={{ top: h * SLOTS_PER_HOUR * SLOT_HEIGHT }}
+              />
+            ))}
+            {/* Half-hour lines (lighter) */}
+            {hours.map((h) => (
+              <div
+                key={`h${h}`}
+                className="absolute left-0 right-0 border-t border-gray-100"
+                style={{ top: (h * SLOTS_PER_HOUR + 1) * SLOT_HEIGHT }}
+              />
+            ))}
+
+            {/* Events */}
+            {timedEvs.map((ev) => {
+              const timeStr = ev.begin!.split('T')[1].slice(0, 5)
+              const startSlot = Math.min(timeToSlot(timeStr), TOTAL_SLOTS - 1)
+              const endSlot = ev.end?.includes('T')
+                ? Math.min(timeToSlot(ev.end.split('T')[1].slice(0, 5)), TOTAL_SLOTS)
+                : startSlot + 2
+              const heightSlots = Math.max(endSlot - startSlot, 1)
+
+              return (
+                <div
+                  key={ev.id}
+                  className={`absolute left-1 right-1 rounded px-1.5 py-0.5 text-xs cursor-pointer overflow-hidden
+                    ${ev.type === 'todo' ? 'bg-gray-200 text-gray-800 hover:bg-gray-300' : 'bg-blue-200 text-blue-900 hover:bg-blue-300'}`}
+                  style={{
+                    top: startSlot * SLOT_HEIGHT + 1,
+                    height: heightSlots * SLOT_HEIGHT - 2,
+                  }}
+                  onClick={(e) => openEdit(ev, e)}
                 >
-                  {getDayLabel(d, today)}
-                </span>
-                <span className="text-xs text-gray-400 ml-2">
-                  {d.toLocaleDateString('default', {
-                    weekday: 'short',
-                    month: 'short',
-                    day: 'numeric',
-                  })}
-                </span>
-              </div>
-              <div className="space-y-1">
-                {allDayEvs.map(renderEvent)}
-                {timedEvs.map((ev) => (
-                  <div key={ev.id} className="flex gap-2">
-                    <div className="text-xs text-gray-400 w-12 shrink-0 pt-2">
-                      {ev.begin!.split('T')[1].slice(0, 5)}
-                    </div>
-                    <div className="flex-1">
-                      {ev.type === 'todo' ? (
-                        <div className="text-sm bg-gray-100 text-gray-800 p-2 rounded flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={!!ev.completed}
-                            className="shrink-0"
-                            onChange={(e) => {
-                              updateMutation.mutate({
-                                id: ev.id,
-                                begin: ev.begin ?? '',
-                                allDay: false,
-                                title: ev.title,
-                                detail: ev.detail ?? undefined,
-                                completed: e.target.checked,
-                              })
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                          <span
-                            className="cursor-pointer hover:underline"
-                            onClick={(e) => openEdit(ev, e)}
-                          >
-                            {ev.title}
-                          </span>
-                        </div>
-                      ) : (
-                        <div
-                          className="text-sm bg-blue-100 text-blue-800 p-2 rounded cursor-pointer hover:bg-blue-200"
-                          onClick={(e) => openEdit(ev, e)}
-                        >
-                          <div className="font-medium">{ev.title}</div>
-                          {ev.end?.includes('T') && (
-                            <div className="text-xs text-blue-600">
-                              to {ev.end.split('T')[1].slice(0, 5)}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                  <div className="font-medium truncate">{ev.title}</div>
+                  <div className="text-blue-700/70">
+                    {timeStr}
+                    {ev.end?.includes('T') && ` – ${ev.end.split('T')[1].slice(0, 5)}`}
                   </div>
-                ))}
-              </div>
-            </div>
-          )
-        })}
+                </div>
+              )
+            })}
+          </div>
+        </div>
       </div>
 
       <CalendarEventDialog
