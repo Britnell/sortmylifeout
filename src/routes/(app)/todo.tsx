@@ -7,7 +7,7 @@ export const Route = createFileRoute('/(app)/todo')({
 
 function RouteComponent() {
   return (
-    <div className="h-screen p-4">
+    <div className="">
       <TodoList />
     </div>
   )

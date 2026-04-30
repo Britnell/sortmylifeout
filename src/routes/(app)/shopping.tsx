@@ -7,7 +7,7 @@ export const Route = createFileRoute('/(app)/shopping')({
 
 function RouteComponent() {
   return (
-    <div className="h-screen p-4">
+    <div className="">
       <ShoppingList />
     </div>
   )

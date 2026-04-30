@@ -146,19 +146,19 @@ export default function TodoList() {
         <div className="flex gap-2">
           <button
             onClick={() => setTab('unscheduled')}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'unscheduled' ? 'bg-bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 '}`}
+            className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'unscheduled' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 '}`}
           >
             Todos
           </button>
           <button
             onClick={() => setTab('upcoming')}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'upcoming' ? 'bg-bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 '}`}
+            className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'upcoming' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 '}`}
           >
             Planned
           </button>
           <button
             onClick={() => setTab('done')}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'done' ? 'bg-bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 '}`}
+            className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'done' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 '}`}
           >
             Finished
           </button>
