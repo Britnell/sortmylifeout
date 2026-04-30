@@ -28,6 +28,7 @@ export default function TodoList() {
     'unscheduled',
   )
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [dialogKey, setDialogKey] = useState(0)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -107,6 +108,7 @@ export default function TodoList() {
   const openCreate = () => {
     setEditingEvent(null)
     setConfirmDelete(false)
+    setDialogKey((k) => k + 1)
     setDialogOpen(true)
   }
 
@@ -144,19 +146,19 @@ export default function TodoList() {
         <div className="flex gap-2">
           <button
             onClick={() => setTab('unscheduled')}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'unscheduled' ? 'bg-gray-100 text-gray-600 ' : 'bg-gray-900 text-white'}`}
+            className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'unscheduled' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 '}`}
           >
             Todos
           </button>
           <button
             onClick={() => setTab('upcoming')}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'upcoming' ? 'bg-gray-100 text-gray-600 ' : 'bg-gray-900 text-white'}`}
+            className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'upcoming' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 '}`}
           >
             Planned
           </button>
           <button
             onClick={() => setTab('done')}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'done' ? 'bg-gray-100 text-gray-600 ' : 'bg-gray-900 text-white'}`}
+            className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'done' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 '}`}
           >
             Finished
           </button>
@@ -280,7 +282,7 @@ export default function TodoList() {
               name="title"
               required
               defaultValue={editingEvent?.title ?? ''}
-              key={editingEvent?.id ?? 'new'}
+              key={editingEvent?.id ?? dialogKey}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Title"
             />
