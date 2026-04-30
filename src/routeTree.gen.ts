@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as appRouteRouteImport } from './routes/(app)/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiWazapRouteImport } from './routes/api/wazap'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as appTodoRouteImport } from './routes/(app)/todo'
 import { Route as appShoppingRouteImport } from './routes/(app)/shopping'
@@ -43,6 +44,11 @@ const appRouteRoute = appRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWazapRoute = ApiWazapRouteImport.update({
+  id: '/api/wazap',
+  path: '/api/wazap',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/shopping': typeof appShoppingRoute
   '/todo': typeof appTodoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/wazap': typeof ApiWazapRoute
   '/app/day': typeof appAppDayRoute
   '/app/week': typeof appAppWeekRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/shopping': typeof appShoppingRoute
   '/todo': typeof appTodoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/wazap': typeof ApiWazapRoute
   '/app/day': typeof appAppDayRoute
   '/app/week': typeof appAppWeekRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/(app)/shopping': typeof appShoppingRoute
   '/(app)/todo': typeof appTodoRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/wazap': typeof ApiWazapRoute
   '/(app)/app/day': typeof appAppDayRoute
   '/(app)/app/week': typeof appAppWeekRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/shopping'
     | '/todo'
     | '/api/chat'
+    | '/api/wazap'
     | '/app/day'
     | '/app/week'
     | '/api/auth/$'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/shopping'
     | '/todo'
     | '/api/chat'
+    | '/api/wazap'
     | '/app/day'
     | '/app/week'
     | '/api/auth/$'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/(app)/shopping'
     | '/(app)/todo'
     | '/api/chat'
+    | '/api/wazap'
     | '/(app)/app/day'
     | '/(app)/app/week'
     | '/api/auth/$'
@@ -161,6 +173,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiWazapRoute: typeof ApiWazapRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -199,6 +212,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/wazap': {
+      id: '/api/wazap'
+      path: '/api/wazap'
+      fullPath: '/api/wazap'
+      preLoaderRoute: typeof ApiWazapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -271,6 +291,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiWazapRoute: ApiWazapRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
