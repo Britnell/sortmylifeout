@@ -18,7 +18,7 @@ const models = {
   },
 } as const
 
-export const MODEL = models.cloudflare.gemma31
+export const MODEL = models.openrouter.gemma31
 
 function getAdapter() {
   return createOpenRouterText(

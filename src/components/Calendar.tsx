@@ -36,7 +36,7 @@ const DAY_RANGE = 60
 
 export default function Calendar() {
 	const [viewMode, setViewMode] = useState<ViewMode>('week')
-	const [weekOffset, setWeekOffset] = useState(0)
+	const [weekOffset, _setWeekOffset] = useState(0)
 	const [selectedDate, setSelectedDate] = useState<string | null>(null)
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
