@@ -5,10 +5,10 @@
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
   "vars": {
-    "BETTER_AUTH_URL": "http://localhost:3000",
+    "BETTER_AUTH_URL": "https://tanstack-start-app.britnell.workers.dev",
   },
   "ai": {
-    "binding": "AI"
+    "binding": "AI",
   },
   "d1_databases": [
     {
