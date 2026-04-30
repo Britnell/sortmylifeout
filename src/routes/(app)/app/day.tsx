@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import Calendar from '@/components/Calendar'
 
-export const Route = createFileRoute('/(app)/app')({
+export const Route = createFileRoute('/(app)/app/day')({
   component: RouteComponent,
 })
 

@@ -17,8 +17,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as appTodoRouteImport } from './routes/(app)/todo'
 import { Route as appShoppingRouteImport } from './routes/(app)/shopping'
-import { Route as appAppRouteImport } from './routes/(app)/app'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as appAppWeekRouteImport } from './routes/(app)/app/week'
+import { Route as appAppDayRouteImport } from './routes/(app)/app/day'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -59,15 +60,20 @@ const appShoppingRoute = appShoppingRouteImport.update({
   path: '/shopping',
   getParentRoute: () => appRouteRoute,
 } as any)
-const appAppRoute = appAppRouteImport.update({
-  id: '/app',
-  path: '/app',
-  getParentRoute: () => appRouteRoute,
-} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
+} as any)
+const appAppWeekRoute = appAppWeekRouteImport.update({
+  id: '/app/week',
+  path: '/app/week',
+  getParentRoute: () => appRouteRoute,
+} as any)
+const appAppDayRoute = appAppDayRouteImport.update({
+  id: '/app/day',
+  path: '/app/day',
+  getParentRoute: () => appRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -75,10 +81,11 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/app': typeof appAppRoute
   '/shopping': typeof appShoppingRoute
   '/todo': typeof appTodoRoute
   '/api/chat': typeof ApiChatRoute
+  '/app/day': typeof appAppDayRoute
+  '/app/week': typeof appAppWeekRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
@@ -86,10 +93,11 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/app': typeof appAppRoute
   '/shopping': typeof appShoppingRoute
   '/todo': typeof appTodoRoute
   '/api/chat': typeof ApiChatRoute
+  '/app/day': typeof appAppDayRoute
+  '/app/week': typeof appAppWeekRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
@@ -99,10 +107,11 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/(app)/app': typeof appAppRoute
   '/(app)/shopping': typeof appShoppingRoute
   '/(app)/todo': typeof appTodoRoute
   '/api/chat': typeof ApiChatRoute
+  '/(app)/app/day': typeof appAppDayRoute
+  '/(app)/app/week': typeof appAppWeekRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
@@ -112,10 +121,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/login'
     | '/signup'
-    | '/app'
     | '/shopping'
     | '/todo'
     | '/api/chat'
+    | '/app/day'
+    | '/app/week'
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -123,10 +133,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/login'
     | '/signup'
-    | '/app'
     | '/shopping'
     | '/todo'
     | '/api/chat'
+    | '/app/day'
+    | '/app/week'
     | '/api/auth/$'
   id:
     | '__root__'
@@ -135,10 +146,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/login'
     | '/signup'
-    | '/(app)/app'
     | '/(app)/shopping'
     | '/(app)/todo'
     | '/api/chat'
+    | '/(app)/app/day'
+    | '/(app)/app/week'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
@@ -210,13 +222,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appShoppingRouteImport
       parentRoute: typeof appRouteRoute
     }
-    '/(app)/app': {
-      id: '/(app)/app'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof appAppRouteImport
-      parentRoute: typeof appRouteRoute
-    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -224,19 +229,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(app)/app/week': {
+      id: '/(app)/app/week'
+      path: '/app/week'
+      fullPath: '/app/week'
+      preLoaderRoute: typeof appAppWeekRouteImport
+      parentRoute: typeof appRouteRoute
+    }
+    '/(app)/app/day': {
+      id: '/(app)/app/day'
+      path: '/app/day'
+      fullPath: '/app/day'
+      preLoaderRoute: typeof appAppDayRouteImport
+      parentRoute: typeof appRouteRoute
+    }
   }
 }
 
 interface appRouteRouteChildren {
-  appAppRoute: typeof appAppRoute
   appShoppingRoute: typeof appShoppingRoute
   appTodoRoute: typeof appTodoRoute
+  appAppDayRoute: typeof appAppDayRoute
+  appAppWeekRoute: typeof appAppWeekRoute
 }
 
 const appRouteRouteChildren: appRouteRouteChildren = {
-  appAppRoute: appAppRoute,
   appShoppingRoute: appShoppingRoute,
   appTodoRoute: appTodoRoute,
+  appAppDayRoute: appAppDayRoute,
+  appAppWeekRoute: appAppWeekRoute,
 }
 
 const appRouteRouteWithChildren = appRouteRoute._addFileChildren(
