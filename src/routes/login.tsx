@@ -28,7 +28,7 @@ function LoginPage() {
 			return
 		}
 
-		navigate({ to: '/app' })
+		navigate({ to: '/app/week' })
 	}
 
 	return (
