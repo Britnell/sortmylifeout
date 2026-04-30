@@ -20,6 +20,7 @@ import { Route as appTodoRouteImport } from './routes/(app)/todo'
 import { Route as appShoppingRouteImport } from './routes/(app)/shopping'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as appAppWeekRouteImport } from './routes/(app)/app/week'
+import { Route as appAppScheduleRouteImport } from './routes/(app)/app/schedule'
 import { Route as appAppDayRouteImport } from './routes/(app)/app/day'
 
 const SignupRoute = SignupRouteImport.update({
@@ -76,6 +77,11 @@ const appAppWeekRoute = appAppWeekRouteImport.update({
   path: '/app/week',
   getParentRoute: () => appRouteRoute,
 } as any)
+const appAppScheduleRoute = appAppScheduleRouteImport.update({
+  id: '/app/schedule',
+  path: '/app/schedule',
+  getParentRoute: () => appRouteRoute,
+} as any)
 const appAppDayRoute = appAppDayRouteImport.update({
   id: '/app/day',
   path: '/app/day',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/wazap': typeof ApiWazapRoute
   '/app/day': typeof appAppDayRoute
+  '/app/schedule': typeof appAppScheduleRoute
   '/app/week': typeof appAppWeekRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -105,6 +112,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/wazap': typeof ApiWazapRoute
   '/app/day': typeof appAppDayRoute
+  '/app/schedule': typeof appAppScheduleRoute
   '/app/week': typeof appAppWeekRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/wazap': typeof ApiWazapRoute
   '/(app)/app/day': typeof appAppDayRoute
+  '/(app)/app/schedule': typeof appAppScheduleRoute
   '/(app)/app/week': typeof appAppWeekRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/wazap'
     | '/app/day'
+    | '/app/schedule'
     | '/app/week'
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/wazap'
     | '/app/day'
+    | '/app/schedule'
     | '/app/week'
     | '/api/auth/$'
   id:
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/wazap'
     | '/(app)/app/day'
+    | '/(app)/app/schedule'
     | '/(app)/app/week'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
@@ -256,6 +268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appAppWeekRouteImport
       parentRoute: typeof appRouteRoute
     }
+    '/(app)/app/schedule': {
+      id: '/(app)/app/schedule'
+      path: '/app/schedule'
+      fullPath: '/app/schedule'
+      preLoaderRoute: typeof appAppScheduleRouteImport
+      parentRoute: typeof appRouteRoute
+    }
     '/(app)/app/day': {
       id: '/(app)/app/day'
       path: '/app/day'
@@ -270,6 +289,7 @@ interface appRouteRouteChildren {
   appShoppingRoute: typeof appShoppingRoute
   appTodoRoute: typeof appTodoRoute
   appAppDayRoute: typeof appAppDayRoute
+  appAppScheduleRoute: typeof appAppScheduleRoute
   appAppWeekRoute: typeof appAppWeekRoute
 }
 
@@ -277,6 +297,7 @@ const appRouteRouteChildren: appRouteRouteChildren = {
   appShoppingRoute: appShoppingRoute,
   appTodoRoute: appTodoRoute,
   appAppDayRoute: appAppDayRoute,
+  appAppScheduleRoute: appAppScheduleRoute,
   appAppWeekRoute: appAppWeekRoute,
 }
 
