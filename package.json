@@ -14,7 +14,8 @@
     "format": "prettier --check .",
     "migration": "wrangler d1 execute sortinglifedb --file=src/db/migration.sql --remote",
     "check": "prettier --write . && eslint --fix",
-    "deploy": "bun run build && wrangler deploy"
+    "deploy": "bun run build && wrangler deploy",
+    "secrets": "wrangler secret bulk .dev.vars"
   },
   "dependencies": {
     "@cloudflare/tanstack-ai": "^0.1.8",
