@@ -179,11 +179,14 @@ function RouteComponent() {
 								</div>
 							)
 
+						const totalEvents = allDayEvs.length + timedEvs.length
+						const fewEvents = totalEvents <= 1
+
 						return (
-							<div
+							<button
 								key={`${wi}-${i}`}
-								className={`border p-2 min-h-[120px] cursor-pointer rounded ${isToday ? 'border-blue-300' : ''}`}
-								onClick={() => openCreate(dateStr)}
+								className={`group border p-2 min-h-[120px] rounded text-left w-full ${fewEvents ? 'cursor-pointer' : 'cursor-default'} ${isToday ? 'border-blue-300' : ''}`}
+								onClick={() => { if (fewEvents) openCreate(dateStr) }}
 							>
 								<div className={`text-sm font-medium ${isToday ? 'text-blue-600' : ''}`}>
 									{day.getDate()}
@@ -203,8 +206,13 @@ function RouteComponent() {
 											</div>
 										</div>
 									))}
+									{fewEvents && (
+										<div className="invisible group-hover:visible w-full text-xs p-1 rounded bg-gray-100 text-gray-500 flex items-center justify-center">
+											+
+										</div>
+									)}
 								</div>
-							</div>
+							</button>
 						)
 					}),
 				)}
