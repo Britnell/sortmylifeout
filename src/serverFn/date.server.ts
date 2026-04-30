@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { getDb } from '../lib/db'
+import { getDb, type EventTable } from '../lib/db'
 
 const EVENT_TYPES = ['event', 'todo', 'shopping'] as const
 
@@ -65,7 +65,7 @@ export async function updateEvent(
       begin: data.begin,
       title: data.title,
       detail: data.detail || null,
-      ...(data.type ? { type: data.type } : {}),
+      ...(data.type ? { type: data.type as EventTable['type'] } : {}),
       ...(data.end !== undefined ? { end: data.end || null } : {}),
       ...(data.completed !== undefined
         ? { completed: data.completed ? 1 : 0 }
@@ -116,7 +116,7 @@ export async function searchEvents(
   const db = getDb()
   let query = db.selectFrom('event').selectAll().where('user_id', '=', userId)
 
-  if (filters.type != null) query = query.where('type', '=', filters.type)
+  if (filters.type != null) query = query.where('type', '=', filters.type as EventTable['type'])
   if (filters.completed != null)
     query = query.where('completed', '=', filters.completed ? 1 : 0)
 
