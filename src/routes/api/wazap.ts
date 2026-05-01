@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { waitUntil } from 'cloudflare:workers'
-import { agentMessage, replyToWhatsapp } from '@/tools/agent'
+import { replyToWhatsapp } from '@/tools/agent'
 import { getDb } from '@/lib/db'
 
 export const Route = createFileRoute('/api/wazap')({
