@@ -8,10 +8,12 @@ export const Route = createFileRoute('/(app)/profile')({
   component: ProfilePage,
 })
 
-// Normalise any phone input to E.164 digits (no plus, no spaces/dashes)
-// e.g. "+1 (650) 555-1234" → "16505551234"
-function toE164Digits(raw: string): string {
-  return raw.replace(/\D/g, '')
+// Normalise to international format with + prefix, stripping spaces/dashes
+// e.g. "+1 (650) 555-1234" → "+16505551234". Returns null if no leading +.
+function toIntlFormat(raw: string): string | null {
+  const trimmed = raw.trim()
+  if (!trimmed.startsWith('+')) return null
+  return '+' + trimmed.slice(1).replace(/\D/g, '')
 }
 
 function ProfilePage() {
@@ -46,9 +48,9 @@ function ProfilePage() {
 
   function handlePhonePreview(e: React.FormEvent) {
     e.preventDefault()
-    const digits = toE164Digits(phoneRaw)
-    if (!digits) return
-    setPhoneConfirm(digits)
+    const normalised = toIntlFormat(phoneRaw)
+    if (!normalised) return
+    setPhoneConfirm(normalised)
   }
 
   function handlePhoneSave() {
@@ -95,7 +97,7 @@ function ProfilePage() {
 
         {user.phone ? (
           <div className="flex items-center gap-3">
-            <span className="text-sm font-mono">+{user.phone}</span>
+            <span className="text-sm font-mono">{user.phone}</span>
             <button
               onClick={handleRemovePhone}
               className="text-xs text-red-500 hover:underline"
@@ -129,7 +131,7 @@ function ProfilePage() {
               <form onSubmit={handlePhonePreview} className="flex gap-2">
                 <input
                   className="flex-1 border rounded px-3 py-2 text-sm font-mono"
-                  placeholder="+1 650 555 1234"
+                  placeholder="+44 7911 123456"
                   value={phoneRaw}
                   onChange={(e) => setPhoneRaw(e.target.value)}
                   autoFocus
@@ -153,7 +155,7 @@ function ProfilePage() {
                 <p className="text-sm text-gray-600">
                   Confirm your number in international format:
                 </p>
-                <p className="font-mono text-lg">+{phoneConfirm}</p>
+                <p className="font-mono text-lg">{phoneConfirm}</p>
                 <div className="flex gap-2">
                   <button
                     onClick={handlePhoneSave}
