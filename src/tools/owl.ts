@@ -1,5 +1,5 @@
 import { agentMessage } from '#/tools/ai'
-import { db } from '#/lib/db'
+import { db } from '@/lib/db'
 
 export async function receiveEmail(from: string, body: string) {
   const user = await db
@@ -14,6 +14,6 @@ export async function receiveEmail(from: string, body: string) {
   }
 
   const resp = await agentMessage([body], user.id)
-  console.log({ respd })
+  console.log({ resp })
   return null
 }

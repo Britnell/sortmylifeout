@@ -28,17 +28,6 @@ export const Route = createFileRoute('/api/emila')({
 
           if (!ip.text) throw new Error('empty')
 
-          const user = await db
-            .selectFrom('user')
-            .select(['id'])
-            .where('email', '=', ip.from)
-            .executeTakeFirst()
-
-          if (!user) {
-            console.error(`Email from unknown address: ${ip.from}`)
-            return new Response('ok', { status: 200 })
-          }
-
           const prom = receiveEmail(ip.from, ip.text)
           waitUntil(prom)
           return new Response('ok', { status: 200 })
