@@ -22,7 +22,7 @@ interface CalendarEvent {
 
 const today = new Date().toISOString().split('T')[0]
 
-export default function ShoppingList() {
+export default function ShoppingList({ sidebar = false }: { sidebar?: boolean }) {
   const queryClient = useQueryClient()
   const [tab, setTab] = useState<'unscheduled' | 'upcoming'>('unscheduled')
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -131,28 +131,39 @@ export default function ShoppingList() {
 
   return (
     <>
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex gap-2">
+      {sidebar ? (
+        <select
+          value={tab}
+          onChange={(e) => setTab(e.target.value as typeof tab)}
+          className="w-full mb-4 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="unscheduled">Items</option>
+          <option value="upcoming">Planned</option>
+        </select>
+      ) : (
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setTab('unscheduled')}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'unscheduled' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 '}`}
+            >
+              Items
+            </button>
+            <button
+              onClick={() => setTab('upcoming')}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'upcoming' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 '}`}
+            >
+              Planned
+            </button>
+          </div>
           <button
-            onClick={() => setTab('unscheduled')}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'unscheduled' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 '}`}
+            onClick={openCreate}
+            className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md "
           >
-            Todo
-          </button>
-          <button
-            onClick={() => setTab('upcoming')}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'upcoming' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 '}`}
-          >
-            Planned
+            + New Item
           </button>
         </div>
-        <button
-          onClick={openCreate}
-          className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md "
-        >
-          + New Item
-        </button>
-      </div>
+      )}
 
       <div className="space-y-2">
         {(items as CalendarEvent[]).length === 0 && (
