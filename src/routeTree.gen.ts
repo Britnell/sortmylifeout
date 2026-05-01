@@ -19,6 +19,7 @@ import { Route as ApiTestRouteImport } from './routes/api/test'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as appTodoRouteImport } from './routes/(app)/todo'
 import { Route as appShoppingRouteImport } from './routes/(app)/shopping'
+import { Route as appProfileRouteImport } from './routes/(app)/profile'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as appAppWeekRouteImport } from './routes/(app)/app/week'
 import { Route as appAppScheduleRouteImport } from './routes/(app)/app/schedule'
@@ -73,6 +74,11 @@ const appShoppingRoute = appShoppingRouteImport.update({
   path: '/shopping',
   getParentRoute: () => appRouteRoute,
 } as any)
+const appProfileRoute = appProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => appRouteRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/profile': typeof appProfileRoute
   '/shopping': typeof appShoppingRoute
   '/todo': typeof appTodoRoute
   '/api/chat': typeof ApiChatRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/profile': typeof appProfileRoute
   '/shopping': typeof appShoppingRoute
   '/todo': typeof appTodoRoute
   '/api/chat': typeof ApiChatRoute
@@ -131,6 +139,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/(app)/profile': typeof appProfileRoute
   '/(app)/shopping': typeof appShoppingRoute
   '/(app)/todo': typeof appTodoRoute
   '/api/chat': typeof ApiChatRoute
@@ -148,6 +157,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/login'
     | '/signup'
+    | '/profile'
     | '/shopping'
     | '/todo'
     | '/api/chat'
@@ -163,6 +173,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/login'
     | '/signup'
+    | '/profile'
     | '/shopping'
     | '/todo'
     | '/api/chat'
@@ -179,6 +190,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/login'
     | '/signup'
+    | '/(app)/profile'
     | '/(app)/shopping'
     | '/(app)/todo'
     | '/api/chat'
@@ -274,6 +286,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appShoppingRouteImport
       parentRoute: typeof appRouteRoute
     }
+    '/(app)/profile': {
+      id: '/(app)/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof appProfileRouteImport
+      parentRoute: typeof appRouteRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -306,6 +325,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface appRouteRouteChildren {
+  appProfileRoute: typeof appProfileRoute
   appShoppingRoute: typeof appShoppingRoute
   appTodoRoute: typeof appTodoRoute
   appAppDayRoute: typeof appAppDayRoute
@@ -314,6 +334,7 @@ interface appRouteRouteChildren {
 }
 
 const appRouteRouteChildren: appRouteRouteChildren = {
+  appProfileRoute: appProfileRoute,
   appShoppingRoute: appShoppingRoute,
   appTodoRoute: appTodoRoute,
   appAppDayRoute: appAppDayRoute,
