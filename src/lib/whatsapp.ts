@@ -2,8 +2,8 @@ const PHONE_NUMBER_ID = '1041968662343715'
 
 export async function sendWhatsAppMessage(to: string, text: string) {
   to = to.replace(/\D/g, '')
-  const token = process.env.WHATSAPP_ACCESS_TOKEN
-  if (!token) throw new Error('WHATSAPP_ACCESS_TOKEN env var not set')
+  const token = process.env.FB_ACCESS_TOKEN
+  if (!token) throw new Error('FB_ACCESS_TOKEN env var not set')
 
   const res = await fetch(
     `https://graph.facebook.com/v25.0/${PHONE_NUMBER_ID}/messages`,

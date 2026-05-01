@@ -1,5 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { agentMessage } from '@/tools/agent'
+import { waitUntil } from 'cloudflare:workers'
+import { agentMessage, replyToWhatsapp } from '@/tools/agent'
+import { getDb } from '@/lib/db'
 
 export const Route = createFileRoute('/api/wazap')({
   server: {
@@ -42,17 +44,34 @@ export const Route = createFileRoute('/api/wazap')({
 
             const textBodies = (messages ?? [])
               .filter((m) => m.type === 'text')
-              .map((m) => (m as Extract<WhatsAppBaseMessage, { type: 'text' }>).text.body)
+              .map(
+                (m) =>
+                  (m as Extract<WhatsAppBaseMessage, { type: 'text' }>).text
+                    .body,
+              )
 
             if (textBodies.length > 0) {
-              const userId = 'TODO'
-              agentMessage(textBodies, userId)
+              const fromNumber = messages?.[0]?.from
+              const db = getDb()
+              const user = await db
+                .selectFrom('user')
+                .select(['id'])
+                .where('phone', '=', `+${fromNumber}`)
+                .executeTakeFirst()
+
+              if (!user || !fromNumber) {
+                console.error(
+                  `WhatsApp message from unknown number: ${fromNumber}`,
+                )
+              } else {
+                const prom = replyToWhatsapp(textBodies, user.id, fromNumber)
+                waitUntil(prom)
+              }
             }
 
-            for (const status of statuses ?? []) {
-              console.log('status update', status.id, status.status)
-              // TODO: handle delivery status
-            }
+            // for (const status of statuses ?? []) {
+            //   console.log('status update', status.id, status.status)
+            // }
           }
         }
 

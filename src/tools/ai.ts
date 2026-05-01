@@ -28,7 +28,6 @@ export function getAdapter() {
   // return createWorkersAiChat(MODEL, { binding: env.AI })
 }
 
-
 export const SYSTEM_PROMPT = (userId: string) => {
   const d = new Date()
   return `You are my personal assistant - help me sort my life out. You have full access to my calendar sql table
@@ -103,6 +102,20 @@ export function createChatStream(
     systemPrompts: [SYSTEM_PROMPT(userId)],
     messages: messages as never,
     conversationId,
+    tools: [
+      createSearchEventsTool(userId),
+      createCreateEventTool(userId),
+      createUpdateEventTool(userId),
+    ],
+  })
+}
+
+export function agentMessage(messages: string[], userId: string) {
+  return chat({
+    adapter: getAdapter(),
+    systemPrompts: [SYSTEM_PROMPT(userId)],
+    messages: messages.map((content) => ({ role: 'user', content })),
+    stream: false,
     tools: [
       createSearchEventsTool(userId),
       createCreateEventTool(userId),
