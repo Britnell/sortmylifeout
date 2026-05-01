@@ -7,6 +7,7 @@ import {
 import { useEffect, useState } from 'react'
 import { authClient } from '../../lib/auth-client'
 import { ChatPanel } from '@/components/ChatPanel'
+import Sidebar from '@/components/Sidebar'
 
 export const Route = createFileRoute('/(app)')({
   component: RouteComponent,
@@ -49,20 +50,18 @@ function RouteComponent() {
         </div>
 
         {/* Right sidebar */}
-        <div
-          className={`flex-shrink-0 transition-all duration-200 overflow-hidden border-l border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 ${
+        <aside
+          className={`flex-shrink-0 transition-all duration-200 overflow-hidden border-l border-gray-200 dark:border-gray-700 bg-white -900 ${
             sidebarOpen ? 'w-72' : 'w-0'
           }`}
         >
-          <div className="w-72 p-4">
-            <p className="text-sm text-gray-400">Sidebar</p>
-          </div>
-        </div>
+          <Sidebar />
+        </aside>
 
         {/* Toggle button — fixed to right edge of viewport */}
         <button
           onClick={() => setSidebarOpen((o) => !o)}
-          className={`flex fixed top-16 items-center justify-center w-6 h-12 rounded-l-md bg-white border border-r-0 border-gray-200 shadow-sm hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 transition-all duration-200 z-20 ${
+          className={`flex fixed top-16 items-center justify-center w-6 h-12 rounded-l-md bg-white border border-r-0 border-gray-200 shadow-sm hover:bg-gray-50 -800 dark:border-gray-700 dark:hover:bg-gray-700 transition-all duration-200 z-20 ${
             sidebarOpen ? 'right-72' : 'right-0'
           }`}
           aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
