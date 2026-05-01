@@ -20,13 +20,14 @@ const models = {
 
 export const MODEL = models.openrouter.gemma31
 
-function getAdapter() {
+export function getAdapter() {
   return createOpenRouterText(
     models.openrouter.gemma31,
     process.env.OPENROUTER_API_KEY!,
   )
   // return createWorkersAiChat(MODEL, { binding: env.AI })
 }
+
 
 export const SYSTEM_PROMPT = (userId: string) => {
   const d = new Date()
