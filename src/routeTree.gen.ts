@@ -17,6 +17,7 @@ import { Route as appRouteRouteImport } from './routes/(app)/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiWazapRouteImport } from './routes/api/wazap'
 import { Route as ApiTestRouteImport } from './routes/api/test'
+import { Route as ApiEmilaRouteImport } from './routes/api/emila'
 import { Route as ApiDeletionRouteImport } from './routes/api/deletion'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as appTodoRouteImport } from './routes/(app)/todo'
@@ -64,6 +65,11 @@ const ApiWazapRoute = ApiWazapRouteImport.update({
 const ApiTestRoute = ApiTestRouteImport.update({
   id: '/api/test',
   path: '/api/test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiEmilaRoute = ApiEmilaRouteImport.update({
+  id: '/api/emila',
+  path: '/api/emila',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDeletionRoute = ApiDeletionRouteImport.update({
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/todo': typeof appTodoRoute
   '/api/chat': typeof ApiChatRoute
   '/api/deletion': typeof ApiDeletionRoute
+  '/api/emila': typeof ApiEmilaRoute
   '/api/test': typeof ApiTestRoute
   '/api/wazap': typeof ApiWazapRoute
   '/app/day': typeof appAppDayRoute
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/todo': typeof appTodoRoute
   '/api/chat': typeof ApiChatRoute
   '/api/deletion': typeof ApiDeletionRoute
+  '/api/emila': typeof ApiEmilaRoute
   '/api/test': typeof ApiTestRoute
   '/api/wazap': typeof ApiWazapRoute
   '/app/day': typeof appAppDayRoute
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/(app)/todo': typeof appTodoRoute
   '/api/chat': typeof ApiChatRoute
   '/api/deletion': typeof ApiDeletionRoute
+  '/api/emila': typeof ApiEmilaRoute
   '/api/test': typeof ApiTestRoute
   '/api/wazap': typeof ApiWazapRoute
   '/(app)/app/day': typeof appAppDayRoute
@@ -181,6 +190,7 @@ export interface FileRouteTypes {
     | '/todo'
     | '/api/chat'
     | '/api/deletion'
+    | '/api/emila'
     | '/api/test'
     | '/api/wazap'
     | '/app/day'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/todo'
     | '/api/chat'
     | '/api/deletion'
+    | '/api/emila'
     | '/api/test'
     | '/api/wazap'
     | '/app/day'
@@ -218,6 +229,7 @@ export interface FileRouteTypes {
     | '/(app)/todo'
     | '/api/chat'
     | '/api/deletion'
+    | '/api/emila'
     | '/api/test'
     | '/api/wazap'
     | '/(app)/app/day'
@@ -235,6 +247,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiDeletionRoute: typeof ApiDeletionRoute
+  ApiEmilaRoute: typeof ApiEmilaRoute
   ApiTestRoute: typeof ApiTestRoute
   ApiWazapRoute: typeof ApiWazapRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -296,6 +309,13 @@ declare module '@tanstack/react-router' {
       path: '/api/test'
       fullPath: '/api/test'
       preLoaderRoute: typeof ApiTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/emila': {
+      id: '/api/emila'
+      path: '/api/emila'
+      fullPath: '/api/emila'
+      preLoaderRoute: typeof ApiEmilaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/deletion': {
@@ -395,6 +415,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   ApiChatRoute: ApiChatRoute,
   ApiDeletionRoute: ApiDeletionRoute,
+  ApiEmilaRoute: ApiEmilaRoute,
   ApiTestRoute: ApiTestRoute,
   ApiWazapRoute: ApiWazapRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

@@ -21,10 +21,27 @@ interface CalendarEvent {
 
 const today = new Date().toISOString().split('T')[0]
 
+function fmtDate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function parseBegin(begin: string | null): { date: string; time: string } {
+  if (!begin) return { date: '', time: '' }
+  const [datePart, timePart = ''] = begin.split('T')
+  return { date: datePart, time: timePart.slice(0, 5) }
+}
+
+function buildBegin(date: string, time: string): string | undefined {
+  if (!date) return undefined
+  return time ? `${date}T${time}:00` : `${date}T00:00:00`
+}
+
 interface EditState {
   id: number
   title: string
   detail: string
+  date: string
+  time: string
 }
 
 export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
@@ -33,7 +50,7 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
     'unscheduled',
   )
   const [editing, setEditing] = useState<EditState | null>(null)
-  const [creatingDraft, setCreatingDraft] = useState<{ title: string; detail: string } | null>(null)
+  const [creatingDraft, setCreatingDraft] = useState<{ title: string; detail: string; date: string; time: string } | null>(null)
   const titleRef = useRef<HTMLInputElement>(null)
   const newTitleRef = useRef<HTMLInputElement>(null)
 
@@ -71,9 +88,9 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
   }
 
   const createMutation = useMutation({
-    mutationFn: (data: { title: string; detail?: string }) =>
+    mutationFn: (data: { title: string; detail?: string; begin?: string }) =>
       createEventFn({
-        data: { ...data, type: 'todo', allDay: true },
+        data: { ...data, type: 'todo', allDay: !data.begin },
       }),
     onSuccess: () => {
       invalidate()
@@ -87,6 +104,7 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
       title?: string
       detail?: string
       completed?: boolean
+      begin?: string
     }) => updateEventFn({ data }),
     onSuccess: () => {
       invalidate()
@@ -103,7 +121,8 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
   })
 
   const startEditing = (ev: CalendarEvent) => {
-    setEditing({ id: ev.id, title: ev.title, detail: ev.detail ?? '' })
+    const { date, time } = parseBegin(ev.begin)
+    setEditing({ id: ev.id, title: ev.title, detail: ev.detail ?? '', date, time })
     setTimeout(() => titleRef.current?.focus(), 0)
   }
 
@@ -113,12 +132,13 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
       id: ev.id,
       title: editing.title,
       detail: editing.detail || undefined,
+      begin: buildBegin(editing.date, editing.time),
     })
   }
 
   const openNewDraft = () => {
     setEditing(null)
-    setCreatingDraft({ title: '', detail: '' })
+    setCreatingDraft({ title: '', detail: '', date: '', time: '' })
     setTimeout(() => newTitleRef.current?.focus(), 0)
   }
 
@@ -230,6 +250,45 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
                     placeholder="Description"
                     className="w-full text-sm text-gray-500 bg-transparent border-b border-gray-200 focus:border-blue-400 focus:outline-none py-0.5 placeholder:text-gray-300"
                   />
+                  {!editing.date ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEditing({ ...editing, date: fmtDate(new Date()) })
+                      }}
+                      className="text-xs text-gray-400 hover:text-gray-600"
+                    >
+                      + Add date
+                    </button>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-2">
+                      <input
+                        type="date"
+                        value={editing.date}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => setEditing({ ...editing, date: e.target.value })}
+                        className="px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+                      />
+                      <input
+                        type="time"
+                        value={editing.time}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => setEditing({ ...editing, time: e.target.value })}
+                        className="px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditing({ ...editing, date: '', time: '' })
+                        }}
+                        className="px-2 py-1 border border-gray-300 rounded-md hover:bg-gray-50 text-xs text-gray-600"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 pt-1">
                     <button
                       onClick={(e) => {
@@ -292,6 +351,37 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
                 placeholder="Description"
                 className="w-full text-sm text-gray-500 bg-transparent border-b border-gray-200 focus:border-blue-400 focus:outline-none py-0.5 placeholder:text-gray-300"
               />
+              {!creatingDraft.date ? (
+                <button
+                  type="button"
+                  onClick={() => setCreatingDraft({ ...creatingDraft, date: fmtDate(new Date()) })}
+                  className="text-xs text-gray-400 hover:text-gray-600"
+                >
+                  + Add date
+                </button>
+              ) : (
+                <div className="grid grid-cols-3 gap-2">
+                  <input
+                    type="date"
+                    value={creatingDraft.date}
+                    onChange={(e) => setCreatingDraft({ ...creatingDraft, date: e.target.value })}
+                    className="px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+                  />
+                  <input
+                    type="time"
+                    value={creatingDraft.time}
+                    onChange={(e) => setCreatingDraft({ ...creatingDraft, time: e.target.value })}
+                    className="px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setCreatingDraft({ ...creatingDraft, date: '', time: '' })}
+                    className="px-2 py-1 border border-gray-300 rounded-md hover:bg-gray-50 text-xs text-gray-600"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
               <div className="flex items-center gap-2 pt-1">
                 <button
                   onClick={() => {
@@ -299,6 +389,7 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
                     createMutation.mutate({
                       title: creatingDraft.title.trim(),
                       detail: creatingDraft.detail.trim() || undefined,
+                      begin: buildBegin(creatingDraft.date, creatingDraft.time),
                     })
                   }}
                   disabled={createMutation.isPending || !creatingDraft.title.trim()}
