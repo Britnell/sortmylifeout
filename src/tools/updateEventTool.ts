@@ -1,8 +1,6 @@
 import { toolDefinition } from '@tanstack/ai'
-import { getDb } from '@/lib/db'
+import { db } from '@/lib/db'
 import { dateDescription } from './dateUtils'
-
-const db = getDb()
 
 export function createUpdateEventTool(userId: string) {
   return toolDefinition({

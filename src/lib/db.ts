@@ -30,6 +30,4 @@ export interface Database {
   event: EventTable
 }
 
-export function getDb() {
-	return new Kysely<Database>({ dialect: new D1Dialect({ database: env.sortinglifedb }) })
-}
+export const db = new Kysely<Database>({ dialect: new D1Dialect({ database: env.sortinglifedb }) })

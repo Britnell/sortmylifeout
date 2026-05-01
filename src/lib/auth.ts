@@ -2,11 +2,11 @@ import { betterAuth } from 'better-auth'
 import { kyselyAdapter } from '@better-auth/kysely-adapter'
 import { env } from 'cloudflare:workers'
 import { getRequest } from '@tanstack/react-start/server'
-import { getDb } from './db'
+import { db } from './db'
 
 export function createAuth() {
   return betterAuth({
-    database: kyselyAdapter(getDb(), { type: 'sqlite' }),
+    database: kyselyAdapter(db, { type: 'sqlite' }),
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
     emailAndPassword: {

@@ -1,5 +1,5 @@
 import * as v from 'valibot'
-import { getDb, type EventTable } from '../lib/db'
+import { db, type EventTable } from '../lib/db'
 
 const EVENT_TYPES = ['event', 'todo', 'shopping'] as const
 
@@ -60,7 +60,6 @@ export async function updateEvent(
       `updateEvent validation failed — ${formatIssues(parsed.issues)}`,
     )
 
-  const db = getDb()
   await db
     .updateTable('event')
     .set({
@@ -84,7 +83,6 @@ export async function deleteEvent(userId: string, id: number) {
     throw new Error(
       `deleteEvent validation failed — id must be a positive integer, got: ${id}`,
     )
-  const db = getDb()
   await db
     .deleteFrom('event')
     .where('id', '=', id)
@@ -116,7 +114,6 @@ export async function searchEvents(
       `searchEvents validation failed — ${formatIssues(parsed.issues)}`,
     )
 
-  const db = getDb()
   let query = db.selectFrom('event').selectAll().where('user_id', '=', userId)
 
   if (filters.type != null) query = query.where('type', '=', filters.type as EventTable['type'])
@@ -180,7 +177,6 @@ export async function createEvent(
     )
 
   const allDay = data.allDay
-  const db = getDb()
   const result = await db
     .insertInto('event')
     .values({

@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getSessionUser } from '../lib/auth'
-import { getDb } from '../lib/db'
+import { db } from '../lib/db'
 import { createEvent, deleteEvent, updateEvent, searchEvents } from './date.server'
 
 export const getSessionFn = createServerFn({ method: 'GET' }).handler(
@@ -41,7 +41,6 @@ export const deleteEventFn = createServerFn({ method: 'POST' })
 export const getUserFn = createServerFn({ method: 'GET' }).handler(async () => {
   const user = await getSessionUser()
   if (!user) throw new Error('Unauthorized')
-  const db = getDb()
   const row = await db
     .selectFrom('user')
     .select(['id', 'name', 'email', 'phone'])
@@ -55,7 +54,6 @@ export const updateUserFn = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const user = await getSessionUser()
     if (!user) throw new Error('Unauthorized')
-    const db = getDb()
     const updates: Record<string, unknown> = { updatedAt: Math.floor(Date.now() / 1000) }
     if (data.name !== undefined) updates.name = data.name
     if (data.phone !== undefined) updates.phone = data.phone

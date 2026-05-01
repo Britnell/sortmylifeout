@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { waitUntil } from 'cloudflare:workers'
 import { replyToWhatsapp } from '@/tools/agent'
-import { getDb } from '@/lib/db'
+import { db } from '@/lib/db'
 
 export const Route = createFileRoute('/api/wazap')({
   server: {
@@ -57,7 +57,6 @@ export const Route = createFileRoute('/api/wazap')({
 
             if (textBodies.length > 0) {
               const fromNumber = messages?.[0]?.from
-              const db = getDb()
               const user = await db
                 .selectFrom('user')
                 .select(['id'])

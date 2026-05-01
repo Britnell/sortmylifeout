@@ -1,5 +1,6 @@
 import { toolDefinition } from '@tanstack/ai'
 import { createEvent } from '@/serverFn/date.server'
+import { db } from '@/lib/db'
 import { dateDescription } from './dateUtils'
 
 export function createCreateEventTool(userId: string) {
@@ -66,8 +67,7 @@ export function createCreateEventTool(userId: string) {
       completed: completed ?? false,
     })
 
-    const { getDb } = await import('@/lib/db')
-    const row = await getDb()
+    const row = await db
       .selectFrom('event')
       .selectAll()
       .where('id', '=', id)
