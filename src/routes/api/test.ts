@@ -5,6 +5,7 @@ import { getAdapter, SYSTEM_PROMPT } from '@/tools/ai'
 import { createSearchEventsTool } from '@/tools/searchEventsTool'
 import { createCreateEventTool } from '@/tools/createEventTool'
 import { createUpdateEventTool } from '@/tools/updateEventTool'
+import { sendWhatsAppMessage } from '@/lib/whatsapp'
 
 const message = `hey, give me a briefing for today?`
 
@@ -19,19 +20,24 @@ export const Route = createFileRoute('/api/test')({
             headers: { 'Content-Type': 'application/json' },
           })
 
-        const response = await chat({
-          adapter: getAdapter(),
-          systemPrompts: [SYSTEM_PROMPT(user.id)],
-          messages: [{ role: 'user', content: message }],
-          stream: false,
-          tools: [
-            createSearchEventsTool(user.id),
-            createCreateEventTool(user.id),
-            createUpdateEventTool(user.id),
-          ],
-        })
+        // const response = await chat({
+        //   adapter: getAdapter(),
+        //   systemPrompts: [SYSTEM_PROMPT(user.id)],
+        //   messages: [{ role: 'user', content: message }],
+        //   stream: false,
+        //   tools: [
+        //     createSearchEventsTool(user.id),
+        //     createCreateEventTool(user.id),
+        //     createUpdateEventTool(user.id),
+        //   ],
+        // })
 
-        return new Response(JSON.stringify({ response }), {
+        const whatsapp = await sendWhatsAppMessage(
+          '447769317697',
+          'Echoooo: test message from sortmylifeout',
+        )
+
+        return new Response(JSON.stringify({ response, whatsapp }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
         })
