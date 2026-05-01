@@ -1,9 +1,9 @@
-import { useState } from 'react'
 import TodoList from '@/components/TodoList'
 import ShoppingList from '@/components/ShoppingList'
+import { useLocalStorage } from '@/lib/useLocalStorage'
 
 export default function Sidebar() {
-	const [list, setList] = useState<'todos' | 'shopping'>('todos')
+	const [list, setList] = useLocalStorage<'todos' | 'shopping'>('sidebar-tab', 'todos')
 
 	return (
 		<div className="w-72 p-4 relative">
