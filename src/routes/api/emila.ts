@@ -1,29 +1,51 @@
+import { receiveEmail } from '#/tools/owl'
 import { createFileRoute } from '@tanstack/react-router'
+import { waitUntil } from 'cloudflare:workers'
 
 export const Route = createFileRoute('/api/emila')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const rawBody = await request.arrayBuffer()
+        try {
+          const rawBody = await request.arrayBuffer()
 
-        const valid = await verifySignature(request, rawBody)
-        if (!valid) {
-          return new Response('Unauthorized', { status: 401 })
+          const valid = await verifySignature(request, rawBody)
+          if (!valid) throw new Error('unauthorized')
+
+          const contentType = request.headers.get('content-type') ?? ''
+          const response = new Response(rawBody, {
+            headers: { 'content-type': contentType },
+          })
+          const formData = await response.formData()
+          const emailJson = formData.get('email') as string
+          const email = JSON.parse(emailJson) as OwlEmail
+
+          const ip = {
+            from: email.from.address,
+            text: email.text,
+          }
+          console.log('email', ip)
+
+          if (!ip.text) throw new Error('empty')
+
+          const user = await db
+            .selectFrom('user')
+            .select(['id'])
+            .where('email', '=', ip.from)
+            .executeTakeFirst()
+
+          if (!user) {
+            console.error(`Email from unknown address: ${ip.from}`)
+            return new Response('ok', { status: 200 })
+          }
+
+          const prom = receiveEmail(ip.from, ip.text)
+          waitUntil(prom)
+          return new Response('ok', { status: 200 })
+        } catch (e) {
+          console.log(e.message)
+          return new Response('nope', { status: 500 })
         }
-
-        const text = new TextDecoder().decode(rawBody)
-        const email = JSON.parse(text) as OwlEmail
-
-        console.log('emila webhook', {
-          from: email.from,
-          to: email.to,
-          subject: email.subject,
-          x: email.text,
-        })
-
-        // TODO: handle email
-
-        return new Response('ok', { status: 200 })
       },
     },
   },
@@ -34,11 +56,8 @@ async function verifySignature(
   body: ArrayBuffer,
 ): Promise<boolean> {
   const secret = process.env.OWL_WEBHOOK_SECRET
-  console.log({ secret })
-  if (!secret) return true // no secret configured, skip verification
-
+  if (!secret) return true
   const signature = request.headers.get('x-signature')
-  console.log({ signature })
   if (!signature) return false
 
   const key = await crypto.subtle.importKey(
@@ -50,21 +69,28 @@ async function verifySignature(
   )
   const mac = await crypto.subtle.sign('HMAC', key, body)
   const expected = btoa(String.fromCharCode(...new Uint8Array(mac)))
-
-  console.log({ expected })
   return signature === expected
 }
 
+type OwlAddr = {
+  name?: string
+  address: string
+}
+
 type OwlEmail = {
-  from: string
-  to: string
+  from: OwlAddr
+  to: OwlAddr[]
+  date: string
   subject: string
+  messageId: string
   text?: string
   html?: string
-  headers?: Record<string, string>
+  // headers?: Record<string, string>
   attachments?: Array<{
     filename: string
     contentType: string
     content: string
   }>
+  originalFrom: OwlAddr
+  originalTo: OwlAddr[]
 }

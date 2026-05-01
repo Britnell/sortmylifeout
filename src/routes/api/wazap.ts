@@ -53,8 +53,6 @@ export const Route = createFileRoute('/api/wazap')({
                     .body,
               )
 
-            console.log('M:', textBodies)
-
             if (textBodies.length > 0) {
               const fromNumber = messages?.[0]?.from
               const user = await db
