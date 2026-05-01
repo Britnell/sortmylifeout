@@ -24,7 +24,9 @@ const UpdateEventSchema = v.pipe(
   v.object({
     begin: v.optional(DateString),
     allDay: v.optional(v.boolean()),
-    title: v.optional(v.pipe(v.string(), v.minLength(1, 'title must not be empty'))),
+    title: v.optional(
+      v.pipe(v.string(), v.minLength(1, 'title must not be empty')),
+    ),
     detail: v.optional(v.string()),
     type: v.optional(
       v.picklist(EVENT_TYPES, `type must be one of: ${EVENT_TYPES.join(', ')}`),
@@ -37,7 +39,7 @@ const UpdateEventSchema = v.pipe(
       d.begin === undefined ||
       d.allDay === undefined ||
       (d.allDay ? !d.begin.includes('T') : d.begin.includes('T')),
-    "allDay events must not have a time; timed events must have a time",
+    'allDay events must not have a time; timed events must have a time',
   ),
 )
 
@@ -116,7 +118,8 @@ export async function searchEvents(
 
   let query = db.selectFrom('event').selectAll().where('user_id', '=', userId)
 
-  if (filters.type != null) query = query.where('type', '=', filters.type as EventTable['type'])
+  if (filters.type != null)
+    query = query.where('type', '=', filters.type as EventTable['type'])
   if (filters.completed != null)
     query = query.where('completed', '=', filters.completed ? 1 : 0)
 
@@ -154,7 +157,7 @@ const CreateEventSchema = v.pipe(
     (d) =>
       d.begin == null ||
       (d.allDay ? !d.begin.includes('T') : d.begin.includes('T')),
-    "allDay events must not have a time; timed events must have a time",
+    'allDay events must not have a time; timed events must have a time',
   ),
 )
 
