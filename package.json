@@ -12,8 +12,8 @@
     "test": "vitest run",
     "lint": "eslint",
     "format": "prettier --check .",
-    "migration": "wrangler d1 execute sortinglifedb --file=src/db/migration.sql --remote",
     "check": "prettier --write . && eslint --fix",
+    "migration": "wrangler d1 execute sortinglifedb --file=src/db/migration.sql --remote",
     "deploy": "bun run build && wrangler deploy",
     "secrets": "wrangler secret bulk .dev.vars"
   },
