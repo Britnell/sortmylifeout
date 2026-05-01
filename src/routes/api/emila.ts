@@ -34,9 +34,11 @@ async function verifySignature(
   body: ArrayBuffer,
 ): Promise<boolean> {
   const secret = process.env.OWL_WEBHOOK_SECRET
+  console.log({ secret })
   if (!secret) return true // no secret configured, skip verification
 
   const signature = request.headers.get('x-signature')
+  console.log({ signature })
   if (!signature) return false
 
   const key = await crypto.subtle.importKey(
@@ -47,10 +49,9 @@ async function verifySignature(
     ['sign'],
   )
   const mac = await crypto.subtle.sign('HMAC', key, body)
-  const expected = Array.from(new Uint8Array(mac))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
+  const expected = btoa(String.fromCharCode(...new Uint8Array(mac)))
 
+  console.log({ expected })
   return signature === expected
 }
 
