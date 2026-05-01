@@ -22,9 +22,9 @@ function formatIssues(issues: v.BaseIssue<unknown>[]): string {
 
 const UpdateEventSchema = v.pipe(
   v.object({
-    begin: DateString,
-    allDay: v.boolean(),
-    title: v.pipe(v.string(), v.minLength(1, 'title must not be empty')),
+    begin: v.optional(DateString),
+    allDay: v.optional(v.boolean()),
+    title: v.optional(v.pipe(v.string(), v.minLength(1, 'title must not be empty'))),
     detail: v.optional(v.string()),
     type: v.optional(
       v.picklist(EVENT_TYPES, `type must be one of: ${EVENT_TYPES.join(', ')}`),
@@ -33,7 +33,10 @@ const UpdateEventSchema = v.pipe(
     completed: v.optional(v.boolean()),
   }),
   v.check(
-    (d) => (d.allDay ? !d.begin.includes('T') : d.begin.includes('T')),
+    (d) =>
+      d.begin === undefined ||
+      d.allDay === undefined ||
+      (d.allDay ? !d.begin.includes('T') : d.begin.includes('T')),
     "allDay events must not have a time; timed events must have a time",
   ),
 )
@@ -42,12 +45,12 @@ export async function updateEvent(
   userId: string,
   id: number,
   data: {
-    begin: string
-    allDay: boolean
-    title: string
+    begin?: string
+    allDay?: boolean
+    title?: string
     detail?: string
     type?: string
-    end?: string
+    end?: string | null
     completed?: boolean
   },
 ) {
@@ -61,10 +64,10 @@ export async function updateEvent(
   await db
     .updateTable('event')
     .set({
-      all_day: data.allDay ? 1 : 0,
-      begin: data.begin,
-      title: data.title,
-      detail: data.detail || null,
+      ...(data.title !== undefined ? { title: data.title } : {}),
+      ...(data.detail !== undefined ? { detail: data.detail || null } : {}),
+      ...(data.begin !== undefined ? { begin: data.begin } : {}),
+      ...(data.allDay !== undefined ? { all_day: data.allDay ? 1 : 0 } : {}),
       ...(data.type ? { type: data.type as EventTable['type'] } : {}),
       ...(data.end !== undefined ? { end: data.end || null } : {}),
       ...(data.completed !== undefined

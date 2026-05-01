@@ -69,11 +69,9 @@ export default function ShoppingList({ sidebar = false }: { sidebar?: boolean })
   const updateMutation = useMutation({
     mutationFn: (data: {
       id: number
-      title: string
+      title?: string
       detail?: string
       completed?: boolean
-      begin: string
-      allDay: boolean
     }) => updateEventFn({ data }),
     onSuccess: () => {
       invalidate()
@@ -118,9 +116,6 @@ export default function ShoppingList({ sidebar = false }: { sidebar?: boolean })
         id: editingEvent.id,
         title,
         detail,
-        begin: editingEvent.begin ?? '',
-        allDay: !!editingEvent.all_day,
-        completed: !!editingEvent.completed,
       })
     } else {
       createMutation.mutate({ title, detail })
@@ -187,10 +182,6 @@ export default function ShoppingList({ sidebar = false }: { sidebar?: boolean })
                 e.stopPropagation()
                 updateMutation.mutate({
                   id: ev.id,
-                  title: ev.title,
-                  detail: ev.detail ?? undefined,
-                  begin: ev.begin ?? '',
-                  allDay: !!ev.all_day,
                   completed: e.target.checked,
                 })
               }}

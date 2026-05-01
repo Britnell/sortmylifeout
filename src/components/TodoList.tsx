@@ -84,11 +84,9 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
   const updateMutation = useMutation({
     mutationFn: (data: {
       id: number
-      title: string
+      title?: string
       detail?: string
       completed?: boolean
-      begin: string
-      allDay: boolean
     }) => updateEventFn({ data }),
     onSuccess: () => {
       invalidate()
@@ -115,9 +113,6 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
       id: ev.id,
       title: editing.title,
       detail: editing.detail || undefined,
-      begin: ev.begin ?? '',
-      allDay: !!ev.all_day,
-      completed: !!ev.completed,
     })
   }
 
@@ -201,10 +196,6 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
                     e.stopPropagation()
                     updateMutation.mutate({
                       id: ev.id,
-                      title: ev.title,
-                      detail: ev.detail ?? undefined,
-                      begin: ev.begin ?? '',
-                      allDay: !!ev.all_day,
                       completed: e.target.checked,
                     })
                   }}
