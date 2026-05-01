@@ -7,5 +7,6 @@ export async function replyToWhatsapp(
   phone: string,
 ) {
   const reply = await agentMessage(messages, userId)
+  console.log({ reply })
   return sendWhatsAppMessage(phone, reply)
 }

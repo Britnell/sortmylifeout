@@ -27,11 +27,14 @@ export const Route = createFileRoute('/api/wazap')({
         const rawBody = await request.text()
 
         const valid = await verifySignature(request, rawBody)
+
+        console.log({ valid })
         if (!valid) {
           return new Response('Unauthorized', { status: 401 })
         }
 
         const payload = JSON.parse(rawBody) as WhatsAppWebhookPayload
+        console.log(payload)
 
         if (payload.object !== 'whatsapp_business_account') {
           return new Response('ok', { status: 200 })
@@ -49,6 +52,8 @@ export const Route = createFileRoute('/api/wazap')({
                   (m as Extract<WhatsAppBaseMessage, { type: 'text' }>).text
                     .body,
               )
+
+            console.log('M:', textBodies)
 
             if (textBodies.length > 0) {
               const fromNumber = messages?.[0]?.from
