@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS "user" (
   email TEXT UNIQUE NOT NULL,
   emailVerified INTEGER NOT NULL DEFAULT 0,
   image TEXT,
+  phone TEXT,
   createdAt INTEGER NOT NULL,
   updatedAt INTEGER NOT NULL
 );

@@ -9,6 +9,16 @@ import { authClient } from '../../lib/auth-client'
 import { ChatPanel } from '@/components/ChatPanel'
 import Sidebar from '@/components/Sidebar'
 
+function HamburgerIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <line x1="3" y1="6" x2="19" y2="6" />
+      <line x1="3" y1="11" x2="19" y2="11" />
+      <line x1="3" y1="16" x2="19" y2="16" />
+    </svg>
+  )
+}
+
 export const Route = createFileRoute('/(app)')({
   component: RouteComponent,
 })
@@ -44,7 +54,9 @@ function RouteComponent() {
                 </li>
               </ul>
             </nav>
-            <button onClick={() => authClient.signOut()}>Logout</button>
+            <Link to="/profile" aria-label="Profile">
+              <HamburgerIcon />
+            </Link>
           </header>
           {data && <Outlet />}
         </div>
