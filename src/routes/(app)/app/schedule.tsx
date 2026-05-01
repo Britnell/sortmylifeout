@@ -22,7 +22,7 @@ function getDayDate(dayOffset: number): Date {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset)
 }
 
-function getDayLabel(d: Date, today: Date): string {
+function getRelativeLabel(d: Date, today: Date): string | null {
   if (isSameDay(d, today)) return 'Today'
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
@@ -30,11 +30,13 @@ function getDayLabel(d: Date, today: Date): string {
   const yesterday = new Date(today)
   yesterday.setDate(yesterday.getDate() - 1)
   if (isSameDay(d, yesterday)) return 'Yesterday'
-  return d.toLocaleDateString('default', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  })
+  return null
+}
+
+function ordinal(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd']
+  const v = n % 100
+  return n + (s[(v - 20) % 10] ?? s[v] ?? s[0])
 }
 
 function parseDate(dateStr: string): Date {
@@ -224,18 +226,27 @@ function RouteComponent() {
               key={dateStr}
               className={`border-b py-3 px-2 ${isToday ? 'bg-blue-50/50' : ''}`}
             >
-              <div className="flex items-center mb-2">
-                <span
-                  className={`text-sm font-semibold ${isToday ? 'text-blue-600' : 'text-gray-900'}`}
-                >
-                  {getDayLabel(d, today)}
-                </span>
-                <span className="text-xs text-gray-400 ml-2">
-                  {d.toLocaleDateString('default', {
-                    weekday: 'short',
-                    month: 'short',
-                    day: 'numeric',
-                  })}
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`text-sm font-semibold ${isToday ? 'text-blue-600' : 'text-gray-900'}`}
+                  >
+                    {d.toLocaleDateString('default', { weekday: 'long' })}
+                  </span>
+                  <span
+                    className={`text-sm font-semibold ${isToday ? 'text-blue-600' : 'text-gray-900'}`}
+                  >
+                    {ordinal(d.getDate())}
+                  </span>
+                  {(() => {
+                    const rel = getRelativeLabel(d, today)
+                    return rel ? (
+                      <span className="text-xs text-gray-400">{rel}</span>
+                    ) : null
+                  })()}
+                </div>
+                <span className="text-xs text-gray-400">
+                  {d.toLocaleDateString('default', { month: 'long' })}
                 </span>
               </div>
               <div className="space-y-1">
