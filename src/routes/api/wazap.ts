@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { agentMessage } from '@/tools/agent'
 
 export const Route = createFileRoute('/api/wazap')({
   server: {
@@ -39,9 +40,13 @@ export const Route = createFileRoute('/api/wazap')({
             if (change.field !== 'messages') continue
             const { messages, statuses, contacts } = change.value
 
-            for (const message of messages ?? []) {
-              console.log('incoming message', message.from, message.type)
-              // TODO: handle message
+            const textBodies = (messages ?? [])
+              .filter((m) => m.type === 'text')
+              .map((m) => (m as Extract<WhatsAppBaseMessage, { type: 'text' }>).text.body)
+
+            if (textBodies.length > 0) {
+              const userId = 'TODO'
+              agentMessage(textBodies, userId)
             }
 
             for (const status of statuses ?? []) {
