@@ -85,3 +85,6 @@ i want to talk to my calendar
 # Auth
 - astro x better auth ? 
 https://docs.astro.build/en/guides/authentication/#better-auth
+
+# Email
+https://app.owlrelay.email/

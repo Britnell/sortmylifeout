@@ -24,8 +24,6 @@ export const Route = createFileRoute('/api/emila')({
             from: email.from.address,
             text: email.text,
           }
-          console.log('email', ip)
-
           if (!ip.text) throw new Error('empty')
 
           const prom = receiveEmail(ip.from, ip.text)

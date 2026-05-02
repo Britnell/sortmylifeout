@@ -9,8 +9,7 @@ export async function receiveEmail(from: string, body: string) {
     .executeTakeFirst()
 
   if (!user) {
-    console.error(`Email from unknown address: ${from}`)
-    return
+    throw new Error(`Email from unknown address: ${from}`)
   }
 
   const resp = await agentMessage([body], user.id)
