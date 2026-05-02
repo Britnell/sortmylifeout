@@ -4,15 +4,20 @@ import { env } from 'cloudflare:workers'
 import { getRequest } from '@tanstack/react-start/server'
 import { db } from './db'
 
+let authInstance: ReturnType<typeof betterAuth> | null = null
+
 export function createAuth() {
-  return betterAuth({
-    database: kyselyAdapter(db, { type: 'sqlite' }),
-    secret: env.BETTER_AUTH_SECRET,
-    baseURL: env.BETTER_AUTH_URL,
-    emailAndPassword: {
-      enabled: true,
-    },
-  })
+  if (!authInstance) {
+    authInstance = betterAuth({
+      database: kyselyAdapter(db, { type: 'sqlite' }),
+      secret: env.BETTER_AUTH_SECRET,
+      baseURL: env.BETTER_AUTH_URL,
+      emailAndPassword: {
+        enabled: true,
+      },
+    })
+  }
+  return authInstance
 }
 
 export type Auth = ReturnType<typeof createAuth>
