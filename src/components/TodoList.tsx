@@ -33,7 +33,7 @@ function parseBegin(begin: string | null): { date: string; time: string } {
 
 function buildBegin(date: string, time: string): string | undefined {
   if (!date) return undefined
-  return time ? `${date}T${time}:00` : `${date}T00:00:00`
+  return time ? `${date}T${time}` : date
 }
 
 interface EditState {
