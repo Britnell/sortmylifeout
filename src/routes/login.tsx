@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { authClient } from '../lib/auth-client'
 
 export const Route = createFileRoute('/login')({
@@ -10,6 +10,11 @@ function LoginPage() {
 	const navigate = useNavigate()
 	const [error, setError] = useState('')
 	const [loading, setLoading] = useState(false)
+
+	const { data } = authClient.useSession()
+	useEffect(() => {
+		if (data?.user) navigate({ to: '/app/week' })
+	}, [data])
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()

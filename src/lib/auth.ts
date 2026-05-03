@@ -26,7 +26,6 @@ async function hashPassword(password: string): Promise<string> {
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
   const hash = `pbkdf2:${saltHex}:${hashHex}`
-  console.log({ hash })
   return hash
 }
 
