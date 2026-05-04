@@ -101,7 +101,7 @@ export function ChatPanel() {
   const hasMessages = messages.length > 0
 
   return (
-    <div className="fixed bottom-0 right-6 w-96 z-50 flex flex-col shadow-2xl rounded-t-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+    <div className="fixed bottom-0 right-0 left-0 sm:left-auto sm:right-6 sm:w-96 z-50 flex flex-col shadow-2xl rounded-t-xl overflow-hidden border border-gray-200 bg-white">
       {/* Collapsed tab — only when there are messages and panel is collapsed */}
       {hasMessages && !expanded && (
         <button
@@ -116,34 +116,34 @@ export function ChatPanel() {
       {/* Messages — only shown when expanded */}
       {expanded && hasMessages && (
         <>
-          <div className="flex justify-between px-2 pt-2 bg-white dark:bg-gray-900">
+          <div className="flex justify-between px-2 pt-2 bg-white">
             <button
               onClick={() => {
                 setMessages([])
                 setExpanded(false)
                 lastHandledToolCallId.current = null
               }}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs px-1"
+              className="text-gray-400 hover:text-gray-600 text-xs px-1"
               aria-label="New chat"
             >
               New chat
             </button>
             <button
               onClick={() => setExpanded(false)}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm px-1"
+              className="text-gray-400 hover:text-gray-600 text-sm px-1"
               aria-label="Close"
             >
               ✕
             </button>
           </div>
-          <div className="overflow-y-auto max-h-80 px-4 pb-4 flex flex-col gap-3 bg-white dark:bg-gray-900">
+          <div className="overflow-y-auto max-h-80 px-4 pb-4 flex flex-col gap-3 bg-white">
             {messages.map((message) => (
               <div
                 key={message.id}
                 className={`text-sm ${
                   message.role === 'assistant'
-                    ? 'text-blue-700 dark:text-blue-400'
-                    : 'text-gray-800 dark:text-gray-200'
+                    ? 'text-blue-700'
+                    : 'text-gray-800'
                 }`}
               >
                 <div className="font-semibold mb-0.5 text-xs uppercase tracking-wide opacity-60">
@@ -171,7 +171,7 @@ export function ChatPanel() {
                             Tool: <code>{part.name}</code>
                             {part.output !== undefined ? ' ✓' : ' …'}
                           </summary>
-                          <pre className="mt-1 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs overflow-auto">
+                          <pre className="mt-1 p-2 bg-gray-100 rounded text-xs overflow-auto">
                             {(() => {
                               try {
                                 return JSON.stringify(
@@ -201,19 +201,19 @@ export function ChatPanel() {
       {(!hasMessages || expanded) && (
         <form
           onSubmit={handleSubmit}
-          className="flex gap-2 px-3 py-2 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+          className="flex gap-2 px-3 py-2 border-t border-gray-200 bg-white"
         >
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type a message..."
-            className="flex-1 px-3 py-1.5 text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-3 py-1.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             type="button"
             onClick={toggleListening}
-            className={`px-2 py-1.5 text-sm rounded-lg transition-colors ${isListening ? 'bg-red-500 text-white hover:bg-red-600' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}
+            className={`px-2 py-1.5 text-sm rounded-lg transition-colors ${isListening ? 'bg-red-500 text-white hover:bg-red-600' : 'text-gray-400 hover:text-gray-600'}`}
             aria-label={isListening ? 'Stop listening' : 'Start voice input'}
           >
             🎤

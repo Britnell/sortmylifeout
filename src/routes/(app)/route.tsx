@@ -94,7 +94,7 @@ function RouteComponent() {
           }`}
           aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
         >
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-xs text-gray-500 ">
             {sidebarOpen ? '›' : '‹'}
           </span>
         </button>
