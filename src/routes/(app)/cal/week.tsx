@@ -16,17 +16,15 @@ export const Route = createFileRoute('/(app)/cal/week')({
   component: RouteComponent,
 })
 
-type ExpandedDay = { dateStr: string; rect: DOMRect }
-
 function DayPopover({
-  expandedDay,
+  dateStr,
   dayEvents,
   onClose,
   onEdit,
   onCreateNew,
   updateMutation,
 }: {
-  expandedDay: ExpandedDay
+  dateStr: string
   dayEvents: CalendarEvent[]
   onClose: () => void
   onEdit: (ev: CalendarEvent) => void
@@ -46,17 +44,6 @@ function DayPopover({
     >
   >
 }) {
-  const { rect, dateStr } = expandedDay
-
-  const centerX = rect.left + rect.width / 2
-  const centerY = rect.top + rect.height / 2
-  const popW = Math.max(rect.width * 1.5, 180)
-  const popH = Math.max(rect.height * 1.4, 160)
-  let left = centerX - popW / 2
-  let top = centerY - popH / 2
-  left = Math.max(8, Math.min(left, window.innerWidth - popW - 8))
-  top = Math.max(8, Math.min(top, window.innerHeight - popH - 8))
-
   const allDayEvs = dayEvents.filter(
     (ev) => ev.all_day || !ev.begin?.includes('T'),
   )
@@ -78,20 +65,11 @@ function DayPopover({
   return (
     <dialog
       ref={dialogRef}
-      style={{
-        left,
-        top,
-        width: popW,
-        minHeight: popH,
-        transformOrigin: `${centerX - left}px ${centerY - top}px`,
-        animation: 'day-pop-in 0.15s ease-out forwards',
-      }}
-      className="fixed m-0 bg-white border border-gray-200 rounded-lg shadow-lg p-3 flex flex-col gap-1 backdrop:bg-transparent"
+      className="rounded-lg shadow-lg border border-gray-200 p-3 w-52 flex flex-col gap-1 backdrop:bg-black/20"
       onCancel={(e) => { e.preventDefault(); onClose() }}
       onClick={(e) => { if (e.target === dialogRef.current) onClose() }}
     >
-      <style>{`@keyframes day-pop-in { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }`}</style>
-        <div className="text-xs font-semibold text-gray-500 mb-1">{label}</div>
+      <div className="text-xs font-semibold text-gray-500 mb-1">{label}</div>
         {allDayEvs.map((ev) =>
           ev.type === 'todo' ? (
             <div
@@ -162,7 +140,7 @@ function RouteComponent() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
-  const [expandedDay, setExpandedDay] = useState<ExpandedDay | null>(null)
+  const [expandedDay, setExpandedDay] = useState<string | null>(null)
 
   const today = new Date()
 
@@ -330,12 +308,11 @@ function RouteComponent() {
               <button
                 key={`${wi}-${i}`}
                 className={`group flex flex-col border p-2 min-h-[120px] rounded text-left w-full cursor-pointer ${isToday ? 'border-blue-500 bg-blue-50' : ''}`}
-                onClick={(e) => {
+                onClick={() => {
                   if (fewEvents) {
                     openCreate(dateStr)
                   } else {
-                    const rect = e.currentTarget.getBoundingClientRect()
-                    setExpandedDay({ dateStr, rect })
+                    setExpandedDay(dateStr)
                   }
                 }}
               >
@@ -382,8 +359,8 @@ function RouteComponent() {
 
       {expandedDay && (
         <DayPopover
-          expandedDay={expandedDay}
-          dayEvents={eventsByDate.get(expandedDay.dateStr) || []}
+          dateStr={expandedDay}
+          dayEvents={eventsByDate.get(expandedDay) || []}
           onClose={() => setExpandedDay(null)}
           onEdit={(ev) => openEdit(ev)}
           onCreateNew={openCreate}
