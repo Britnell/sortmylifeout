@@ -10,6 +10,8 @@ import { ChatPanel } from '@/components/ChatPanel'
 import Sidebar from '@/components/Sidebar'
 import Icon from '@/components/Icon'
 import { useMatchRoute } from '@tanstack/react-router'
+import { useLocalStorage } from '@/lib/useLocalStorage'
+import type { CalView } from '@/components/CalViewSwitcher'
 
 export const Route = createFileRoute('/(app)')({
   component: RouteComponent,
@@ -21,10 +23,11 @@ function RouteComponent() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const matchRoute = useMatchRoute()
-  // const match = Route.useMatch()
   const isCal = matchRoute({ to: '/cal/$all' })
   const isTodo = matchRoute({ to: '/todo' })
   const isShopping = matchRoute({ to: '/shopping' })
+  const [lastCalView] = useLocalStorage<CalView>('cal-last-view', '/cal/week')
+  console.log('[route] lastCalView:', lastCalView)
 
   useEffect(() => {
     if (!isPending && !data) navigate({ to: '/login' })
@@ -43,7 +46,7 @@ function RouteComponent() {
               <ul className="flex gap-4">
                 <li>
                   <Link
-                    to="/cal/week"
+                    to={lastCalView}
                     className={`flex items-center gap-1 rounded px-2 py-1 ${isCal ? '  bg-blue-400' : ''}`}
                   >
                     <Icon name="calendar" />

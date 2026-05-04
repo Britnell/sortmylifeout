@@ -1,4 +1,6 @@
 import { Link, useRouterState, useNavigate } from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { useLocalStorage } from '@/lib/useLocalStorage'
 
 const views = [
   { label: 'Week', to: '/cal/week' },
@@ -6,10 +8,18 @@ const views = [
   { label: 'Day', to: '/cal/day' },
 ] as const
 
+export type CalView = (typeof views)[number]['to']
+
 export default function CalViewSwitcher() {
   const pathname = useRouterState({ select: s => s.location.pathname })
   const navigate = useNavigate()
   const active = views.find(v => pathname.startsWith(v.to)) ?? views[0]
+  const [, setLastCalView] = useLocalStorage<CalView>('cal-last-view', '/cal/week')
+
+  useEffect(() => {
+    console.log('[CalViewSwitcher] saving last cal view:', active.to)
+    setLastCalView(active.to)
+  }, [active.to])
 
   return (
     <>
