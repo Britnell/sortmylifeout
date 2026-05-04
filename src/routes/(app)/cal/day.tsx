@@ -11,7 +11,7 @@ import CalendarEventDialog from '@/components/CalendarEventDialog'
 import type { CalendarEvent } from '@/components/CalendarEventDialog'
 import { fmtDate, isSameDay } from '#/lib/date'
 
-export const Route = createFileRoute('/(app)/app/day')({
+export const Route = createFileRoute('/(app)/cal/day')({
   component: RouteComponent,
 })
 
@@ -63,7 +63,8 @@ function RouteComponent() {
 
   const { data: events = [], refetch: invalidate } = useQuery({
     queryKey: ['searchEventsFn', dateStr, dateStr],
-    queryFn: () => searchEventsFn({ data: { date_from: dateStr, date_to: dateStr } }),
+    queryFn: () =>
+      searchEventsFn({ data: { date_from: dateStr, date_to: dateStr } }),
   })
 
   const allDayEvs = useMemo(
@@ -96,7 +97,10 @@ function RouteComponent() {
       detail?: string
       type?: string
     }) => createEventFn({ data }),
-    onSuccess: () => { invalidate(); closeDialog() },
+    onSuccess: () => {
+      invalidate()
+      closeDialog()
+    },
   })
 
   const updateMutation = useMutation({
@@ -110,12 +114,18 @@ function RouteComponent() {
       type?: string
       completed?: boolean
     }) => updateEventFn({ data }),
-    onSuccess: () => { invalidate(); closeDialog() },
+    onSuccess: () => {
+      invalidate()
+      closeDialog()
+    },
   })
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteEventFn({ data: { id } }),
-    onSuccess: () => { invalidate(); closeDialog() },
+    onSuccess: () => {
+      invalidate()
+      closeDialog()
+    },
   })
 
   const goDay = (delta: number) => {
@@ -146,19 +156,19 @@ function RouteComponent() {
       <div className="flex items-center justify-between mb-3 shrink-0">
         <div className="flex border border-gray-300 rounded-md overflow-hidden">
           <Link
-            to="/app/week"
+            to="/cal/week"
             className="px-4 py-2 text-sm font-medium transition-colors text-gray-600 hover:bg-gray-50"
           >
             Week
           </Link>
           <Link
-            to="/app/schedule"
+            to="/cal/schedule"
             className="px-4 py-2 text-sm font-medium transition-colors border-l border-gray-300 text-gray-600 hover:bg-gray-50"
           >
             Schedule
           </Link>
           <Link
-            to="/app/day"
+            to="/cal/day"
             className="px-4 py-2 text-sm font-medium transition-colors border-l border-gray-300 bg-blue-600 text-white"
           >
             Day
@@ -173,11 +183,17 @@ function RouteComponent() {
             ‹
           </button>
           <div className="text-center min-w-32">
-            <div className={`text-sm font-semibold ${isSameDay(currentDate, today) ? 'text-blue-600' : 'text-gray-900'}`}>
+            <div
+              className={`text-sm font-semibold ${isSameDay(currentDate, today) ? 'text-blue-600' : 'text-gray-900'}`}
+            >
               {getDayLabel(currentDate, today)}
             </div>
             <div className="text-xs text-gray-400">
-              {currentDate.toLocaleDateString('default', { weekday: 'short', month: 'short', day: 'numeric' })}
+              {currentDate.toLocaleDateString('default', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+              })}
             </div>
           </div>
           <button
@@ -221,7 +237,10 @@ function RouteComponent() {
                   }
                   onClick={(e) => e.stopPropagation()}
                 />
-                <span className="cursor-pointer hover:underline" onClick={(e) => openEdit(ev, e)}>
+                <span
+                  className="cursor-pointer hover:underline"
+                  onClick={(e) => openEdit(ev, e)}
+                >
                   {ev.title}
                 </span>
               </div>
@@ -283,7 +302,10 @@ function RouteComponent() {
               const timeStr = ev.begin!.split('T')[1].slice(0, 5)
               const startSlot = Math.min(timeToSlot(timeStr), TOTAL_SLOTS - 1)
               const endSlot = ev.end?.includes('T')
-                ? Math.min(timeToSlot(ev.end.split('T')[1].slice(0, 5)), TOTAL_SLOTS)
+                ? Math.min(
+                    timeToSlot(ev.end.split('T')[1].slice(0, 5)),
+                    TOTAL_SLOTS,
+                  )
                 : startSlot + 2
               const heightSlots = Math.max(endSlot - startSlot, 1)
 
@@ -301,7 +323,8 @@ function RouteComponent() {
                   <div className="font-medium truncate">{ev.title}</div>
                   <div className="text-blue-700/70">
                     {timeStr}
-                    {ev.end?.includes('T') && ` – ${ev.end.split('T')[1].slice(0, 5)}`}
+                    {ev.end?.includes('T') &&
+                      ` – ${ev.end.split('T')[1].slice(0, 5)}`}
                   </div>
                 </div>
               )

@@ -8,16 +8,8 @@ import { useEffect, useState } from 'react'
 import { authClient } from '../../lib/auth-client'
 import { ChatPanel } from '@/components/ChatPanel'
 import Sidebar from '@/components/Sidebar'
-
-function HamburgerIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <line x1="3" y1="6" x2="19" y2="6" />
-      <line x1="3" y1="11" x2="19" y2="11" />
-      <line x1="3" y1="16" x2="19" y2="16" />
-    </svg>
-  )
-}
+import Icon from '@/components/Icon'
+import { useMatchRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/(app)')({
   component: RouteComponent,
@@ -27,6 +19,12 @@ function RouteComponent() {
   const { data, isPending } = authClient.useSession()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const matchRoute = useMatchRoute()
+  // const match = Route.useMatch()
+  const isCal = matchRoute({ to: '/cal/$all' })
+  const isTodo = matchRoute({ to: '/todo' })
+  const isShopping = matchRoute({ to: '/shopping' })
 
   useEffect(() => {
     if (!isPending && !data) navigate({ to: '/login' })
@@ -44,18 +42,36 @@ function RouteComponent() {
             <nav>
               <ul className="flex gap-4">
                 <li>
-                  <Link to="/app/week">Calendar</Link>
+                  <Link
+                    to="/cal/week"
+                    className={`flex items-center gap-1 rounded px-2 py-1 ${isCal ? '  bg-blue-400' : ''}`}
+                  >
+                    <Icon name="calendar" />
+                    Calendar
+                  </Link>
                 </li>
                 <li>
-                  <Link to="/todo">Todo</Link>
+                  <Link
+                    to="/todo"
+                    className={`flex items-center gap-1 rounded px-2 py-1 ${isTodo ? '  bg-blue-400' : ''}`}
+                  >
+                    <Icon name="todo" />
+                    Todo
+                  </Link>
                 </li>
                 <li>
-                  <Link to="/shopping">Shopping</Link>
+                  <Link
+                    to="/shopping"
+                    className={`flex items-center gap-1 rounded px-2 py-1 ${isShopping ? '  bg-blue-400' : ''}`}
+                  >
+                    <Icon name="shopping" />
+                    Shopping
+                  </Link>
                 </li>
               </ul>
             </nav>
             <Link to="/profile" aria-label="Profile">
-              <HamburgerIcon />
+              <Icon name="hamburger" size={22} />
             </Link>
           </header>
           {data && <Outlet />}

@@ -12,7 +12,7 @@ import CalendarEventDialog from '@/components/CalendarEventDialog'
 import type { CalendarEvent } from '@/components/CalendarEventDialog'
 import { fmtDate, getWeekDays, isSameDay, weekdays } from '#/lib/date'
 
-export const Route = createFileRoute('/(app)/app/week')({
+export const Route = createFileRoute('/(app)/cal/week')({
   component: RouteComponent,
 })
 
@@ -259,19 +259,19 @@ function RouteComponent() {
       <div className="flex items-center gap-4 mb-4">
         <div className="flex border border-gray-300 rounded-md overflow-hidden">
           <Link
-            to="/app/week"
+            to="/cal/week"
             className="px-4 py-2 text-sm font-medium transition-colors bg-blue-600 text-white"
           >
             Week
           </Link>
           <Link
-            to="/app/schedule"
+            to="/cal/schedule"
             className="px-4 py-2 text-sm font-medium transition-colors border-l border-gray-300 text-gray-600 hover:bg-gray-50"
           >
             Schedule
           </Link>
           <Link
-            to="/app/day"
+            to="/cal/day"
             className="px-4 py-2 text-sm font-medium transition-colors border-l border-gray-300 text-gray-600 hover:bg-gray-50"
           >
             Day
