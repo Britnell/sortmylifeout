@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
+import CalViewSwitcher from '@/components/CalViewSwitcher'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
   searchEventsFn,
@@ -154,26 +155,7 @@ function RouteComponent() {
     <div className="flex flex-col h-[calc(100vh-120px)]">
       {/* Header */}
       <div className="flex items-center justify-between mb-3 shrink-0">
-        <div className="flex border border-gray-300 rounded-md overflow-hidden">
-          <Link
-            to="/cal/week"
-            className="px-4 py-2 text-sm font-medium transition-colors text-gray-600 hover:bg-gray-50"
-          >
-            Week
-          </Link>
-          <Link
-            to="/cal/schedule"
-            className="px-4 py-2 text-sm font-medium transition-colors border-l border-gray-300 text-gray-600 hover:bg-gray-50"
-          >
-            Schedule
-          </Link>
-          <Link
-            to="/cal/day"
-            className="px-4 py-2 text-sm font-medium transition-colors border-l border-gray-300 bg-blue-600 text-white"
-          >
-            Day
-          </Link>
-        </div>
+        <CalViewSwitcher />
 
         <div className="flex items-center gap-3">
           <button
