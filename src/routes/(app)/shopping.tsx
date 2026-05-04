@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import ShoppingList from '@/components/ShoppingList'
+import CheckList from '#/components/CheckList'
 
 export const Route = createFileRoute('/(app)/shopping')({
   component: RouteComponent,
@@ -8,7 +8,7 @@ export const Route = createFileRoute('/(app)/shopping')({
 function RouteComponent() {
   return (
     <div className="">
-      <ShoppingList />
+      <CheckList type="shopping" />
     </div>
   )
 }

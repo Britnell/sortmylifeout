@@ -44,35 +44,75 @@ interface EditState {
   time: string
 }
 
-export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
+type EventType = 'todo' | 'shopping'
+
+const LABELS: Record<
+  EventType,
+  {
+    unscheduled: string
+    newButton: string
+    emptyUnscheduled: string
+    emptyUpcoming: string
+    emptyDone: string
+  }
+> = {
+  todo: {
+    unscheduled: 'Todos',
+    newButton: '+ New Todo',
+    emptyUnscheduled: 'No outstanding todos.',
+    emptyUpcoming: 'No upcoming todos.',
+    emptyDone: 'No completed todos.',
+  },
+  shopping: {
+    unscheduled: 'Items',
+    newButton: '+ New Item',
+    emptyUnscheduled: 'No outstanding items.',
+    emptyUpcoming: 'No upcoming items.',
+    emptyDone: 'No completed items.',
+  },
+}
+
+export default function CheckList({
+  type,
+  sidebar = false,
+}: {
+  type: EventType
+  sidebar?: boolean
+}) {
   const queryClient = useQueryClient()
+  const labels = LABELS[type]
   const [tab, setTab] = useState<'unscheduled' | 'upcoming' | 'done'>(
     'unscheduled',
   )
   const [editing, setEditing] = useState<EditState | null>(null)
-  const [creatingDraft, setCreatingDraft] = useState<{ title: string; detail: string; date: string; time: string } | null>(null)
+  const [creatingDraft, setCreatingDraft] = useState<{
+    title: string
+    detail: string
+    date: string
+    time: string
+  } | null>(null)
   const titleRef = useRef<HTMLInputElement>(null)
   const newTitleRef = useRef<HTMLInputElement>(null)
 
   const { data: unscheduled = [] } = useQuery({
-    queryKey: ['todos', 'unscheduled'],
-    queryFn: () => searchEventsFn({ data: { type: 'todo', completed: false } }),
+    queryKey: [type, 'unscheduled'],
+    queryFn: () => searchEventsFn({ data: { type, completed: false } }),
   })
 
   const { data: upcoming = [] } = useQuery({
-    queryKey: ['todos', 'upcoming', today],
+    queryKey: [type, 'upcoming', today],
     queryFn: () =>
       searchEventsFn({
-        data: { type: 'todo', completed: false, date_from: today },
+        data: { type, completed: false, date_from: today },
       }),
   })
 
   const { data: done = [] } = useQuery({
-    queryKey: ['todos', 'done'],
-    queryFn: () => searchEventsFn({ data: { type: 'todo', completed: true } }),
+    queryKey: [type, 'done'],
+    queryFn: () => searchEventsFn({ data: { type, completed: true } }),
   })
 
-  const todos =
+  const items =
     tab === 'unscheduled'
       ? (unscheduled as CalendarEvent[]).filter((ev) => !ev.begin)
       : tab === 'upcoming'
@@ -82,15 +122,15 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
         : (done as CalendarEvent[])
 
   const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ['todos', 'unscheduled'] })
-    queryClient.invalidateQueries({ queryKey: ['todos', 'upcoming'] })
-    queryClient.invalidateQueries({ queryKey: ['todos', 'done'] })
+    queryClient.invalidateQueries({ queryKey: [type, 'unscheduled'] })
+    queryClient.invalidateQueries({ queryKey: [type, 'upcoming'] })
+    queryClient.invalidateQueries({ queryKey: [type, 'done'] })
   }
 
   const createMutation = useMutation({
     mutationFn: (data: { title: string; detail?: string; begin?: string }) =>
       createEventFn({
-        data: { ...data, type: 'todo', allDay: !data.begin },
+        data: { ...data, type, allDay: !data.begin },
       }),
     onSuccess: () => {
       invalidate()
@@ -122,7 +162,13 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
 
   const startEditing = (ev: CalendarEvent) => {
     const { date, time } = parseBegin(ev.begin)
-    setEditing({ id: ev.id, title: ev.title, detail: ev.detail ?? '', date, time })
+    setEditing({
+      id: ev.id,
+      title: ev.title,
+      detail: ev.detail ?? '',
+      date,
+      time,
+    })
     setTimeout(() => titleRef.current?.focus(), 0)
   }
 
@@ -150,7 +196,7 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
           onChange={(e) => setTab(e.target.value as typeof tab)}
           className="w-full mb-4 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="unscheduled">Todos</option>
+          <option value="unscheduled">{labels.unscheduled}</option>
           <option value="upcoming">Planned</option>
           <option value="done">Finished</option>
         </select>
@@ -161,7 +207,7 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
               onClick={() => setTab('unscheduled')}
               className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'unscheduled' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 '}`}
             >
-              Todos
+              {labels.unscheduled}
             </button>
             <button
               onClick={() => setTab('upcoming')}
@@ -180,22 +226,22 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
             onClick={openNewDraft}
             className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md"
           >
-            + New Todo
+            {labels.newButton}
           </button>
         </div>
       )}
 
       <div className="space-y-1">
-        {(todos as CalendarEvent[]).length === 0 && !creatingDraft && (
+        {items.length === 0 && !creatingDraft && (
           <p className="text-gray-500 text-sm">
             {tab === 'upcoming'
-              ? 'No upcoming todos.'
+              ? labels.emptyUpcoming
               : tab === 'done'
-                ? 'No completed todos.'
-                : 'No outstanding todos.'}
+                ? labels.emptyDone
+                : labels.emptyUnscheduled}
           </p>
         )}
-        {(todos as CalendarEvent[]).map((ev) => {
+        {items.map((ev) => {
           const isEditing = editing?.id === ev.id
           return (
             <div
@@ -233,7 +279,9 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
                     className="flex-1 min-w-0 text-sm font-medium bg-transparent border-b border-blue-400 focus:outline-none py-0.5"
                   />
                 ) : (
-                  <p className={`flex-1 min-w-0 text-sm font-medium ${ev.completed ? 'line-through text-gray-400' : ''}`}>
+                  <p
+                    className={`flex-1 min-w-0 text-sm font-medium ${ev.completed ? 'line-through text-gray-400' : ''}`}
+                  >
                     {ev.title}
                   </p>
                 )}
@@ -267,14 +315,18 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
                         type="date"
                         value={editing.date}
                         onClick={(e) => e.stopPropagation()}
-                        onChange={(e) => setEditing({ ...editing, date: e.target.value })}
+                        onChange={(e) =>
+                          setEditing({ ...editing, date: e.target.value })
+                        }
                         className="px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
                       />
                       <input
                         type="time"
                         value={editing.time}
                         onClick={(e) => e.stopPropagation()}
-                        onChange={(e) => setEditing({ ...editing, time: e.target.value })}
+                        onChange={(e) =>
+                          setEditing({ ...editing, time: e.target.value })
+                        }
                         className="px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
                       />
                       <button
@@ -354,7 +406,12 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
               {!creatingDraft.date ? (
                 <button
                   type="button"
-                  onClick={() => setCreatingDraft({ ...creatingDraft, date: fmtDate(new Date()) })}
+                  onClick={() =>
+                    setCreatingDraft({
+                      ...creatingDraft,
+                      date: fmtDate(new Date()),
+                    })
+                  }
                   className="text-xs text-gray-400 hover:text-gray-600"
                 >
                   + Add date
@@ -364,18 +421,30 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
                   <input
                     type="date"
                     value={creatingDraft.date}
-                    onChange={(e) => setCreatingDraft({ ...creatingDraft, date: e.target.value })}
+                    onChange={(e) =>
+                      setCreatingDraft({
+                        ...creatingDraft,
+                        date: e.target.value,
+                      })
+                    }
                     className="px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
                   />
                   <input
                     type="time"
                     value={creatingDraft.time}
-                    onChange={(e) => setCreatingDraft({ ...creatingDraft, time: e.target.value })}
+                    onChange={(e) =>
+                      setCreatingDraft({
+                        ...creatingDraft,
+                        time: e.target.value,
+                      })
+                    }
                     className="px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
                   />
                   <button
                     type="button"
-                    onClick={() => setCreatingDraft({ ...creatingDraft, date: '', time: '' })}
+                    onClick={() =>
+                      setCreatingDraft({ ...creatingDraft, date: '', time: '' })
+                    }
                     className="px-2 py-1 border border-gray-300 rounded-md hover:bg-gray-50 text-xs text-gray-600"
                   >
                     ✕
@@ -392,7 +461,9 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
                       begin: buildBegin(creatingDraft.date, creatingDraft.time),
                     })
                   }}
-                  disabled={createMutation.isPending || !creatingDraft.title.trim()}
+                  disabled={
+                    createMutation.isPending || !creatingDraft.title.trim()
+                  }
                   className="px-3 py-1 text-xs font-medium bg-blue-600 text-white rounded-md disabled:opacity-50"
                 >
                   {createMutation.isPending ? 'Creating…' : 'Create'}
@@ -411,7 +482,7 @@ export default function TodoList({ sidebar = false }: { sidebar?: boolean }) {
             onClick={openNewDraft}
             className="w-full mt-1 py-2 text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-md border border-dashed border-gray-200 hover:border-gray-300"
           >
-            + New Todo
+            {labels.newButton}
           </button>
         )}
       </div>
