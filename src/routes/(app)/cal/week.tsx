@@ -290,10 +290,6 @@ function RouteComponent() {
                 <div
                   key={ev.id}
                   className="text-xs bg-gray-100 text-gray-800 p-1 rounded flex items-center gap-1"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    openEdit(ev, e)
-                  }}
                 >
                   <input
                     type="checkbox"
@@ -317,18 +313,14 @@ function RouteComponent() {
               ) : (
                 <div
                   key={ev.id}
-                  className="text-xs bg-blue-100 text-blue-800 p-1 rounded truncate cursor-pointer hover:bg-blue-200"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    openEdit(ev, e)
-                  }}
+                  className="text-xs bg-blue-100 text-blue-800 p-1 rounded truncate"
                 >
                   {ev.title}
                 </div>
               )
 
             const totalEvents = allDayEvs.length + timedEvs.length
-            const fewEvents = totalEvents <= 1
+            const fewEvents = totalEvents === 0
 
             return (
               <button
@@ -356,11 +348,7 @@ function RouteComponent() {
                         {ev.begin!.split('T')[1].slice(0, 5)}
                       </span>
                       <div
-                        className={`text-xs p-1 rounded cursor-pointer overflow-hidden ${ev.type === 'todo' ? 'bg-gray-100 text-gray-800 hover:bg-gray-200' : ' hover:bg-gray-100'}`}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          openEdit(ev, e)
-                        }}
+                        className={`text-xs p-1 rounded overflow-hidden ${ev.type === 'todo' ? 'bg-gray-100 text-gray-800' : ''}`}
                       >
                         <span className="block truncate">{ev.title}</span>
                       </div>
