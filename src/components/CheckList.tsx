@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { useLocalStorage } from '@/lib/useLocalStorage'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   searchEventsFn,
@@ -81,7 +82,8 @@ export default function CheckList({
 }) {
   const queryClient = useQueryClient()
   const labels = LABELS[type]
-  const [tab, setTab] = useState<'unscheduled' | 'upcoming' | 'done'>(
+  const [tab, setTab] = useLocalStorage<'unscheduled' | 'upcoming' | 'done'>(
+    `checklist-tab-${type}`,
     'unscheduled',
   )
   const [editing, setEditing] = useState<EditState | null>(null)
