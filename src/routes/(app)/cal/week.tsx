@@ -303,6 +303,13 @@ function RouteComponent() {
 
             const totalEvents = allDayEvs.length + timedEvs.length
             const fewEvents = totalEvents === 0
+            const MAX_VISIBLE = 4
+            const visibleAllDay = allDayEvs.slice(0, MAX_VISIBLE)
+            const visibleTimed = timedEvs.slice(
+              0,
+              Math.max(0, MAX_VISIBLE - allDayEvs.length),
+            )
+            const hasMore = totalEvents > MAX_VISIBLE
 
             return (
               <button
@@ -322,8 +329,8 @@ function RouteComponent() {
                   {day.getDate()}
                 </div>
                 <div className="mt-1 space-y-1">
-                  {allDayEvs.map(renderAllDay)}
-                  {timedEvs.map((ev) => (
+                  {visibleAllDay.map(renderAllDay)}
+                  {visibleTimed.map((ev) => (
                     <div key={ev.id}>
                       <span className="text-[10px] text-gray-500 leading-tight block">
                         {ev.begin!.split('T')[1].slice(0, 5)}
@@ -335,6 +342,11 @@ function RouteComponent() {
                       </div>
                     </div>
                   ))}
+                  {hasMore && (
+                    <div className="text-xs text-gray-400 px-1">
+                      +{totalEvents - MAX_VISIBLE} more
+                    </div>
+                  )}
                   {fewEvents && (
                     <div className="invisible group-hover:visible w-full text-xs p-1 rounded bg-gray-100 text-gray-500 flex items-center justify-center">
                       +
