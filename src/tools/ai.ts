@@ -8,9 +8,7 @@ import { createUpdateEventTool } from '@/tools/updateEventTool'
 
 // -- Providers --
 const models = {
-  cloudflare: {
-    gemma: '@cf/google/gemma-4-26b-a4b-it',
-  },
+  // cloudflare: {gemma: '@cf/google/gemma-4-26b-a4b-it',},
   openrouter: {
     deepseek: 'deepseek/deepseek-v3.2',
     gemma26: 'google/gemma-4-26b-a4b-it',

@@ -1,8 +1,5 @@
-
 -[ ] tool - update + create tools, allow many, array input
-
-## sidebar
--  
+-[ ] week - day dialog - center / pin to day
 
 ## future
 

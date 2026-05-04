@@ -43,7 +43,7 @@ function RouteComponent() {
           <header className="py-1 flex justify-between">
             <span className="x">App!</span>
             <nav>
-              <ul className="flex gap-4">
+              <ul className="flex gap-1">
                 <li>
                   <Link
                     to={lastCalView}
