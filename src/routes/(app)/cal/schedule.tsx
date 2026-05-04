@@ -70,6 +70,8 @@ function RouteComponent() {
       if (!map.has(dateKey)) map.set(dateKey, [])
       map.get(dateKey)!.push(ev)
     })
+    const todayKey = fmtDate(today)
+    if (!map.has(todayKey)) map.set(todayKey, [])
     return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b))
   }, [events])
 
@@ -188,11 +190,6 @@ function RouteComponent() {
       </div>
 
       <div className="h-[calc(100vh-180px)] overflow-y-auto scroll-smooth">
-        {sortedDates.length === 0 && (
-          <div className="text-sm text-gray-500 text-center py-8">
-            No events in range
-          </div>
-        )}
         {sortedDates.map(([dateStr, dayEvents]) => {
           const d = parseDate(dateStr)
           const isToday = isSameDay(d, today)
