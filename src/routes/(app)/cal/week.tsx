@@ -66,17 +66,60 @@ function DayPopover({
     <dialog
       ref={dialogRef}
       className="rounded-lg shadow-lg border border-gray-200 p-3 w-52 flex flex-col gap-1 backdrop:bg-black/20"
-      onCancel={(e) => { e.preventDefault(); onClose() }}
-      onClick={(e) => { if (e.target === dialogRef.current) onClose() }}
+      onCancel={(e) => {
+        e.preventDefault()
+        onClose()
+      }}
+      onClick={(e) => {
+        if (e.target === dialogRef.current) onClose()
+      }}
     >
       <div className="text-xs font-semibold text-gray-500 mb-1">{label}</div>
-        {allDayEvs.map((ev) =>
-          ev.type === 'todo' ? (
-            <div
-              key={ev.id}
-              className="text-xs bg-gray-100 text-gray-800 p-1 rounded flex items-center gap-1 cursor-pointer"
-              onClick={() => onEdit(ev)}
-            >
+      {allDayEvs.map((ev) =>
+        ev.type === 'todo' ? (
+          <div
+            key={ev.id}
+            className="text-xs bg-gray-100 text-gray-800 p-1 rounded flex items-center gap-1 cursor-pointer"
+            onClick={() => onEdit(ev)}
+          >
+            <input
+              type="checkbox"
+              checked={!!ev.completed}
+              className="shrink-0"
+              onChange={(e) => {
+                e.stopPropagation()
+                updateMutation.mutate({
+                  id: ev.id,
+                  begin: ev.begin ?? '',
+                  allDay: !ev.begin?.includes('T'),
+                  title: ev.title,
+                  detail: ev.detail ?? undefined,
+                  completed: e.target.checked,
+                })
+              }}
+              onClick={(e) => e.stopPropagation()}
+            />
+            <span className="truncate">{ev.title}</span>
+          </div>
+        ) : (
+          <div
+            key={ev.id}
+            className="text-xs bg-blue-100 text-blue-800 p-1 rounded truncate cursor-pointer hover:bg-blue-200"
+            onClick={() => onEdit(ev)}
+          >
+            {ev.title}
+          </div>
+        ),
+      )}
+      {timedEvs.map((ev) => (
+        <div key={ev.id} className="cursor-pointer" onClick={() => onEdit(ev)}>
+          <span className="text-[10px] text-gray-400 leading-tight block">
+            {ev.begin!.split('T')[1].slice(0, 5)}
+          </span>
+          <div
+            className={`text-xs p-1 rounded flex items-center gap-1 ${ev.type === 'todo' ? 'bg-gray-100 text-gray-800 hover:bg-gray-200' : 'hover:bg-gray-100'}`}
+          >
+            {ev.type === 'todo' && (
               <input
                 type="checkbox"
                 checked={!!ev.completed}
@@ -86,7 +129,7 @@ function DayPopover({
                   updateMutation.mutate({
                     id: ev.id,
                     begin: ev.begin ?? '',
-                    allDay: !ev.begin?.includes('T'),
+                    allDay: false,
                     title: ev.title,
                     detail: ev.detail ?? undefined,
                     completed: e.target.checked,
@@ -94,62 +137,20 @@ function DayPopover({
                 }}
                 onClick={(e) => e.stopPropagation()}
               />
-              <span className="truncate">{ev.title}</span>
-            </div>
-          ) : (
-            <div
-              key={ev.id}
-              className="text-xs bg-blue-100 text-blue-800 p-1 rounded truncate cursor-pointer hover:bg-blue-200"
-              onClick={() => onEdit(ev)}
-            >
-              {ev.title}
-            </div>
-          ),
-        )}
-        {timedEvs.map((ev) => (
-          <div
-            key={ev.id}
-            className="cursor-pointer"
-            onClick={() => onEdit(ev)}
-          >
-            <span className="text-[10px] text-gray-400 leading-tight block">
-              {ev.begin!.split('T')[1].slice(0, 5)}
-            </span>
-            <div
-              className={`text-xs p-1 rounded flex items-center gap-1 ${ev.type === 'todo' ? 'bg-gray-100 text-gray-800 hover:bg-gray-200' : 'hover:bg-gray-100'}`}
-            >
-              {ev.type === 'todo' && (
-                <input
-                  type="checkbox"
-                  checked={!!ev.completed}
-                  className="shrink-0"
-                  onChange={(e) => {
-                    e.stopPropagation()
-                    updateMutation.mutate({
-                      id: ev.id,
-                      begin: ev.begin ?? '',
-                      allDay: false,
-                      title: ev.title,
-                      detail: ev.detail ?? undefined,
-                      completed: e.target.checked,
-                    })
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              )}
-              <span className="block truncate">{ev.title}</span>
-            </div>
+            )}
+            <span className="block truncate">{ev.title}</span>
           </div>
-        ))}
-        <button
-          className="mt-auto pt-2 w-full text-xs text-gray-400 hover:text-gray-700 flex items-center justify-center gap-1 border-t border-gray-100"
-          onClick={() => {
-            onClose()
-            onCreateNew(dateStr)
-          }}
-        >
-          <span className="text-base leading-none">+</span> New event
-        </button>
+        </div>
+      ))}
+      <button
+        className="mt-auto pt-2 w-full text-xs text-gray-400 hover:text-gray-700 flex items-center justify-center gap-1 border-t border-gray-100"
+        onClick={() => {
+          onClose()
+          onCreateNew(dateStr)
+        }}
+      >
+        <span className="text-base leading-none">+</span> New event
+      </button>
     </dialog>
   )
 }
@@ -308,7 +309,7 @@ function RouteComponent() {
 
             const totalEvents = allDayEvs.length + timedEvs.length
             const fewEvents = totalEvents === 0
-            const MAX_VISIBLE = 4
+            const MAX_VISIBLE = 3
             const visibleAllDay = allDayEvs.slice(0, MAX_VISIBLE)
             const visibleTimed = timedEvs.slice(
               0,
