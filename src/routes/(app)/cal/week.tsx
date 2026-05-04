@@ -1,5 +1,4 @@
-import { useState, useMemo } from 'react'
-import { createPortal } from 'react-dom'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import CalViewSwitcher from '@/components/CalViewSwitcher'
 import { useQuery, useMutation } from '@tanstack/react-query'
@@ -71,23 +70,27 @@ function DayPopover({
     day: 'numeric',
   })
 
-  return createPortal(
-    <>
-      <div className="fixed inset-0 z-40" onMouseDown={() => onClose()} />
-      <div
-        style={{
-          position: 'fixed',
-          left,
-          top,
-          width: popW,
-          minHeight: popH,
-          zIndex: 50,
-          transformOrigin: `${centerX - left}px ${centerY - top}px`,
-          animation: 'day-pop-in 0.15s ease-out forwards',
-        }}
-        className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 flex flex-col gap-1"
-      >
-        <style>{`@keyframes day-pop-in { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }`}</style>
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  useEffect(() => {
+    dialogRef.current?.showModal()
+  }, [])
+
+  return (
+    <dialog
+      ref={dialogRef}
+      style={{
+        left,
+        top,
+        width: popW,
+        minHeight: popH,
+        transformOrigin: `${centerX - left}px ${centerY - top}px`,
+        animation: 'day-pop-in 0.15s ease-out forwards',
+      }}
+      className="fixed m-0 bg-white border border-gray-200 rounded-lg shadow-lg p-3 flex flex-col gap-1 backdrop:bg-transparent"
+      onCancel={(e) => { e.preventDefault(); onClose() }}
+      onClick={(e) => { if (e.target === dialogRef.current) onClose() }}
+    >
+      <style>{`@keyframes day-pop-in { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }`}</style>
         <div className="text-xs font-semibold text-gray-500 mb-1">{label}</div>
         {allDayEvs.map((ev) =>
           ev.type === 'todo' ? (
@@ -150,9 +153,7 @@ function DayPopover({
         >
           <span className="text-base leading-none">+</span> New event
         </button>
-      </div>
-    </>,
-    document.body,
+    </dialog>
   )
 }
 
@@ -296,6 +297,7 @@ function RouteComponent() {
                     checked={!!ev.completed}
                     className="shrink-0"
                     onChange={(e) => {
+                      if (!fewEvents) return
                       e.stopPropagation()
                       updateMutation.mutate({
                         id: ev.id,
@@ -306,7 +308,9 @@ function RouteComponent() {
                         completed: e.target.checked,
                       })
                     }}
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      if (fewEvents) e.stopPropagation()
+                    }}
                   />
                   <span className="truncate">{ev.title}</span>
                 </div>
