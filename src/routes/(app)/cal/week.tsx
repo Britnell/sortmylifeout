@@ -116,8 +116,27 @@ function DayPopover({
               {ev.begin!.split('T')[1].slice(0, 5)}
             </span>
             <div
-              className={`text-xs p-1 rounded ${ev.type === 'todo' ? 'bg-gray-100 text-gray-800 hover:bg-gray-200' : 'hover:bg-gray-100'}`}
+              className={`text-xs p-1 rounded flex items-center gap-1 ${ev.type === 'todo' ? 'bg-gray-100 text-gray-800 hover:bg-gray-200' : 'hover:bg-gray-100'}`}
             >
+              {ev.type === 'todo' && (
+                <input
+                  type="checkbox"
+                  checked={!!ev.completed}
+                  className="shrink-0"
+                  onChange={(e) => {
+                    e.stopPropagation()
+                    updateMutation.mutate({
+                      id: ev.id,
+                      begin: ev.begin ?? '',
+                      allDay: false,
+                      title: ev.title,
+                      detail: ev.detail ?? undefined,
+                      completed: e.target.checked,
+                    })
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              )}
               <span className="block truncate">{ev.title}</span>
             </div>
           </div>
@@ -274,21 +293,7 @@ function RouteComponent() {
                     type="checkbox"
                     checked={!!ev.completed}
                     className="shrink-0"
-                    onChange={(e) => {
-                      if (!fewEvents) return
-                      e.stopPropagation()
-                      updateMutation.mutate({
-                        id: ev.id,
-                        begin: ev.begin ?? '',
-                        allDay: !ev.begin?.includes('T'),
-                        title: ev.title,
-                        detail: ev.detail ?? undefined,
-                        completed: e.target.checked,
-                      })
-                    }}
-                    onClick={(e) => {
-                      if (fewEvents) e.stopPropagation()
-                    }}
+                    readOnly
                   />
                   <span className="truncate">{ev.title}</span>
                 </div>
@@ -336,8 +341,16 @@ function RouteComponent() {
                         {ev.begin!.split('T')[1].slice(0, 5)}
                       </span>
                       <div
-                        className={`text-xs p-1 rounded overflow-hidden ${ev.type === 'todo' ? 'bg-gray-100 text-gray-800' : ''}`}
+                        className={`text-xs p-1 rounded overflow-hidden ${ev.type === 'todo' ? 'bg-gray-100 text-gray-800 flex items-center gap-1' : ''}`}
                       >
+                        {ev.type === 'todo' && (
+                          <input
+                            type="checkbox"
+                            checked={!!ev.completed}
+                            className="shrink-0"
+                            readOnly
+                          />
+                        )}
                         <span className="block truncate">{ev.title}</span>
                       </div>
                     </div>
