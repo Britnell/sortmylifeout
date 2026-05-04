@@ -189,7 +189,7 @@ function RouteComponent() {
 
       <div className="h-[calc(100vh-180px)] overflow-y-auto scroll-smooth">
         {sortedDates.length === 0 && (
-          <div className="text-sm text-gray-400 text-center py-8">
+          <div className="text-sm text-gray-500 text-center py-8">
             No events in range
           </div>
         )}
@@ -206,28 +206,29 @@ function RouteComponent() {
           return (
             <div
               key={dateStr}
-              className={`border-b py-3 px-2 ${isToday ? 'bg-blue-50/50' : ''}`}
+              className={`xx border-b py-3 px-2 ${isToday ? 'bg-blue-300' : ''}`}
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span
-                    className={`text-sm font-semibold ${isToday ? 'text-blue-600' : 'text-gray-900'}`}
+                    className={`text-sm font-semibold ${isToday ? '' : ' '}`}
                   >
                     {d.toLocaleDateString('default', { weekday: 'long' })}
                   </span>
                   <span
-                    className={`text-sm font-semibold ${isToday ? 'text-blue-600' : 'text-gray-900'}`}
+                    className={`text-sm font-semibold ${isToday ? '' : ' '}`}
                   >
                     {ordinal(d.getDate())}
                   </span>
-                  {(() => {
-                    const rel = getRelativeLabel(d, today)
-                    return rel ? (
-                      <span className="text-xs text-gray-400">{rel}</span>
-                    ) : null
-                  })()}
                 </div>
-                <span className="text-xs text-gray-400">
+                {(() => {
+                  const rel = getRelativeLabel(d, today)
+                  return rel ? (
+                    <span className="text-sm text-gray-500">{rel}</span>
+                  ) : null
+                })()}
+
+                <span className="text-sm text-gray-500">
                   {d.toLocaleDateString('default', { month: 'long' })}
                 </span>
               </div>
@@ -235,7 +236,7 @@ function RouteComponent() {
                 {allDayEvs.map(renderEvent)}
                 {timedEvs.map((ev) => (
                   <div key={ev.id} className="flex gap-2">
-                    <div className="text-xs text-gray-400 w-12 shrink-0 pt-2">
+                    <div className="text-xs text-gray-500 w-12 shrink-0 pt-2">
                       {ev.begin!.split('T')[1].slice(0, 5)}
                     </div>
                     <div className="flex-1">
