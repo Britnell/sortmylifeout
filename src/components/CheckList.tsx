@@ -57,8 +57,8 @@ const LABELS: Record<
   }
 > = {
   todo: {
-    unscheduled: 'Todos',
-    newButton: '+ New Todo',
+    unscheduled: 'Items',
+    newButton: '+ New Item',
     emptyUnscheduled: 'No outstanding todos.',
     emptyUpcoming: 'No upcoming todos.',
     emptyDone: 'No completed todos.',
@@ -196,28 +196,37 @@ export default function CheckList({
           onChange={(e) => setTab(e.target.value as typeof tab)}
           className="w-full mb-4 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <option value="unscheduled">{labels.unscheduled}</option>
-          <option value="upcoming">Planned</option>
+          <option value="unscheduled">Items</option>
+          <option value="upcoming">Scheduled</option>
           <option value="done">Finished</option>
         </select>
       ) : (
         <div className="flex justify-between items-center mb-4">
-          <div className="flex gap-2">
+          <select
+            value={tab}
+            onChange={(e) => setTab(e.target.value as typeof tab)}
+            className="sm:hidden px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="unscheduled">Items</option>
+            <option value="upcoming">Scheduled</option>
+            <option value="done">Finished</option>
+          </select>
+          <div className="hidden sm:flex border border-gray-300 rounded-md overflow-hidden">
             <button
               onClick={() => setTab('unscheduled')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'unscheduled' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 '}`}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${tab === 'unscheduled' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
             >
-              {labels.unscheduled}
+              Items
             </button>
             <button
               onClick={() => setTab('upcoming')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'upcoming' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 '}`}
+              className={`px-4 py-2 text-sm font-medium transition-colors border-l border-gray-300 ${tab === 'upcoming' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
             >
-              Planned
+              Scheduled
             </button>
             <button
               onClick={() => setTab('done')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md ${tab === 'done' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 '}`}
+              className={`px-4 py-2 text-sm font-medium transition-colors border-l border-gray-300 ${tab === 'done' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
             >
               Finished
             </button>
@@ -345,13 +354,14 @@ export default function CheckList({
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
-                        saveEditing(ev)
+                        deleteMutation.mutate(ev.id)
                       }}
-                      disabled={updateMutation.isPending}
-                      className="px-3 py-1 text-xs font-medium bg-blue-600 text-white rounded-md disabled:opacity-50"
+                      disabled={deleteMutation.isPending}
+                      className="mr-auto px-3 py-1 text-xs font-medium text-red-500 hover:text-red-700 disabled:opacity-50"
                     >
-                      {updateMutation.isPending ? 'Saving…' : 'Save'}
+                      Delete
                     </button>
+
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
@@ -364,12 +374,12 @@ export default function CheckList({
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
-                        deleteMutation.mutate(ev.id)
+                        saveEditing(ev)
                       }}
-                      disabled={deleteMutation.isPending}
-                      className="ml-auto px-3 py-1 text-xs font-medium text-red-500 hover:text-red-700 disabled:opacity-50"
+                      disabled={updateMutation.isPending}
+                      className="px-3 py-1 text-xs font-medium bg-blue-600 text-white rounded-md disabled:opacity-50"
                     >
-                      Delete
+                      {updateMutation.isPending ? 'Saving…' : 'Save'}
                     </button>
                   </div>
                 </div>
@@ -389,6 +399,15 @@ export default function CheckList({
                 onChange={(e) =>
                   setCreatingDraft({ ...creatingDraft, title: e.target.value })
                 }
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && creatingDraft.title.trim()) {
+                    createMutation.mutate({
+                      title: creatingDraft.title.trim(),
+                      detail: creatingDraft.detail.trim() || undefined,
+                      begin: buildBegin(creatingDraft.date, creatingDraft.time),
+                    })
+                  }
+                }}
                 placeholder="Title"
                 className="flex-1 min-w-0 text-sm font-medium bg-transparent border-b border-blue-400 focus:outline-none py-0.5 placeholder:text-gray-300"
               />
