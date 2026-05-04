@@ -73,7 +73,11 @@ function RouteComponent() {
                 </li>
               </ul>
             </nav>
-            <Link to="/profile" aria-label="Profile">
+            <Link
+              to="/profile"
+              aria-label="Profile"
+              className="px-2 grid place-items-center"
+            >
               <Icon name="hamburger" size={22} />
             </Link>
           </header>

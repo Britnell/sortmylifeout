@@ -233,7 +233,7 @@ function RouteComponent() {
                 {allDayEvs.map(renderEvent)}
                 {timedEvs.map((ev) => (
                   <div key={ev.id} className="flex gap-2">
-                    <div className="text-xs text-gray-500 w-12 shrink-0 pt-2">
+                    <div className="text-xs text-gray-500 shrink-0 pt-2">
                       {ev.begin!.split('T')[1].slice(0, 5)}
                     </div>
                     <div className="flex-1">

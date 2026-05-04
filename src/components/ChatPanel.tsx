@@ -13,7 +13,11 @@ type EventRow = {
   [key: string]: unknown
 }
 
-const TYPE_ICON: Record<string, string> = { event: '📅', todo: '☑', shopping: '🛒' }
+const TYPE_ICON: Record<string, string> = {
+  event: '📅',
+  todo: '☑',
+  shopping: '🛒',
+}
 
 function EventCard({
   item,
@@ -23,15 +27,18 @@ function EventCard({
   action: 'created' | 'updated'
 }) {
   const icon = TYPE_ICON[item.type] ?? '•'
-  const dateStr = item.end && item.end !== item.begin
-    ? `${item.begin} → ${item.end}`
-    : item.begin ?? null
+  const dateStr =
+    item.end && item.end !== item.begin
+      ? `${item.begin} → ${item.end}`
+      : (item.begin ?? null)
 
   return (
     <div className="mt-1.5 px-2.5 py-2 bg-blue-50 border border-blue-100 rounded-lg text-xs flex items-start gap-2">
       <span className="text-sm leading-none mt-0.5">{icon}</span>
       <div className="min-w-0 flex-1">
-        <div className="font-medium text-gray-800 truncate">{item.title ?? '(untitled)'}</div>
+        <div className="font-medium text-gray-800 truncate">
+          {item.title ?? '(untitled)'}
+        </div>
         {dateStr && <div className="text-gray-500 mt-0.5">{dateStr}</div>}
       </div>
       <span className="text-gray-400 shrink-0 capitalize">{action}</span>
@@ -129,8 +136,6 @@ export function ChatPanel() {
 
   const hasMessages = messages.length > 0
 
-  console.log(messages)
-
   return (
     <div className="fixed bottom-0 right-0 left-0 sm:left-auto sm:right-6 sm:w-96 z-50 flex flex-col shadow-2xl rounded-t-xl overflow-hidden border border-gray-200 bg-white">
       {/* Collapsed tab — only when there are messages and panel is collapsed */}
@@ -212,7 +217,11 @@ export function ChatPanel() {
                           return (
                             <div key={idx}>
                               {items.map((item, i) => (
-                                <EventCard key={i} item={item} action={action} />
+                                <EventCard
+                                  key={i}
+                                  item={item}
+                                  action={action}
+                                />
                               ))}
                             </div>
                           )

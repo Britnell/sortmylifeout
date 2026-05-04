@@ -1,8 +1,6 @@
--[ ] tool - update + create tools, allow many, array input
 -[ ] week - day dialog - center / pin to day
+-[ ] cr up on event dialog are optimistic (or so). but our ai tool call updates are no longer reactive. when a tool call is made to upd/create evetns, then after we need to refetch events usequery
 
 ## future
 
 - TTS - ai tool - resp will be read in FE w browser api
-- ai event dispaly - when ai updates / responds w an event, can we disaply it as a lil card in chat ui? w a link to view that event in new page / ui
-- that implies an event.$id route
