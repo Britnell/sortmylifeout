@@ -113,46 +113,9 @@ export function ChatPanel() {
           />
         )}
 
-        <div className="flex flex-col-reverse min-[500px]:flex-row items-center gap-2 px-2 py-1.5">
-          <nav className="flex gap-0.5 shrink-0 ">
-            <Link
-              to={lastCalView}
-              title="Calendar"
-              className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${isCal ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
-            >
-              <Icon name="calendar" />
-            </Link>
-            <Link
-              to="/todo"
-              title="Todo"
-              className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${isTodo ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
-            >
-              <Icon name="todo" />
-            </Link>
-            <Link
-              to="/shopping"
-              title="Shopping"
-              className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${isShopping ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
-            >
-              <Icon name="shopping" />
-            </Link>
-          </nav>
-
-          {/*<div className="w-px h-6 bg-gray-200 shrink-0" />*/}
-
-          <form
-            onSubmit={handleSubmit}
-            className={`flex-1 w-full flex items-center gap-1.5 rounded-xl px-1 ${isActive ? 'bg-gray-50 ring-1 ring-gray-200' : ''}`}
-          >
-            <button
-              type="button"
-              onClick={toggleListening}
-              className={`shrink-0 flex items-center justify-center w-8 h-8 rounded-full transition-colors ${isListening ? 'bg-red-500 text-white' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
-              aria-label={isListening ? 'Stop listening' : 'Voice input'}
-            >
-              🎤
-            </button>
-
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          {/* Mobile only: input gets its own top row */}
+          <div className="flex min-[500px]:hidden items-center px-2 pt-1.5 pb-0.5">
             <input
               type="text"
               value={input}
@@ -160,15 +123,65 @@ export function ChatPanel() {
               onFocus={() => setIsInputFocused(true)}
               onBlur={() => setIsInputFocused(false)}
               placeholder="Ask anything…"
-              className="flex-1 min-w-0 py-1.5 text-sm bg-transparent focus:outline-none placeholder:text-gray-400 text-gray-800"
+              className="flex-1 min-w-0 py-2 px-3 text-sm bg-gray-50 ring-1 ring-gray-200 rounded-xl focus:outline-none placeholder:text-gray-400 text-gray-800"
+            />
+          </div>
+
+          {/* Bar: mic + nav + (desktop: input) + send */}
+          <div className="flex items-center gap-1.5 px-2 py-1.5">
+            {/* Mic: after nav on mobile, after input on desktop */}
+            <button
+              type="button"
+              onClick={toggleListening}
+              className={`shrink-0 flex items-center justify-center w-8 h-8 rounded-full transition-colors order-2 min-[500px]:order-3 ${isListening ? 'bg-red-500 text-white' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+              aria-label={isListening ? 'Stop listening' : 'Voice input'}
+            >
+              🎤
+            </button>
+
+            {/* Nav: first always */}
+            <nav className="flex gap-0.5 shrink-0 order-1">
+              <Link
+                to={lastCalView}
+                title="Calendar"
+                className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${isCal ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
+              >
+                <Icon name="calendar" />
+              </Link>
+              <Link
+                to="/todo"
+                title="Todo"
+                className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${isTodo ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
+              >
+                <Icon name="todo" />
+              </Link>
+              <Link
+                to="/shopping"
+                title="Shopping"
+                className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${isShopping ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
+              >
+                <Icon name="shopping" />
+              </Link>
+            </nav>
+
+            {/* Desktop only: input fills remaining space */}
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => setIsInputFocused(false)}
+              placeholder="Ask anything…"
+              className={`hidden min-[500px]:block flex-1 min-w-0 py-1.5 px-2 text-sm rounded-xl focus:outline-none placeholder:text-gray-400 text-gray-800 min-[500px]:order-2 ${isActive ? 'bg-gray-50 ring-1 ring-gray-200' : 'bg-transparent'}`}
             />
 
+            {/* Send/Stop: last in bar */}
             {isActive &&
               (isLoading ? (
                 <button
                   type="button"
                   onClick={stop}
-                  className="shrink-0 px-3 py-1.5 text-xs bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors font-medium"
+                  className="shrink-0 px-3 py-1.5 text-xs bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors font-medium order-3 min-[500px]:order-4"
                 >
                   Stop
                 </button>
@@ -176,13 +189,13 @@ export function ChatPanel() {
                 <button
                   type="submit"
                   disabled={!input.trim()}
-                  className="shrink-0 px-3 py-1.5 text-xs bg-blue-600 text-white rounded-full disabled:opacity-30 hover:bg-blue-700 transition-colors font-medium"
+                  className="shrink-0 px-3 py-1.5 text-xs bg-blue-600 text-white rounded-full disabled:opacity-30 hover:bg-blue-700 transition-colors font-medium order-3 min-[500px]:order-4"
                 >
                   Send
                 </button>
               ))}
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   )
