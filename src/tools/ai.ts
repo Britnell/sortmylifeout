@@ -88,6 +88,9 @@ all items have a 'title' + optional 'detail' col for extra info, address, links 
 Today's date: ${d.toDateString()} ${d.toTimeString()} (UTC)
 'week' refers to a calendar week from Mo - Su
 Current user_id: ${userId} — always filter queries for the user_id and set this on new events.
+
+## Display tool
+When you call display_events, keep your text response to a short summary (e.g. "You have 2 events and a todo tomorrow"). Never list the individual item titles, times, or details in text — those are already shown in the display.
 `
 }
 
