@@ -40,6 +40,16 @@ function ordinal(n: number): string {
   return n + (s[(v - 20) % 10] ?? s[v] ?? s[0])
 }
 
+function getDuration(begin: string, end: string): string {
+  const diffMin = Math.round(
+    (new Date(end).getTime() - new Date(begin).getTime()) / 60000,
+  )
+  if (diffMin < 60) return `${diffMin}m`
+  const h = Math.floor(diffMin / 60)
+  const m = diffMin % 60
+  return m ? `${h}h ${m}m` : `${h}h`
+}
+
 function parseDate(dateStr: string): Date {
   const [y, m, d] = dateStr.split('-').map(Number)
   return new Date(y, m - 1, d)
@@ -228,48 +238,46 @@ function RouteComponent() {
               <div className="space-y-1">
                 {allDayEvs.map(renderEvent)}
                 {timedEvs.map((ev) => (
-                  <div key={ev.id} className="flex gap-2">
-                    <div className="text-xs text-gray-500 shrink-0 pt-2">
+                  <div key={ev.id}>
+                    <div className="text-xs text-gray-500 mb-0.5">
                       {ev.begin!.split('T')[1].slice(0, 5)}
                     </div>
-                    <div className="flex-1">
-                      {ev.type === 'todo' ? (
-                        <div
-                          className="text-sm bg-gray-100 text-gray-800 p-2 rounded flex items-center gap-2 cursor-pointer hover:bg-gray-200"
-                          onClick={(e) => openEdit(ev, e)}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={!!ev.completed}
-                            className="shrink-0"
-                            onChange={(e) => {
-                              updateMutation.mutate({
-                                id: ev.id,
-                                begin: ev.begin ?? '',
-                                allDay: false,
-                                title: ev.title,
-                                detail: ev.detail ?? undefined,
-                                completed: e.target.checked,
-                              })
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                          <span>{ev.title}</span>
-                        </div>
-                      ) : (
-                        <div
-                          className="text-sm bg-blue-100 text-blue-800 p-2 rounded cursor-pointer hover:bg-blue-200"
-                          onClick={(e) => openEdit(ev, e)}
-                        >
-                          <div className="font-medium">{ev.title}</div>
-                          {ev.end?.includes('T') && (
-                            <div className="text-xs text-blue-600">
-                              to {ev.end.split('T')[1].slice(0, 5)}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    {ev.type === 'todo' ? (
+                      <div
+                        className="text-sm bg-gray-100 text-gray-800 p-2 rounded flex items-center gap-2 cursor-pointer hover:bg-gray-200"
+                        onClick={(e) => openEdit(ev, e)}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={!!ev.completed}
+                          className="shrink-0"
+                          onChange={(e) => {
+                            updateMutation.mutate({
+                              id: ev.id,
+                              begin: ev.begin ?? '',
+                              allDay: false,
+                              title: ev.title,
+                              detail: ev.detail ?? undefined,
+                              completed: e.target.checked,
+                            })
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <span>{ev.title}</span>
+                      </div>
+                    ) : (
+                      <div
+                        className="text-sm bg-blue-100 text-blue-800 p-2 rounded cursor-pointer hover:bg-blue-200"
+                        onClick={(e) => openEdit(ev, e)}
+                      >
+                        <div className="font-medium">{ev.title}</div>
+                        {ev.begin && ev.end?.includes('T') && (
+                          <div className="text-xs text-blue-600">
+                            {getDuration(ev.begin, ev.end)}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
