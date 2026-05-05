@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useChat, fetchServerSentEvents } from '@tanstack/ai-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSpeechRecognition } from '../lib/useSpeechRecognition'
-import { Link, useMatchRoute } from '@tanstack/react-router'
+import { Link, useMatchRoute, useLocation } from '@tanstack/react-router'
 import { useLocalStorage } from '../lib/useLocalStorage'
 import Icon from './Icon'
 import type { CalView } from './CalViewSwitcher'
@@ -13,7 +13,8 @@ export function ChatPanel() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const matchRoute = useMatchRoute()
-  const isCal = matchRoute({ to: '/cal/$all' })
+  const location = useLocation()
+  const isCal = location.pathname.startsWith('/cal')
   const isTodo = matchRoute({ to: '/todo' })
   const isShopping = matchRoute({ to: '/shopping' })
   const [lastCalView] = useLocalStorage<CalView>('cal-last-view', '/cal/week')

@@ -39,7 +39,7 @@ function RouteComponent() {
               aria-label="Profile"
               className="px-2 grid place-items-center"
             >
-              <Icon name="hamburger" size={22} />
+              <Icon name="hamburger" />
             </Link>
           </header>
           {data && <Outlet />}

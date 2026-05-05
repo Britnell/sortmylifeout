@@ -70,7 +70,7 @@ export function createAuth() {
           verify: ({ hash, password }) => verifyPassword(hash, password),
         },
       },
-    })
+    }) as ReturnType<typeof betterAuth>
   }
   return authInstance
 }
@@ -80,7 +80,7 @@ export type Auth = ReturnType<typeof createAuth>
 export async function getSessionUser() {
   const request = getRequest()
   const session = await createAuth().api.getSession({
-    headers: request.headers,
+    headers: request!.headers,
   })
   return session?.user ?? null
 }

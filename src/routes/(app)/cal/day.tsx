@@ -10,7 +10,7 @@ import {
 } from '@/serverFn/queries.functions'
 import CalendarEventDialog from '@/components/CalendarEventDialog'
 import type { CalendarEvent } from '@/components/CalendarEventDialog'
-import { fmtDate, isSameDay } from '#/lib/date'
+import { isSameDay } from '#/lib/date'
 
 export const Route = createFileRoute('/(app)/cal/day')({
   component: RouteComponent,
