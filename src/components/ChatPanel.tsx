@@ -10,6 +10,7 @@ import type { CalView } from './CalViewSwitcher'
 export function ChatPanel() {
   const [input, setInput] = useState('')
   const [expanded, setExpanded] = useState(false)
+  const [isInputFocused, setIsInputFocused] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const matchRoute = useMatchRoute()
@@ -75,47 +76,47 @@ export function ChatPanel() {
   }, [messages, expanded])
 
   const hasMessages = messages.length > 0
-
-  console.log(messages)
+  const isActive = isInputFocused || input.trim().length > 0 || hasMessages
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-2 py-2">
-      <div className="flex flex-wrap gap-2 shadow-2xl rounded-xl overflow-hidden border border-gray-200 bg-white max-w-full">
+    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-3 pb-3">
+      <div className="w-full max-w-2xl flex flex-col shadow-2xl rounded-2xl overflow-hidden border border-gray-200 bg-white">
+
         {/* Collapsed tab — only when there are messages and panel is collapsed */}
         {hasMessages && !expanded && (
           <button
             onClick={() => setExpanded(true)}
-            className="w-full flex items-center justify-between px-4 py-2.5 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
+            className="flex items-center justify-between px-4 py-2 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors"
           >
             <span>Assistant</span>
-            <span className="text-xs opacity-75">▴</span>
+            <span className="opacity-75">▴</span>
           </button>
         )}
 
         {/* Messages — only shown when expanded */}
         {expanded && hasMessages && (
-          <div className="w-full border-b border-gray-200">
-            <div className="flex justify-between px-2 pt-2 bg-white">
+          <div className="border-b border-gray-100">
+            <div className="flex justify-between items-center px-3 pt-2 pb-1">
               <button
                 onClick={() => {
                   setMessages([])
                   setExpanded(false)
                   lastHandledToolCallId.current = null
                 }}
-                className="text-gray-400 hover:text-gray-600 text-xs px-1"
+                className="text-gray-400 hover:text-gray-600 text-xs"
                 aria-label="New chat"
               >
                 New chat
               </button>
               <button
                 onClick={() => setExpanded(false)}
-                className="text-gray-400 hover:text-gray-600 text-sm px-1"
+                className="text-gray-400 hover:text-gray-600 text-sm"
                 aria-label="Close"
               >
                 ✕
               </button>
             </div>
-            <div className="overflow-y-auto max-h-80 px-4 pb-4 flex flex-col gap-3 bg-white">
+            <div className="overflow-y-auto max-h-72 px-3 pb-3 flex flex-col gap-3">
               {messages.map((message, idx) => (
                 <div
                   key={message.id}
@@ -232,69 +233,74 @@ export function ChatPanel() {
           </div>
         )}
 
-        {/* Input and navigation — flex wrap for responsive layout */}
-        <div className="flex flex-wrap gap-4 py-2 w-full border-t border-gray-200">
-          {/* Navigation buttons */}
-          <nav className="flex-[0_0_auto] flex gap-1 px-2 items-center">
-            <ul className="flex gap-1">
-              <li>
-                <Link
-                  to={lastCalView}
-                  className={`flex items-center gap-1 rounded px-2 py-1 transition-colors ${isCal ? 'bg-blue-400 text-white' : 'hover:bg-gray-100'}`}
-                >
-                  <Icon name="calendar" />
-                  <span className="text-sm">Calendar</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/todo"
-                  className={`flex items-center gap-1 rounded px-2 py-1 transition-colors ${isTodo ? 'bg-blue-400 text-white' : 'hover:bg-gray-100'}`}
-                >
-                  <Icon name="todo" />
-                  <span className="text-sm">Todo</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shopping"
-                  className={`flex items-center gap-1 rounded px-2 py-1 transition-colors ${isShopping ? 'bg-blue-400 text-white' : 'hover:bg-gray-100'}`}
-                >
-                  <Icon name="shopping" />
-                  <span className="text-sm">Shopping</span>
-                </Link>
-              </li>
-            </ul>
+        {/* Bottom bar: nav + chat input — single row */}
+        <div className="flex items-center gap-2 px-2 py-1.5">
+
+          {/* Navigation — icons only */}
+          <nav className="flex gap-0.5 shrink-0">
+            <Link
+              to={lastCalView}
+              title="Calendar"
+              className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${isCal ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
+            >
+              <Icon name="calendar" />
+            </Link>
+            <Link
+              to="/todo"
+              title="Todo"
+              className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${isTodo ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
+            >
+              <Icon name="todo" />
+            </Link>
+            <Link
+              to="/shopping"
+              title="Shopping"
+              className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${isShopping ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
+            >
+              <Icon name="shopping" />
+            </Link>
           </nav>
 
-          {/* Input — hidden when collapsed with messages */}
-          {(!hasMessages || expanded) && (
-            <form
-              onSubmit={handleSubmit}
-              className="flex-[1_0_auto] flex gap-2 px-3 flex-1 min-w-64"
+          {/* Divider */}
+          <div className="w-px h-6 bg-gray-200 shrink-0" />
+
+          {/* Chat form */}
+          <form
+            onSubmit={handleSubmit}
+            className={`flex-1 flex items-center gap-1.5 min-w-0 rounded-xl px-1 transition-all ${isActive ? 'bg-gray-50 ring-1 ring-gray-200' : ''}`}
+          >
+            {/* Mic — always visible, left of input */}
+            <button
+              type="button"
+              onClick={toggleListening}
+              className={`shrink-0 flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
+                isListening
+                  ? 'bg-red-500 text-white'
+                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+              }`}
+              aria-label={isListening ? 'Stop listening' : 'Voice input'}
             >
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type a message..."
-                className="flex-1 px-3 py-1.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                type="button"
-                onClick={toggleListening}
-                className={`px-2 py-1.5 text-sm rounded-lg transition-colors ${isListening ? 'bg-red-500 text-white hover:bg-red-600' : 'text-gray-400 hover:text-gray-600'}`}
-                aria-label={
-                  isListening ? 'Stop listening' : 'Start voice input'
-                }
-              >
-                🎤
-              </button>
-              {isLoading ? (
+              🎤
+            </button>
+
+            {/* Text input */}
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => setIsInputFocused(false)}
+              placeholder="Ask anything…"
+              className="flex-1 min-w-0 py-1.5 text-sm bg-transparent focus:outline-none placeholder:text-gray-400 text-gray-800"
+            />
+
+            {/* Send / Stop — only visible when active */}
+            {isActive && (
+              isLoading ? (
                 <button
                   type="button"
                   onClick={stop}
-                  className="px-4 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  className="shrink-0 px-3 py-1.5 text-xs bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors font-medium"
                 >
                   Stop
                 </button>
@@ -302,13 +308,13 @@ export function ChatPanel() {
                 <button
                   type="submit"
                   disabled={!input.trim()}
-                  className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50 hover:bg-blue-700 whitespace-nowrap"
+                  className="shrink-0 px-3 py-1.5 text-xs bg-blue-600 text-white rounded-full disabled:opacity-30 hover:bg-blue-700 transition-colors font-medium"
                 >
                   Send
                 </button>
-              )}
-            </form>
-          )}
+              )
+            )}
+          </form>
         </div>
       </div>
     </div>
