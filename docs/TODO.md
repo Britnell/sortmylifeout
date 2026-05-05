@@ -1,6 +1,9 @@
--[ ] week - day dialog - center / pin to day
--[ ] cr up on event dialog are optimistic (or so). but our ai tool call updates are no longer reactive. when a tool call is made to upd/create evetns, then after we need to refetch events usequery
-
-## future
-
-- TTS - ai tool - resp will be read in FE w browser api
+-[ ] week - todos dont hover underline, but entire element is clickable, like for event
+-[ ] menu tabs - on mob show on bottom
+-[ ] sidbar button - nicer position + hide on mob
+-[ ] PWA - (for all routes)
+-[ ] create + update on event dialog are optimistic (ish / auto update data). but our ai tool call updates are no longer reactive. when a tool call is made to upd/create evetns, then after we need to refetch events usequery
+-[ ] voice mode - dictation + tts reading answer 'client tool'
+-[ ]  (log) kysely:warning: outdated driver/plugin detected! `QueryResult.numUpdatedOrDeletedRows` has been replaced with `QueryResult.numAffectedRows`. / fix tsc + lint
+-[ ] todo - add finished date + time instead of boolean. then can show todos that were recently finished
+-[ ] calendar mobile layout

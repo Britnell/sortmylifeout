@@ -46,39 +46,7 @@ function EventCard({
   )
 }
 
-// Maps event row type → query key prefixes that hold those rows
-const TYPE_TO_QUERY_PREFIXES: Record<string, string[]> = {
-  event: ['searchEventsFn'],
-  todo: ['todos'],
-  shopping: ['shopping'],
-}
-
-function applyToolResultToCache(
-  queryClient: ReturnType<typeof useQueryClient>,
-  toolName: string,
-  output: unknown,
-) {
-  if (toolName === 'create_event' || toolName === 'update_event') {
-    const row = output as EventRow
-    const prefixes = TYPE_TO_QUERY_PREFIXES[row.type]
-    if (!prefixes) return
-
-    for (const prefix of prefixes) {
-      queryClient.setQueriesData<EventRow[]>({ queryKey: [prefix] }, (old) => {
-        if (!old) return old
-        if (toolName === 'create_event') {
-          return [...old, row]
-        }
-        // update_event: replace by id
-        return old.map((item) => (item.id === row.id ? row : item))
-      })
-    }
-    return
-  }
-
-  // Fallback for unknown tool names
-  queryClient.invalidateQueries()
-}
+const EVENT_MUTATING_TOOLS = new Set(['create_event', 'update_event'])
 
 export function ChatPanel() {
   const [input, setInput] = useState('')
@@ -116,7 +84,9 @@ export function ChatPanel() {
     if (toolCallPart.output === undefined) return
 
     lastHandledToolCallId.current = toolCallId
-    applyToolResultToCache(queryClient, toolCallPart.name, toolCallPart.output)
+    if (EVENT_MUTATING_TOOLS.has(toolCallPart.name)) {
+      queryClient.invalidateQueries({ queryKey: ['searchEventsFn'] })
+    }
   }, [messages, queryClient])
 
   const handleSubmit = (e: React.FormEvent) => {

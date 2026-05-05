@@ -62,7 +62,7 @@ function DayPopover({
   const dialogRef = useRef<HTMLDialogElement>(null)
   useEffect(() => {
     const dialog = dialogRef.current
-if (!dialog) return
+    if (!dialog) return
     dialog.showModal()
     dialog.style.margin = '0'
     dialog.style.position = 'fixed'
@@ -270,11 +270,11 @@ function RouteComponent() {
         <h2 className="text-xl font-semibold">{weekLabel}</h2>
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 sm:gap-1">
         {weekdays.map((day) => (
           <div
             key={day}
-            className="text-center font-medium p-2 rounded-t text-sm"
+            className="text-center font-medium p-2 text-gray-600 text-sm"
           >
             {day}
           </div>
@@ -302,7 +302,7 @@ function RouteComponent() {
                   <input
                     type="checkbox"
                     checked={!!ev.completed}
-                    className="shrink-0"
+                    className="shrink-0 hidden sm:inline"
                     readOnly
                   />
                   <span className="truncate">{ev.title}</span>
@@ -329,7 +329,7 @@ function RouteComponent() {
             return (
               <button
                 key={`${wi}-${i}`}
-                className={`group flex flex-col border p-2 min-h-[120px] rounded text-left w-full cursor-pointer ${isToday ? 'border-blue-500 bg-blue-50' : ''}`}
+                className={`group flex flex-col border border-gray-400 -mt-px -ml-px p-1 sm:p-2 min-h-[120px] sm:rounded text-left w-full cursor-pointer ${isToday ? ' bg-blue-200' : ''}`}
                 onClick={(e) => {
                   if (fewEvents) {
                     openCreate(dateStr)
@@ -358,7 +358,7 @@ function RouteComponent() {
                           <input
                             type="checkbox"
                             checked={!!ev.completed}
-                            className="shrink-0"
+                            className="shrink-0 hidden sm:inline "
                             readOnly
                           />
                         )}

@@ -1,4 +1,4 @@
-export const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+export const weekdays = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']
 
 export function getWeekDays(weekOffset: number): Date[] {
   const now = new Date()
