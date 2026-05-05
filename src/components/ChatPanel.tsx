@@ -92,7 +92,7 @@ export function ChatPanel() {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-3">
       <div
-        className={`mx-auto shadow-2xl rounded-2xl overflow-hidden border border-gray-200 bg-white transition-[width] duration-200 max-w-full ${isActive ? 'w-[540px]' : 'w-[320px]'}`}
+        className={`mx-auto shadow-2xl rounded-lg overflow-hidden border border-gray-200 bg-white transition-[width] duration-200 max-w-full ${isActive ? 'w-[540px]' : 'w-[320px]'}`}
       >
         {hasMessages && !expanded && (
           <button
@@ -117,13 +117,13 @@ export function ChatPanel() {
           {/* Mobile only: input gets its own top row */}
           <div className="flex min-[500px]:hidden items-center px-2 pt-1.5 pb-0.5">
             <input
-              type="text"
+              type="search"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onFocus={() => setIsInputFocused(true)}
               onBlur={() => setIsInputFocused(false)}
               placeholder="Ask anything…"
-              className="flex-1 min-w-0 py-2 px-3 text-sm bg-gray-50 ring-1 ring-gray-200 rounded-xl focus:outline-none placeholder:text-gray-400 text-gray-800"
+              className="flex-1 min-w-0 py-2 px-3 text-sm bg-gray-50 ring-1 ring-gray-200 rounded-lg focus:outline-none placeholder:text-gray-400 text-gray-800"
             />
           </div>
 
@@ -133,32 +133,32 @@ export function ChatPanel() {
             <button
               type="button"
               onClick={toggleListening}
-              className={`shrink-0 flex items-center justify-center w-8 h-8 rounded-full transition-colors order-2 min-[500px]:order-3 ${isListening ? 'bg-red-500 text-white' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+              className={`shrink-0 flex items-center justify-center w-8 h-8 rounded-lg transition-colors order-2 min-[500px]:order-3 ${isListening ? 'bg-red-500 text-white' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
               aria-label={isListening ? 'Stop listening' : 'Voice input'}
             >
               🎤
             </button>
 
             {/* Nav: first always */}
-            <nav className="flex gap-0.5 shrink-0 order-1">
+            <nav className="flex gap-0.5 shrink-0 order-1 mr-auto">
               <Link
                 to={lastCalView}
                 title="Calendar"
-                className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${isCal ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
+                className={`flex items-center justify-center w-10 h-9 rounded-lg transition-colors ${isCal ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
               >
                 <Icon name="calendar" />
               </Link>
               <Link
                 to="/todo"
                 title="Todo"
-                className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${isTodo ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
+                className={`flex items-center justify-center w-10 h-9 rounded-lg transition-colors ${isTodo ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
               >
                 <Icon name="todo" />
               </Link>
               <Link
                 to="/shopping"
                 title="Shopping"
-                className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors ${isShopping ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
+                className={`flex items-center justify-center w-10 h-9 rounded-lg transition-colors ${isShopping ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
               >
                 <Icon name="shopping" />
               </Link>
@@ -166,13 +166,13 @@ export function ChatPanel() {
 
             {/* Desktop only: input fills remaining space */}
             <input
-              type="text"
+              type="search"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onFocus={() => setIsInputFocused(true)}
               onBlur={() => setIsInputFocused(false)}
               placeholder="Ask anything…"
-              className={`hidden min-[500px]:block flex-1 min-w-0 py-1.5 px-2 text-sm rounded-xl focus:outline-none placeholder:text-gray-400 text-gray-800 min-[500px]:order-2 ${isActive ? 'bg-gray-50 ring-1 ring-gray-200' : 'bg-transparent'}`}
+              className={`hidden min-[500px]:block flex-1 min-w-0 py-1.5 px-2 text-sm rounded-lg focus:outline-none placeholder:text-gray-400 text-gray-800 min-[500px]:order-2 ${isActive ? 'bg-gray-50 ring-1 ring-gray-200' : 'bg-transparent'}`}
             />
 
             {/* Send/Stop: last in bar */}
