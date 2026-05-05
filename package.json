@@ -16,7 +16,8 @@
     "migration": "wrangler d1 execute sortinglifedb --file=src/db/migration.sql --remote",
     "deploy": "bun run build && wrangler deploy",
     "logs": "wrangler tail",
-    "secrets": "wrangler secret bulk .dev.vars"
+    "secrets": "wrangler secret bulk .dev.vars",
+    "doctor": "npx -y react-doctor . --verbose --yes --fail-on error"
   },
   "dependencies": {
     "@cloudflare/tanstack-ai": "^0.1.9",
@@ -58,6 +59,7 @@
     "@vitejs/plugin-react": "^6.0.1",
     "jsdom": "^28.1.0",
     "prettier": "^3.8.1",
+    "react-doctor": "^0.0.47",
     "typescript": "^5.7.2",
     "vite": "^8.0.0",
     "vitest": "^3.0.5",
