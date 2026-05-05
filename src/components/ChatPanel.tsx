@@ -18,6 +18,23 @@ export function ChatPanel() {
   const [expanded, setExpanded] = useState(false)
   const [isInputFocused, setIsInputFocused] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleFocus = () => {
+    if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current)
+    setIsInputFocused(true)
+  }
+
+  const handleBlur = () => {
+    blurTimeoutRef.current = setTimeout(() => setIsInputFocused(false), 600)
+  }
+
+  useEffect(
+    () => () => {
+      if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current)
+    },
+    [],
+  )
 
   const matchRoute = useMatchRoute()
   const location = useLocation()
@@ -90,7 +107,7 @@ export function ChatPanel() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-3">
+    <div className="fixed bottom-0 left-0 right-0 z-50 px-3 sm:pb-3">
       <div
         className={`mx-auto shadow-2xl rounded-lg overflow-hidden border border-gray-200 bg-white transition-[width] duration-200 max-w-full ${isActive ? 'w-[540px]' : 'w-[320px]'}`}
       >
@@ -120,8 +137,8 @@ export function ChatPanel() {
               type="search"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               placeholder="Ask anything…"
               className="flex-1 min-w-0 py-2 px-3 text-sm bg-gray-50 ring-1 ring-gray-200 rounded-lg focus:outline-none placeholder:text-gray-400 text-gray-800"
             />
@@ -169,8 +186,8 @@ export function ChatPanel() {
               type="search"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
               placeholder="Ask anything…"
               className={`hidden min-[500px]:block flex-1 min-w-0 py-1.5 px-2 text-sm rounded-lg focus:outline-none placeholder:text-gray-400 text-gray-800 min-[500px]:order-2 ${isActive ? 'bg-gray-50 ring-1 ring-gray-200' : 'bg-transparent'}`}
             />
