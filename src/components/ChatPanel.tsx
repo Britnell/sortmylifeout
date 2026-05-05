@@ -90,9 +90,9 @@ export function ChatPanel() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-3 pb-3">
+    <div className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-3">
       <div
-        className={`flex flex-col shadow-2xl rounded-2xl overflow-hidden border border-gray-200 bg-white transition-[width] duration-200 max-w-full ${isActive ? 'w-[540px]' : 'w-[320px]'}`}
+        className={`mx-auto shadow-2xl rounded-2xl overflow-hidden border border-gray-200 bg-white transition-[width] duration-200 max-w-full ${isActive ? 'w-[540px]' : 'w-[320px]'}`}
       >
         {hasMessages && !expanded && (
           <button
