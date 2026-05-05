@@ -1,6 +1,5 @@
 -[ ] todo - add finished date + time instead of boolean. then can show todos that were recently finished
--[ ] PWA - (for all routes)
--[ ] create + update on event dialog are optimistic (ish / auto update data). but our ai tool call updates are no longer reactive. when a tool call is made to upd/create evetns, then after we need to refetch events usequery
+-[ ] chat reply - render basic markdown (SAFE)
 -[ ] voice mode - dictation + tts reading answer 'client tool'
 -[ ]  (log) kysely:warning: outdated driver/plugin detected! `QueryResult.numUpdatedOrDeletedRows` has been replaced with `QueryResult.numAffectedRows`. / fix tsc + lint
 
