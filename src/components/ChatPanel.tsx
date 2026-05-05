@@ -80,7 +80,7 @@ export function ChatPanel() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-3 pb-3">
-      <div className="w-full max-w-2xl flex flex-col shadow-2xl rounded-2xl overflow-hidden border border-gray-200 bg-white">
+      <div className={`flex flex-col shadow-2xl rounded-2xl overflow-hidden border border-gray-200 bg-white transition-[width] duration-200 max-w-full ${isActive ? 'w-[640px]' : 'w-[320px]'}`}>
 
         {/* Collapsed tab — only when there are messages and panel is collapsed */}
         {hasMessages && !expanded && (
@@ -267,7 +267,7 @@ export function ChatPanel() {
           {/* Chat form */}
           <form
             onSubmit={handleSubmit}
-            className={`flex-1 flex items-center gap-1.5 min-w-0 rounded-xl px-1 transition-all ${isActive ? 'bg-gray-50 ring-1 ring-gray-200' : ''}`}
+            className={`flex-1 flex items-center gap-1.5 min-w-0 rounded-xl px-1 ${isActive ? 'bg-gray-50 ring-1 ring-gray-200' : ''}`}
           >
             {/* Mic — always visible, left of input */}
             <button
