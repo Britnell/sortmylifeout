@@ -1,4 +1,3 @@
--[ ] menu tabs - on mob show on bottom
 -[ ] todo - add finished date + time instead of boolean. then can show todos that were recently finished
 -[ ] PWA - (for all routes)
 -[ ] create + update on event dialog are optimistic (ish / auto update data). but our ai tool call updates are no longer reactive. when a tool call is made to upd/create evetns, then after we need to refetch events usequery
