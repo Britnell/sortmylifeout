@@ -9,9 +9,6 @@ import { authClient } from '../../lib/auth-client'
 import { ChatPanel } from '@/components/ChatPanel'
 import Sidebar from '@/components/Sidebar'
 import Icon from '@/components/Icon'
-import { useMatchRoute } from '@tanstack/react-router'
-import { useLocalStorage } from '@/lib/useLocalStorage'
-import type { CalView } from '@/components/CalViewSwitcher'
 import { useAtom } from 'jotai'
 import { sidebarOpenAtom } from '@/lib/atoms'
 
@@ -24,13 +21,6 @@ function RouteComponent() {
   const navigate = useNavigate()
   const [sidebarOpen] = useAtom(sidebarOpenAtom)
 
-  const matchRoute = useMatchRoute()
-  const isCal = matchRoute({ to: '/cal/$all' })
-  const isTodo = matchRoute({ to: '/todo' })
-  const isShopping = matchRoute({ to: '/shopping' })
-  const [lastCalView] = useLocalStorage<CalView>('cal-last-view', '/cal/week')
-  console.log('[route] lastCalView:', lastCalView)
-
   useEffect(() => {
     if (!isPending && !data) navigate({ to: '/login' })
   }, [isPending, data])
@@ -42,39 +32,8 @@ function RouteComponent() {
       <div className="flex min-h-screen">
         {/* Main content */}
         <div className="flex-1 min-w-0 px-2 sm:px-4">
-          <header className="py-1 flex justify-between">
+          <header className="py-1 flex justify-between items-center">
             <span className="x">App!</span>
-            <nav>
-              <ul className="flex gap-1">
-                <li>
-                  <Link
-                    to={lastCalView}
-                    className={`flex items-center gap-1 rounded px-2 py-1 ${isCal ? '  bg-blue-400' : ''}`}
-                  >
-                    <Icon name="calendar" />
-                    Calendar
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/todo"
-                    className={`flex items-center gap-1 rounded px-2 py-1 ${isTodo ? '  bg-blue-400' : ''}`}
-                  >
-                    <Icon name="todo" />
-                    Todo
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/shopping"
-                    className={`flex items-center gap-1 rounded px-2 py-1 ${isShopping ? '  bg-blue-400' : ''}`}
-                  >
-                    <Icon name="shopping" />
-                    Shopping
-                  </Link>
-                </li>
-              </ul>
-            </nav>
             <Link
               to="/profile"
               aria-label="Profile"

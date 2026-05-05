@@ -1,13 +1,15 @@
 import calendar from '../assets/calendar.svg?raw'
+import chevron from '../assets/chevron-left.svg?raw'
 import hamburger from '../assets/hamburger.svg?raw'
 import todo from '../assets/todo.svg?raw'
 import shopping from '../assets/shopping.svg?raw'
 
 const icons = {
   calendar,
+  chevron,
   hamburger,
-  todo,
   shopping,
+  todo,
 } as const
 
 type IconName = keyof typeof icons

@@ -48,8 +48,7 @@ export const Route = createFileRoute('/api/deletion')({
           return new Response('Invalid signature', { status: 403 })
         }
 
-        const userId: string = data.user_id
-        console.log('Meta deletion request for user_id:', userId)
+        // const userId: string = data.user_id
 
         const code = (Math.random() * 100000).toString(16)
         const body = {

@@ -28,13 +28,11 @@ export const Route = createFileRoute('/api/wazap')({
 
         const valid = await verifySignature(request, rawBody)
 
-        console.log({ valid })
         if (!valid) {
           return new Response('Unauthorized', { status: 401 })
         }
 
         const payload = JSON.parse(rawBody) as WhatsAppWebhookPayload
-        console.log(payload)
 
         if (payload.object !== 'whatsapp_business_account') {
           return new Response('ok', { status: 200 })

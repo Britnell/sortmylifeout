@@ -11,13 +11,15 @@ const views = [
 export type CalView = (typeof views)[number]['to']
 
 export default function CalViewSwitcher() {
-  const pathname = useRouterState({ select: s => s.location.pathname })
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
   const navigate = useNavigate()
-  const active = views.find(v => pathname.startsWith(v.to)) ?? views[0]
-  const [, setLastCalView] = useLocalStorage<CalView>('cal-last-view', '/cal/week')
+  const active = views.find((v) => pathname.startsWith(v.to)) ?? views[0]
+  const [, setLastCalView] = useLocalStorage<CalView>(
+    'cal-last-view',
+    '/cal/week',
+  )
 
   useEffect(() => {
-    console.log('[CalViewSwitcher] saving last cal view:', active.to)
     setLastCalView(active.to)
   }, [active.to])
 
@@ -25,17 +27,19 @@ export default function CalViewSwitcher() {
     <>
       {/* Mobile: native select */}
       <select
-        className="sm:hidden px-3 py-2 text-sm font-medium border border-gray-300 rounded-md bg-white text-gray-700"
+        className="md:hidden px-3 py-2 text-sm font-medium border border-gray-300 rounded-md bg-white text-gray-700"
         value={active.to}
-        onChange={e => navigate({ to: e.target.value })}
+        onChange={(e) => navigate({ to: e.target.value })}
       >
-        {views.map(view => (
-          <option key={view.to} value={view.to}>{view.label}</option>
+        {views.map((view) => (
+          <option key={view.to} value={view.to}>
+            {view.label}
+          </option>
         ))}
       </select>
 
       {/* Desktop: button group */}
-      <div className="hidden sm:flex border border-gray-300 rounded-md overflow-hidden">
+      <div className="hidden md:flex border border-gray-300 rounded-md overflow-hidden">
         {views.map((view, i) => (
           <Link
             key={view.to}

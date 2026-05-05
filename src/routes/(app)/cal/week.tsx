@@ -269,13 +269,17 @@ function RouteComponent() {
     <div className="">
       <div className="flex items-center gap-4 mb-4">
         <CalViewSwitcher />
-        <h2 className="text-xl font-semibold">{weekLabel}</h2>
+        <h2 className="text-xl font-semibold mr-auto">{weekLabel}</h2>
         <button
           onClick={() => setSidebarOpen((o) => !o)}
-          className="ml-auto flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="hidden  md:flex items-center justify-center rounded hover:bg-gray-100 px-2 "
           aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
         >
-          <Icon name="hamburger" className="text-lg" />
+          Todos
+          <Icon
+            name="chevron"
+            className={`text-lg ${sidebarOpen ? 'rotate-180' : ''}`}
+          />
         </button>
       </div>
 

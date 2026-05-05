@@ -9,6 +9,9 @@
 - helper + hooks in `src/lib`
 - ai chat w tool `ai.ts`
 
+## Styles
+- avoid breakpoints, use responsive css flex + grid that grow, shrink, flex-wrap or repeat(auto-fit,...)
+
 ## Working
 - use tabs not spaces - important! you have edit errors all the time with edit tool
 - i have `npm dev` running

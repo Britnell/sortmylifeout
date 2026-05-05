@@ -2,6 +2,10 @@ import { useState, useRef, useEffect } from 'react'
 import { useChat, fetchServerSentEvents } from '@tanstack/ai-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSpeechRecognition } from '../lib/useSpeechRecognition'
+import { Link, useMatchRoute } from '@tanstack/react-router'
+import { useLocalStorage } from '../lib/useLocalStorage'
+import Icon from './Icon'
+import type { CalView } from './CalViewSwitcher'
 
 type EventRow = {
   id: number
@@ -53,6 +57,12 @@ export function ChatPanel() {
   const [expanded, setExpanded] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  const matchRoute = useMatchRoute()
+  const isCal = matchRoute({ to: '/cal/$all' })
+  const isTodo = matchRoute({ to: '/todo' })
+  const isShopping = matchRoute({ to: '/shopping' })
+  const [lastCalView] = useLocalStorage<CalView>('cal-last-view', '/cal/week')
+
   const { isListening, toggleListening } = useSpeechRecognition(
     () => input,
     setInput,
@@ -64,8 +74,6 @@ export function ChatPanel() {
   const { messages, sendMessage, setMessages, isLoading, stop } = useChat({
     connection: fetchServerSentEvents('/api/chat'),
   })
-
-  if (!isLoading && messages?.length > 0) console.log(messages)
 
   useEffect(() => {
     const lastMessage = messages[messages.length - 1]
@@ -107,166 +115,204 @@ export function ChatPanel() {
   const hasMessages = messages.length > 0
 
   return (
-    <div className="fixed bottom-0 right-0 left-0 sm:left-auto sm:right-6 sm:w-96 z-50 flex flex-col shadow-2xl rounded-t-xl overflow-hidden border border-gray-200 bg-white">
-      {/* Collapsed tab — only when there are messages and panel is collapsed */}
-      {hasMessages && !expanded && (
-        <button
-          onClick={() => setExpanded(true)}
-          className="flex items-center justify-between px-4 py-2.5 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
-        >
-          <span>Assistant</span>
-          <span className="text-xs opacity-75">▴</span>
-        </button>
-      )}
+    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-2 py-2">
+      <div className="flex flex-wrap gap-2 shadow-2xl rounded-xl overflow-hidden border border-gray-200 bg-white max-w-full">
+        {/* Collapsed tab — only when there are messages and panel is collapsed */}
+        {hasMessages && !expanded && (
+          <button
+            onClick={() => setExpanded(true)}
+            className="w-full flex items-center justify-between px-4 py-2.5 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
+          >
+            <span>Assistant</span>
+            <span className="text-xs opacity-75">▴</span>
+          </button>
+        )}
 
-      {/* Messages — only shown when expanded */}
-      {expanded && hasMessages && (
-        <>
-          <div className="flex justify-between px-2 pt-2 bg-white">
-            <button
-              onClick={() => {
-                setMessages([])
-                setExpanded(false)
-                lastHandledToolCallId.current = null
-              }}
-              className="text-gray-400 hover:text-gray-600 text-xs px-1"
-              aria-label="New chat"
-            >
-              New chat
-            </button>
-            <button
-              onClick={() => setExpanded(false)}
-              className="text-gray-400 hover:text-gray-600 text-sm px-1"
-              aria-label="Close"
-            >
-              ✕
-            </button>
-          </div>
-          <div className="overflow-y-auto max-h-80 px-4 pb-4 flex flex-col gap-3 bg-white">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`text-sm ${
-                  message.role === 'assistant'
-                    ? 'text-blue-700'
-                    : 'text-gray-800'
-                }`}
+        {/* Messages — only shown when expanded */}
+        {expanded && hasMessages && (
+          <div className="w-full border-b border-gray-200">
+            <div className="flex justify-between px-2 pt-2 bg-white">
+              <button
+                onClick={() => {
+                  setMessages([])
+                  setExpanded(false)
+                  lastHandledToolCallId.current = null
+                }}
+                className="text-gray-400 hover:text-gray-600 text-xs px-1"
+                aria-label="New chat"
               >
-                <div className="font-semibold mb-0.5 text-xs uppercase tracking-wide opacity-60">
-                  {message.role === 'assistant' ? 'Assistant' : 'You'}
-                </div>
-                <div>
-                  {message.parts.map((part, idx) => {
-                    if (part.type === 'thinking') {
-                      return (
-                        <span
-                          key={idx}
-                          className="text-xs text-gray-400 italic mb-1"
-                        >
-                          ...
-                        </span>
-                      )
-                    }
-                    if (part.type === 'text') {
-                      return <div key={idx}>{part.content}</div>
-                    }
-                    if (part.type === 'tool-call') {
-                      const isEventTool =
-                        part.name === 'create_event' ||
-                        part.name === 'update_event'
-                      const action =
-                        part.name === 'create_event' ? 'created' : 'updated'
+                New chat
+              </button>
+              <button
+                onClick={() => setExpanded(false)}
+                className="text-gray-400 hover:text-gray-600 text-sm px-1"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="overflow-y-auto max-h-80 px-4 pb-4 flex flex-col gap-3 bg-white">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`text-sm ${
+                    message.role === 'assistant'
+                      ? 'text-blue-700'
+                      : 'text-gray-800'
+                  }`}
+                >
+                  <div className="font-semibold mb-0.5 text-xs uppercase tracking-wide opacity-60">
+                    {message.role === 'assistant' ? 'Assistant' : 'You'}
+                  </div>
+                  <div>
+                    {message.parts.map((part, idx) => {
+                      if (part.type === 'thinking') {
+                        return (
+                          <span
+                            key={idx}
+                            className="text-xs text-gray-400 italic mb-1"
+                          >
+                            ...
+                          </span>
+                        )
+                      }
+                      if (part.type === 'text') {
+                        return <div key={idx}>{part.content}</div>
+                      }
+                      if (part.type === 'tool-call') {
+                        const isEventTool =
+                          part.name === 'create_event' ||
+                          part.name === 'update_event'
+                        const action =
+                          part.name === 'create_event' ? 'created' : 'updated'
 
-                      if (isEventTool) {
-                        if (part.output !== undefined) {
-                          const items = (
-                            Array.isArray(part.output)
-                              ? part.output
-                              : [part.output]
-                          ) as EventRow[]
+                        if (isEventTool) {
+                          if (part.output !== undefined) {
+                            const items = (
+                              Array.isArray(part.output)
+                                ? part.output
+                                : [part.output]
+                            ) as EventRow[]
+                            return (
+                              <div key={idx}>
+                                {items.map((item, i) => (
+                                  <EventCard
+                                    key={i}
+                                    item={item}
+                                    action={action}
+                                  />
+                                ))}
+                              </div>
+                            )
+                          }
                           return (
-                            <div key={idx}>
-                              {items.map((item, i) => (
-                                <EventCard
-                                  key={i}
-                                  item={item}
-                                  action={action}
-                                />
-                              ))}
+                            <div
+                              key={idx}
+                              className="text-xs text-gray-400 italic my-1"
+                            >
+                              {part.name === 'create_event'
+                                ? 'Creating…'
+                                : 'Updating…'}
                             </div>
                           )
                         }
-                        return (
+
+                        return part.output === undefined ? (
                           <div
                             key={idx}
                             className="text-xs text-gray-400 italic my-1"
                           >
-                            {part.name === 'create_event'
-                              ? 'Creating…'
-                              : 'Updating…'}
+                            Working…
                           </div>
-                        )
+                        ) : null
                       }
-
-                      return part.output === undefined ? (
-                        <div
-                          key={idx}
-                          className="text-xs text-gray-400 italic my-1"
-                        >
-                          Working…
-                        </div>
-                      ) : null
-                    }
-                    return null
-                  })}
+                      return null
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
           </div>
-        </>
-      )}
+        )}
 
-      {/* Input — hidden when collapsed with messages */}
-      {(!hasMessages || expanded) && (
-        <form
-          onSubmit={handleSubmit}
-          className="flex gap-2 px-3 py-2 border-t border-gray-200 bg-white"
-        >
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-1 px-3 py-1.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            type="button"
-            onClick={toggleListening}
-            className={`px-2 py-1.5 text-sm rounded-lg transition-colors ${isListening ? 'bg-red-500 text-white hover:bg-red-600' : 'text-gray-400 hover:text-gray-600'}`}
-            aria-label={isListening ? 'Stop listening' : 'Start voice input'}
-          >
-            🎤
-          </button>
-          {isLoading ? (
-            <button
-              type="button"
-              onClick={stop}
-              className="px-4 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+        {/* Input and navigation — flex wrap for responsive layout */}
+        <div className="flex flex-wrap gap-2 w-full border-t border-gray-200">
+          {/* Navigation buttons */}
+          <nav className="flex gap-1 px-2 py-2 items-center">
+            <ul className="flex gap-1">
+              <li>
+                <Link
+                  to={lastCalView}
+                  className={`flex items-center gap-1 rounded px-2 py-1 transition-colors ${isCal ? 'bg-blue-400 text-white' : 'hover:bg-gray-100'}`}
+                >
+                  <Icon name="calendar" />
+                  <span className="text-sm">Calendar</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/todo"
+                  className={`flex items-center gap-1 rounded px-2 py-1 transition-colors ${isTodo ? 'bg-blue-400 text-white' : 'hover:bg-gray-100'}`}
+                >
+                  <Icon name="todo" />
+                  <span className="text-sm">Todo</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/shopping"
+                  className={`flex items-center gap-1 rounded px-2 py-1 transition-colors ${isShopping ? 'bg-blue-400 text-white' : 'hover:bg-gray-100'}`}
+                >
+                  <Icon name="shopping" />
+                  <span className="text-sm">Shopping</span>
+                </Link>
+              </li>
+            </ul>
+          </nav>
+
+          {/* Input — hidden when collapsed with messages */}
+          {(!hasMessages || expanded) && (
+            <form
+              onSubmit={handleSubmit}
+              className="flex gap-2 px-3 py-2 flex-1 min-w-64"
             >
-              Stop
-            </button>
-          ) : (
-            <button
-              type="submit"
-              disabled={!input.trim()}
-              className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50 hover:bg-blue-700 transition-colors"
-            >
-              Send
-            </button>
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Type a message..."
+                className="flex-1 px-3 py-1.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                type="button"
+                onClick={toggleListening}
+                className={`px-2 py-1.5 text-sm rounded-lg transition-colors ${isListening ? 'bg-red-500 text-white hover:bg-red-600' : 'text-gray-400 hover:text-gray-600'}`}
+                aria-label={isListening ? 'Stop listening' : 'Start voice input'}
+              >
+                🎤
+              </button>
+              {isLoading ? (
+                <button
+                  type="button"
+                  onClick={stop}
+                  className="px-4 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Stop
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={!input.trim()}
+                  className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50 hover:bg-blue-700 transition-colors"
+                >
+                  Send
+                </button>
+              )}
+            </form>
           )}
-        </form>
-      )}
+        </div>
+      </div>
     </div>
   )
 }
