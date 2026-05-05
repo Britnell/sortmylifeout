@@ -113,8 +113,8 @@ export function ChatPanel() {
           />
         )}
 
-        <div className="flex items-center gap-2 px-2 py-1.5">
-          <nav className="flex gap-0.5 shrink-0">
+        <div className="flex flex-col-reverse min-[500px]:flex-row items-center gap-2 px-2 py-1.5">
+          <nav className="flex gap-0.5 shrink-0 ">
             <Link
               to={lastCalView}
               title="Calendar"
@@ -138,11 +138,11 @@ export function ChatPanel() {
             </Link>
           </nav>
 
-          <div className="w-px h-6 bg-gray-200 shrink-0" />
+          {/*<div className="w-px h-6 bg-gray-200 shrink-0" />*/}
 
           <form
             onSubmit={handleSubmit}
-            className={`flex-1 flex items-center gap-1.5 min-w-0 rounded-xl px-1 ${isActive ? 'bg-gray-50 ring-1 ring-gray-200' : ''}`}
+            className={`flex-1 w-full flex items-center gap-1.5 rounded-xl px-1 ${isActive ? 'bg-gray-50 ring-1 ring-gray-200' : ''}`}
           >
             <button
               type="button"
