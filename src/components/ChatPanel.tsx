@@ -1,10 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 import { useChat, fetchServerSentEvents } from '@tanstack/ai-react'
+import type { UIMessage } from '@tanstack/ai-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSpeechRecognition } from '../lib/useSpeechRecognition'
 import { Link, useMatchRoute, useLocation } from '@tanstack/react-router'
 import { useLocalStorage } from '../lib/useLocalStorage'
-import { updateQueryCachesWithEvents, EVENT_MUTATING_TOOLS } from '../lib/queryCache'
+import {
+  updateQueryCachesWithEvents,
+  EVENT_MUTATING_TOOLS,
+} from '../lib/queryCache'
 import { EventCard, type EventRow } from './EventCard'
 import Icon from './Icon'
 import type { CalView } from './CalViewSwitcher'
@@ -57,7 +61,6 @@ export function ChatPanel() {
           ? toolCallPart.output
           : [toolCallPart.output]
       ) as EventRow[]
-
       updateQueryCachesWithEvents(queryClient, events)
     }
   }, [messages, queryClient])
@@ -80,11 +83,17 @@ export function ChatPanel() {
   const hasMessages = messages.length > 0
   const isActive = isInputFocused || input.trim().length > 0 || hasMessages
 
+  const handleNewChat = () => {
+    setMessages([])
+    setExpanded(false)
+    lastHandledToolCallId.current = null
+  }
+
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-3 pb-3">
-      <div className={`flex flex-col shadow-2xl rounded-2xl overflow-hidden border border-gray-200 bg-white transition-[width] duration-200 max-w-full ${isActive ? 'w-[640px]' : 'w-[320px]'}`}>
-
-        {/* Collapsed tab — only when there are messages and panel is collapsed */}
+      <div
+        className={`flex flex-col shadow-2xl rounded-2xl overflow-hidden border border-gray-200 bg-white transition-[width] duration-200 max-w-full ${isActive ? 'w-[540px]' : 'w-[320px]'}`}
+      >
         {hasMessages && !expanded && (
           <button
             onClick={() => setExpanded(true)}
@@ -95,150 +104,16 @@ export function ChatPanel() {
           </button>
         )}
 
-        {/* Messages — only shown when expanded */}
         {expanded && hasMessages && (
-          <div className="border-b border-gray-100">
-            <div className="flex justify-between items-center px-3 pt-2 pb-1">
-              <button
-                onClick={() => {
-                  setMessages([])
-                  setExpanded(false)
-                  lastHandledToolCallId.current = null
-                }}
-                className="text-gray-400 hover:text-gray-600 text-xs"
-                aria-label="New chat"
-              >
-                New chat
-              </button>
-              <button
-                onClick={() => setExpanded(false)}
-                className="text-gray-400 hover:text-gray-600 text-sm"
-                aria-label="Close"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="overflow-y-auto max-h-72 px-3 pb-3 flex flex-col gap-3">
-              {messages.map((message, idx) => (
-                <div
-                  key={message.id}
-                  className={`text-sm ${
-                    message.role === 'assistant'
-                      ? 'text-blue-700'
-                      : 'text-gray-800'
-                  }`}
-                >
-                  {messages[idx - 1]?.role !== message.role && (
-                    <div className="font-semibold mb-0.5 text-xs uppercase tracking-wide opacity-60">
-                      {message.role === 'assistant' ? 'Assistant' : 'You'}
-                    </div>
-                  )}
-                  <div>
-                    {message.parts.map((part, idx) => {
-                      if (part.type === 'thinking') {
-                        return (
-                          <span
-                            key={idx}
-                            className="text-xs text-gray-400 italic mb-1"
-                          >
-                            ...
-                          </span>
-                        )
-                      }
-                      if (part.type === 'text') {
-                        return <div key={idx}>{part.content}</div>
-                      }
-                      if (part.type === 'tool-call') {
-                        if (part.name === 'display_events') {
-                          let items: EventRow[] | undefined
-                          try {
-                            const args =
-                              typeof part.arguments === 'string'
-                                ? JSON.parse(part.arguments)
-                                : part.arguments
-                            items = (args as { items?: EventRow[] })?.items
-                          } catch {
-                            /* ignore */
-                          }
-                          if (!items?.length) {
-                            return (
-                              <span
-                                key={idx}
-                                className="text-xs text-gray-400 italic my-1"
-                              >
-                                Loading…
-                              </span>
-                            )
-                          }
-                          return (
-                            <div key={idx}>
-                              {items.map((item, i) => (
-                                <EventCard key={i} item={item} action={null} />
-                              ))}
-                            </div>
-                          )
-                        }
-
-                        const isEventTool =
-                          part.name === 'create_event' ||
-                          part.name === 'update_event'
-                        const action =
-                          part.name === 'create_event' ? 'created' : 'updated'
-
-                        if (isEventTool) {
-                          if (part.output !== undefined) {
-                            const items = (
-                              Array.isArray(part.output)
-                                ? part.output
-                                : [part.output]
-                            ) as EventRow[]
-                            return (
-                              <div key={idx}>
-                                {items.map((item, i) => (
-                                  <EventCard
-                                    key={i}
-                                    item={item}
-                                    action={action}
-                                  />
-                                ))}
-                              </div>
-                            )
-                          }
-                          return (
-                            <div
-                              key={idx}
-                              className="text-xs text-gray-400 italic my-1"
-                            >
-                              {part.name === 'create_event'
-                                ? 'Creating…'
-                                : 'Updating…'}
-                            </div>
-                          )
-                        }
-
-                        return part.output === undefined ? (
-                          <span
-                            key={idx}
-                            className="text-xs text-gray-400 italic my-1"
-                          >
-                            Working…
-                          </span>
-                        ) : null
-                      }
-                      return null
-                    })}
-                  </div>
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-          </div>
+          <MessageList
+            messages={messages}
+            onNewChat={handleNewChat}
+            onClose={() => setExpanded(false)}
+            messagesEndRef={messagesEndRef}
+          />
         )}
 
-        {/* Bottom bar: nav + chat input — single row */}
         <div className="flex items-center gap-2 px-2 py-1.5">
-
-          {/* Navigation — icons only */}
           <nav className="flex gap-0.5 shrink-0">
             <Link
               to={lastCalView}
@@ -263,29 +138,21 @@ export function ChatPanel() {
             </Link>
           </nav>
 
-          {/* Divider */}
           <div className="w-px h-6 bg-gray-200 shrink-0" />
 
-          {/* Chat form */}
           <form
             onSubmit={handleSubmit}
             className={`flex-1 flex items-center gap-1.5 min-w-0 rounded-xl px-1 ${isActive ? 'bg-gray-50 ring-1 ring-gray-200' : ''}`}
           >
-            {/* Mic — always visible, left of input */}
             <button
               type="button"
               onClick={toggleListening}
-              className={`shrink-0 flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
-                isListening
-                  ? 'bg-red-500 text-white'
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-              }`}
+              className={`shrink-0 flex items-center justify-center w-8 h-8 rounded-full transition-colors ${isListening ? 'bg-red-500 text-white' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
               aria-label={isListening ? 'Stop listening' : 'Voice input'}
             >
               🎤
             </button>
 
-            {/* Text input */}
             <input
               type="text"
               value={input}
@@ -296,9 +163,8 @@ export function ChatPanel() {
               className="flex-1 min-w-0 py-1.5 text-sm bg-transparent focus:outline-none placeholder:text-gray-400 text-gray-800"
             />
 
-            {/* Send / Stop — only visible when active */}
-            {isActive && (
-              isLoading ? (
+            {isActive &&
+              (isLoading ? (
                 <button
                   type="button"
                   onClick={stop}
@@ -314,8 +180,7 @@ export function ChatPanel() {
                 >
                   Send
                 </button>
-              )
-            )}
+              ))}
           </form>
         </div>
       </div>
@@ -323,3 +188,122 @@ export function ChatPanel() {
   )
 }
 
+type Part = UIMessage['parts'][number]
+
+function MessagePart({ part }: { part: Part }) {
+  if (part.type === 'thinking') {
+    return <span className="text-xs text-gray-400 italic mb-1">...</span>
+  }
+
+  if (part.type === 'text') {
+    return <div>{part.content}</div>
+  }
+
+  if (part.type === 'tool-call') {
+    if (part.name === 'display_events') {
+      let items: EventRow[] | undefined
+      try {
+        const args =
+          typeof part.arguments === 'string'
+            ? JSON.parse(part.arguments)
+            : part.arguments
+        items = (args as { items?: EventRow[] })?.items
+      } catch {
+        /* ignore */
+      }
+
+      if (!items?.length) {
+        return (
+          <span className="text-xs text-gray-400 italic my-1">Loading…</span>
+        )
+      }
+      return (
+        <div>
+          {items.map((item, i) => (
+            <EventCard key={i} item={item} action={null} />
+          ))}
+        </div>
+      )
+    }
+
+    if (part.name === 'create_event' || part.name === 'update_event') {
+      const action = part.name === 'create_event' ? 'created' : 'updated'
+      if (part.output !== undefined) {
+        const items = (
+          Array.isArray(part.output) ? part.output : [part.output]
+        ) as EventRow[]
+        return (
+          <div>
+            {items.map((item, i) => (
+              <EventCard key={i} item={item} action={action} />
+            ))}
+          </div>
+        )
+      }
+      return (
+        <div className="text-xs text-gray-400 italic my-1">
+          {part.name === 'create_event' ? 'Creating…' : 'Updating…'}
+        </div>
+      )
+    }
+
+    if (part.output === undefined) {
+      return <span className="text-xs text-gray-400 italic my-1">Working…</span>
+    }
+  }
+
+  return null
+}
+
+function MessageList({
+  messages,
+  onNewChat,
+  onClose,
+  messagesEndRef,
+}: {
+  messages: UIMessage[]
+  onNewChat: () => void
+  onClose: () => void
+  messagesEndRef: React.RefObject<HTMLDivElement | null>
+}) {
+  return (
+    <div className="border-b border-gray-100">
+      <div className="flex justify-between items-center px-3 pt-2 pb-1">
+        <button
+          onClick={onNewChat}
+          className="text-gray-400 hover:text-gray-600 text-xs"
+          aria-label="New chat"
+        >
+          New chat
+        </button>
+        <button
+          onClick={onClose}
+          className="text-gray-400 hover:text-gray-600 text-sm"
+          aria-label="Close"
+        >
+          ✕
+        </button>
+      </div>
+      <div className="overflow-y-auto max-h-72 px-3 pb-3 flex flex-col gap-3">
+        {messages.map((message, idx) => (
+          <div
+            key={message.id}
+            className={`text-sm ${message.role === 'assistant' ? 'text-blue-700' : 'text-gray-800'}`}
+          >
+            {messages[idx - 1]?.role !== message.role && (
+              <div className="font-semibold mb-0.5 text-xs uppercase tracking-wide opacity-60">
+                {message.role === 'assistant' ? 'Assistant' : 'You'}
+              </div>
+            )}
+            <div>
+              {message.parts.map((part: Part, i: number) => (
+                <MessagePart key={i} part={part} />
+              ))}
+            </div>
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+    </div>
+  )
+}
