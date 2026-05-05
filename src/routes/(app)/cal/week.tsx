@@ -1,6 +1,9 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import CalViewSwitcher from '@/components/CalViewSwitcher'
+import { useAtom } from 'jotai'
+import { sidebarOpenAtom } from '@/lib/atoms'
+import Icon from '@/components/Icon'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
   searchEventsFn,
@@ -88,9 +91,7 @@ function DayPopover({
           <span className="text-[10px] text-gray-400 leading-tight block">
             {ev.begin!.split('T')[1].slice(0, 5)}
           </span>
-          <div
-            className="text-xs p-1 rounded flex items-center gap-1 hover:bg-gray-100"
-          >
+          <div className="text-xs p-1 rounded flex items-center gap-1 hover:bg-gray-100">
             {ev.type === 'todo' && (
               <input
                 type="checkbox"
@@ -164,6 +165,7 @@ function DayPopover({
 }
 
 function RouteComponent() {
+  const [sidebarOpen, setSidebarOpen] = useAtom(sidebarOpenAtom)
   const [weekOffset] = useState(0)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -268,6 +270,13 @@ function RouteComponent() {
       <div className="flex items-center gap-4 mb-4">
         <CalViewSwitcher />
         <h2 className="text-xl font-semibold">{weekLabel}</h2>
+        <button
+          onClick={() => setSidebarOpen((o) => !o)}
+          className="ml-auto flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+          aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+        >
+          <Icon name="hamburger" className="text-lg" />
+        </button>
       </div>
 
       <div className="grid grid-cols-7 sm:gap-1">
@@ -329,7 +338,7 @@ function RouteComponent() {
             return (
               <button
                 key={`${wi}-${i}`}
-                className={`group flex flex-col border border-gray-400 -mt-px -ml-px p-1 sm:p-2 min-h-[120px] sm:rounded text-left w-full cursor-pointer ${isToday ? ' bg-blue-200' : ''}`}
+                className={`group flex flex-col border border-gray-400 -mt-px -ml-px p-1 min-h-[120px] sm:rounded text-left w-full cursor-pointer ${isToday ? ' bg-blue-200' : ''}`}
                 onClick={(e) => {
                   if (fewEvents) {
                     openCreate(dateStr)

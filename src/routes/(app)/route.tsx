@@ -4,7 +4,7 @@ import {
   Outlet,
   useNavigate,
 } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { authClient } from '../../lib/auth-client'
 import { ChatPanel } from '@/components/ChatPanel'
 import Sidebar from '@/components/Sidebar'
@@ -12,6 +12,8 @@ import Icon from '@/components/Icon'
 import { useMatchRoute } from '@tanstack/react-router'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import type { CalView } from '@/components/CalViewSwitcher'
+import { useAtom } from 'jotai'
+import { sidebarOpenAtom } from '@/lib/atoms'
 
 export const Route = createFileRoute('/(app)')({
   component: RouteComponent,
@@ -20,7 +22,7 @@ export const Route = createFileRoute('/(app)')({
 function RouteComponent() {
   const { data, isPending } = authClient.useSession()
   const navigate = useNavigate()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarOpen] = useAtom(sidebarOpenAtom)
 
   const matchRoute = useMatchRoute()
   const isCal = matchRoute({ to: '/cal/$all' })
@@ -93,18 +95,6 @@ function RouteComponent() {
           <Sidebar />
         </aside>
 
-        {/* Toggle button — fixed to right edge of viewport */}
-        <button
-          onClick={() => setSidebarOpen((o) => !o)}
-          className={`flex fixed top-16 items-center justify-center w-6 h-12 rounded-l-md bg-white border border-r-0 border-gray-200 shadow-sm hover:bg-gray-50 -800 dark:border-gray-700 dark:hover:bg-gray-700 transition-all duration-200 z-20 ${
-            sidebarOpen ? 'right-72' : 'right-0'
-          }`}
-          aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-        >
-          <span className="text-xs text-gray-500 ">
-            {sidebarOpen ? '›' : '‹'}
-          </span>
-        </button>
       </div>
       <ChatPanel />
     </>
