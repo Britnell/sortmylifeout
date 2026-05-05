@@ -23,6 +23,7 @@ function DayPopover({
   onEdit,
   onCreateNew,
   updateMutation,
+  anchorRect,
 }: {
   dateStr: string
   dayEvents: CalendarEvent[]
@@ -43,6 +44,7 @@ function DayPopover({
       }
     >
   >
+  anchorRect: DOMRect
 }) {
   const allDayEvs = dayEvents.filter(
     (ev) => ev.all_day || !ev.begin?.includes('T'),
@@ -59,7 +61,13 @@ function DayPopover({
 
   const dialogRef = useRef<HTMLDialogElement>(null)
   useEffect(() => {
-    dialogRef.current?.showModal()
+    const dialog = dialogRef.current
+if (!dialog) return
+    dialog.showModal()
+    dialog.style.margin = '0'
+    dialog.style.position = 'fixed'
+    dialog.style.left = `${anchorRect.left}px`
+    dialog.style.top = `${anchorRect.top}px`
   }, [])
 
   return (
@@ -161,6 +169,7 @@ function RouteComponent() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [expandedDay, setExpandedDay] = useState<string | null>(null)
+  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null)
 
   const today = new Date()
 
@@ -321,10 +330,11 @@ function RouteComponent() {
               <button
                 key={`${wi}-${i}`}
                 className={`group flex flex-col border p-2 min-h-[120px] rounded text-left w-full cursor-pointer ${isToday ? 'border-blue-500 bg-blue-50' : ''}`}
-                onClick={() => {
+                onClick={(e) => {
                   if (fewEvents) {
                     openCreate(dateStr)
                   } else {
+                    setAnchorRect(e.currentTarget.getBoundingClientRect())
                     setExpandedDay(dateStr)
                   }
                 }}
@@ -383,7 +393,7 @@ function RouteComponent() {
         deleteMutation={deleteMutation}
       />
 
-      {expandedDay && (
+      {expandedDay && anchorRect && (
         <DayPopover
           dateStr={expandedDay}
           dayEvents={eventsByDate.get(expandedDay) || []}
@@ -391,6 +401,7 @@ function RouteComponent() {
           onEdit={(ev) => openEdit(ev)}
           onCreateNew={openCreate}
           updateMutation={updateMutation}
+          anchorRect={anchorRect}
         />
       )}
     </div>
