@@ -19,7 +19,7 @@
     "secrets": "wrangler secret bulk .dev.vars"
   },
   "dependencies": {
-    "@cloudflare/tanstack-ai": "^0.1.8",
+    "@cloudflare/tanstack-ai": "^0.1.9",
     "@cloudflare/vite-plugin": "^1.26.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/ai": "^0.14.0",
