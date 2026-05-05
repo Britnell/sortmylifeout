@@ -83,6 +83,37 @@ function DayPopover({
       }}
     >
       <div className="text-xs font-semibold text-gray-500 mb-1">{label}</div>
+      {timedEvs.map((ev) => (
+        <div key={ev.id} className="cursor-pointer" onClick={() => onEdit(ev)}>
+          <span className="text-[10px] text-gray-400 leading-tight block">
+            {ev.begin!.split('T')[1].slice(0, 5)}
+          </span>
+          <div
+            className="text-xs p-1 rounded flex items-center gap-1 hover:bg-gray-100"
+          >
+            {ev.type === 'todo' && (
+              <input
+                type="checkbox"
+                checked={!!ev.completed}
+                className="shrink-0"
+                onChange={(e) => {
+                  e.stopPropagation()
+                  updateMutation.mutate({
+                    id: ev.id,
+                    begin: ev.begin ?? '',
+                    allDay: false,
+                    title: ev.title,
+                    detail: ev.detail ?? undefined,
+                    completed: e.target.checked,
+                  })
+                }}
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
+            <span className="block truncate">{ev.title}</span>
+          </div>
+        </div>
+      ))}
       {allDayEvs.map((ev) =>
         ev.type === 'todo' ? (
           <div
@@ -119,37 +150,6 @@ function DayPopover({
           </div>
         ),
       )}
-      {timedEvs.map((ev) => (
-        <div key={ev.id} className="cursor-pointer" onClick={() => onEdit(ev)}>
-          <span className="text-[10px] text-gray-400 leading-tight block">
-            {ev.begin!.split('T')[1].slice(0, 5)}
-          </span>
-          <div
-            className={`text-xs p-1 rounded flex items-center gap-1 ${ev.type === 'todo' ? 'bg-gray-100 text-gray-800 hover:bg-gray-200' : 'hover:bg-gray-100'}`}
-          >
-            {ev.type === 'todo' && (
-              <input
-                type="checkbox"
-                checked={!!ev.completed}
-                className="shrink-0"
-                onChange={(e) => {
-                  e.stopPropagation()
-                  updateMutation.mutate({
-                    id: ev.id,
-                    begin: ev.begin ?? '',
-                    allDay: false,
-                    title: ev.title,
-                    detail: ev.detail ?? undefined,
-                    completed: e.target.checked,
-                  })
-                }}
-                onClick={(e) => e.stopPropagation()}
-              />
-            )}
-            <span className="block truncate">{ev.title}</span>
-          </div>
-        </div>
-      ))}
       <button
         className="mt-auto pt-2 w-full text-xs text-gray-400 hover:text-gray-700 flex items-center justify-center gap-1 border-t border-gray-100"
         onClick={() => {
@@ -319,10 +319,10 @@ function RouteComponent() {
             const totalEvents = allDayEvs.length + timedEvs.length
             const fewEvents = totalEvents === 0
             const MAX_VISIBLE = 3
-            const visibleAllDay = allDayEvs.slice(0, MAX_VISIBLE)
-            const visibleTimed = timedEvs.slice(
+            const visibleTimed = timedEvs.slice(0, MAX_VISIBLE)
+            const visibleAllDay = allDayEvs.slice(
               0,
-              Math.max(0, MAX_VISIBLE - allDayEvs.length),
+              Math.max(0, MAX_VISIBLE - timedEvs.length),
             )
             const hasMore = totalEvents > MAX_VISIBLE
 
@@ -345,14 +345,13 @@ function RouteComponent() {
                   {day.getDate()}
                 </div>
                 <div className="mt-1 space-y-1">
-                  {visibleAllDay.map(renderAllDay)}
                   {visibleTimed.map((ev) => (
                     <div key={ev.id}>
                       <span className="text-[10px] text-gray-500 leading-tight block">
                         {ev.begin!.split('T')[1].slice(0, 5)}
                       </span>
                       <div
-                        className={`text-xs p-1 rounded overflow-hidden ${ev.type === 'todo' ? 'bg-gray-100 text-gray-800 flex items-center gap-1' : ''}`}
+                        className={`text-xs p-1 rounded overflow-hidden ${ev.type === 'todo' ? 'flex items-center gap-1' : ''}`}
                       >
                         {ev.type === 'todo' && (
                           <input
@@ -366,6 +365,7 @@ function RouteComponent() {
                       </div>
                     </div>
                   ))}
+                  {visibleAllDay.map(renderAllDay)}
                   {hasMore && (
                     <div className="text-xs text-gray-400 px-1">
                       +{totalEvents - MAX_VISIBLE} more
