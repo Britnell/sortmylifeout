@@ -3,6 +3,7 @@ import { createOpenRouterText } from '@tanstack/ai-openrouter'
 import { createSearchEventsTool } from '@/tools/searchEventsTool'
 import { createCreateEventTool } from '@/tools/createEventTool'
 import { createUpdateEventTool } from '@/tools/updateEventTool'
+import { createDisplayEventsTool } from '@/tools/displayEventsTool'
 // import { createWorkersAiChat } from '@cloudflare/tanstack-ai'
 // import { env } from 'cloudflare:workers'
 
@@ -104,6 +105,7 @@ export function createChatStream(
       createSearchEventsTool(userId),
       createCreateEventTool(userId),
       createUpdateEventTool(userId),
+      createDisplayEventsTool(),
     ],
   })
 }
@@ -118,6 +120,7 @@ export function agentMessage(messages: string[], userId: string) {
       createSearchEventsTool(userId),
       createCreateEventTool(userId),
       createUpdateEventTool(userId),
+      createDisplayEventsTool(),
     ],
   })
 }

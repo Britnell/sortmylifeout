@@ -143,6 +143,25 @@ export function ChatPanel() {
                         return <div key={idx}>{part.content}</div>
                       }
                       if (part.type === 'tool-call') {
+                        if (part.name === 'display_events') {
+                          const input = part.input as { items?: EventRow[] } | undefined
+                          const items = input?.items
+                          if (!items?.length) {
+                            return (
+                              <span key={idx} className="text-xs text-gray-400 italic my-1">
+                                Loading…
+                              </span>
+                            )
+                          }
+                          return (
+                            <div key={idx}>
+                              {items.map((item, i) => (
+                                <EventCard key={i} item={item} action={null} />
+                              ))}
+                            </div>
+                          )
+                        }
+
                         const isEventTool =
                           part.name === 'create_event' ||
                           part.name === 'update_event'
@@ -303,7 +322,7 @@ function EventCard({
   action,
 }: {
   item: EventRow
-  action: 'created' | 'updated'
+  action: 'created' | 'updated' | null
 }) {
   const icon = TYPE_ICON[item.type] ?? '•'
   const dateStr =
@@ -320,7 +339,7 @@ function EventCard({
         </div>
         {dateStr && <div className="text-gray-500 mt-0.5">{dateStr}</div>}
       </div>
-      <span className="text-gray-400 shrink-0 capitalize">{action}</span>
+      {action && <span className="text-gray-400 shrink-0 capitalize">{action}</span>}
     </div>
   )
 }

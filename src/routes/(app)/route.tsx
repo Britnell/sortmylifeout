@@ -53,7 +53,6 @@ function RouteComponent() {
         >
           <Sidebar />
         </aside>
-
       </div>
       <ChatPanel />
     </>
