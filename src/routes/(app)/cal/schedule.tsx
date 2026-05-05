@@ -136,7 +136,8 @@ function RouteComponent() {
     ev.type === 'todo' ? (
       <div
         key={ev.id}
-        className="text-sm bg-gray-100 text-gray-800 p-2 rounded flex items-center gap-2"
+        className="text-sm bg-gray-100 text-gray-800 p-2 rounded flex items-center gap-2 cursor-pointer hover:bg-gray-200"
+        onClick={(e) => openEdit(ev, e)}
       >
         <input
           type="checkbox"
@@ -154,12 +155,7 @@ function RouteComponent() {
           }}
           onClick={(e) => e.stopPropagation()}
         />
-        <span
-          className="cursor-pointer hover:underline"
-          onClick={(e) => openEdit(ev, e)}
-        >
-          {ev.title}
-        </span>
+        <span>{ev.title}</span>
       </div>
     ) : (
       <div
@@ -238,7 +234,10 @@ function RouteComponent() {
                     </div>
                     <div className="flex-1">
                       {ev.type === 'todo' ? (
-                        <div className="text-sm bg-gray-100 text-gray-800 p-2 rounded flex items-center gap-2">
+                        <div
+                          className="text-sm bg-gray-100 text-gray-800 p-2 rounded flex items-center gap-2 cursor-pointer hover:bg-gray-200"
+                          onClick={(e) => openEdit(ev, e)}
+                        >
                           <input
                             type="checkbox"
                             checked={!!ev.completed}
@@ -255,12 +254,7 @@ function RouteComponent() {
                             }}
                             onClick={(e) => e.stopPropagation()}
                           />
-                          <span
-                            className="cursor-pointer hover:underline"
-                            onClick={(e) => openEdit(ev, e)}
-                          >
-                            {ev.title}
-                          </span>
+                          <span>{ev.title}</span>
                         </div>
                       ) : (
                         <div
