@@ -159,12 +159,12 @@ export function ChatPanel() {
                   {message.parts.map((part, idx) => {
                     if (part.type === 'thinking') {
                       return (
-                        <div
+                        <span
                           key={idx}
                           className="text-xs text-gray-400 italic mb-1"
                         >
-                          Thinking...
-                        </div>
+                          ...
+                        </span>
                       )
                     }
                     if (part.type === 'text') {

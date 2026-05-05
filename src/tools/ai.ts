@@ -3,12 +3,12 @@ import { createOpenRouterText } from '@tanstack/ai-openrouter'
 import { createSearchEventsTool } from '@/tools/searchEventsTool'
 import { createCreateEventTool } from '@/tools/createEventTool'
 import { createUpdateEventTool } from '@/tools/updateEventTool'
-// import { createWorkersAiChat } from '@cloudflare/tanstack-ai'
-// import { env } from 'cloudflare:workers'
+import { createWorkersAiChat } from '@cloudflare/tanstack-ai'
+import { env } from 'cloudflare:workers'
 
 // -- Providers --
 const models = {
-  // cloudflare: {gemma: '@cf/google/gemma-4-26b-a4b-it',},
+  cloudflare: { gemma: '@cf/google/gemma-4-26b-a4b-it' },
   openrouter: {
     deepseek: 'deepseek/deepseek-v3.2',
     gemma26: 'google/gemma-4-26b-a4b-it',
@@ -16,14 +16,14 @@ const models = {
   },
 } as const
 
-export const MODEL = models.openrouter.gemma31
+export const MODEL = models.cloudflare.gemma
 
 export function getAdapter() {
-  return createOpenRouterText(
-    models.openrouter.gemma31,
-    process.env.OPENROUTER_API_KEY!,
-  )
-  // return createWorkersAiChat(MODEL, { binding: env.AI })
+  // return createOpenRouterText(
+  //   models.openrouter.gemma31,
+  //   process.env.OPENROUTER_API_KEY!,
+  // )
+  return createWorkersAiChat(MODEL, { binding: env.AI })
 }
 
 export const SYSTEM_PROMPT = (userId: string) => {
