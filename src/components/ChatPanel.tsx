@@ -144,11 +144,22 @@ export function ChatPanel() {
                       }
                       if (part.type === 'tool-call') {
                         if (part.name === 'display_events') {
-                          const input = part.input as { items?: EventRow[] } | undefined
-                          const items = input?.items
+                          let items: EventRow[] | undefined
+                          try {
+                            const args =
+                              typeof part.arguments === 'string'
+                                ? JSON.parse(part.arguments)
+                                : part.arguments
+                            items = (args as { items?: EventRow[] })?.items
+                          } catch {
+                            /* ignore */
+                          }
                           if (!items?.length) {
                             return (
-                              <span key={idx} className="text-xs text-gray-400 italic my-1">
+                              <span
+                                key={idx}
+                                className="text-xs text-gray-400 italic my-1"
+                              >
                                 Loading…
                               </span>
                             )
@@ -219,9 +230,9 @@ export function ChatPanel() {
         )}
 
         {/* Input and navigation — flex wrap for responsive layout */}
-        <div className="flex flex-wrap gap-2 w-full border-t border-gray-200">
+        <div className="flex flex-wrap gap-4 py-2 w-full border-t border-gray-200">
           {/* Navigation buttons */}
-          <nav className="flex gap-1 px-2 py-2 items-center">
+          <nav className="flex-[0_0_auto] flex gap-1 px-2 items-center">
             <ul className="flex gap-1">
               <li>
                 <Link
@@ -257,7 +268,7 @@ export function ChatPanel() {
           {(!hasMessages || expanded) && (
             <form
               onSubmit={handleSubmit}
-              className="flex gap-2 px-3 py-2 flex-1 min-w-64"
+              className="flex-[1_0_auto] flex gap-2 px-3 flex-1 min-w-64"
             >
               <input
                 type="text"
@@ -288,7 +299,7 @@ export function ChatPanel() {
                 <button
                   type="submit"
                   disabled={!input.trim()}
-                  className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50 hover:bg-blue-700 transition-colors"
+                  className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg disabled:opacity-50 hover:bg-blue-700 whitespace-nowrap"
                 >
                   Send
                 </button>
@@ -339,7 +350,9 @@ function EventCard({
         </div>
         {dateStr && <div className="text-gray-500 mt-0.5">{dateStr}</div>}
       </div>
-      {action && <span className="text-gray-400 shrink-0 capitalize">{action}</span>}
+      {action && (
+        <span className="text-gray-400 shrink-0 capitalize">{action}</span>
+      )}
     </div>
   )
 }
