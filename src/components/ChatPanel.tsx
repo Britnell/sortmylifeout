@@ -115,7 +115,7 @@ export function ChatPanel() {
               </button>
             </div>
             <div className="overflow-y-auto max-h-80 px-4 pb-4 flex flex-col gap-3 bg-white">
-              {messages.map((message) => (
+              {messages.map((message, idx) => (
                 <div
                   key={message.id}
                   className={`text-sm ${
@@ -124,9 +124,11 @@ export function ChatPanel() {
                       : 'text-gray-800'
                   }`}
                 >
-                  <div className="font-semibold mb-0.5 text-xs uppercase tracking-wide opacity-60">
-                    {message.role === 'assistant' ? 'Assistant' : 'You'}
-                  </div>
+                  {messages[idx - 1]?.role !== message.role && (
+                    <div className="font-semibold mb-0.5 text-xs uppercase tracking-wide opacity-60">
+                      {message.role === 'assistant' ? 'Assistant' : 'You'}
+                    </div>
+                  )}
                   <div>
                     {message.parts.map((part, idx) => {
                       if (part.type === 'thinking') {
