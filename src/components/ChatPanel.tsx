@@ -7,51 +7,6 @@ import { useLocalStorage } from '../lib/useLocalStorage'
 import Icon from './Icon'
 import type { CalView } from './CalViewSwitcher'
 
-type EventRow = {
-  id: number
-  type: 'event' | 'todo' | 'shopping'
-  title?: string | null
-  begin?: string | null
-  end?: string | null
-  completed?: number | null
-  [key: string]: unknown
-}
-
-const TYPE_ICON: Record<string, string> = {
-  event: '📅',
-  todo: '☑',
-  shopping: '🛒',
-}
-
-function EventCard({
-  item,
-  action,
-}: {
-  item: EventRow
-  action: 'created' | 'updated'
-}) {
-  const icon = TYPE_ICON[item.type] ?? '•'
-  const dateStr =
-    item.end && item.end !== item.begin
-      ? `${item.begin} → ${item.end}`
-      : (item.begin ?? null)
-
-  return (
-    <div className="mt-1.5 px-2.5 py-2 bg-blue-50 border border-blue-100 rounded-lg text-xs flex items-start gap-2">
-      <span className="text-sm leading-none mt-0.5">{icon}</span>
-      <div className="min-w-0 flex-1">
-        <div className="font-medium text-gray-800 truncate">
-          {item.title ?? '(untitled)'}
-        </div>
-        {dateStr && <div className="text-gray-500 mt-0.5">{dateStr}</div>}
-      </div>
-      <span className="text-gray-400 shrink-0 capitalize">{action}</span>
-    </div>
-  )
-}
-
-const EVENT_MUTATING_TOOLS = new Set(['create_event', 'update_event'])
-
 export function ChatPanel() {
   const [input, setInput] = useState('')
   const [expanded, setExpanded] = useState(false)
@@ -93,7 +48,13 @@ export function ChatPanel() {
 
     lastHandledToolCallId.current = toolCallId
     if (EVENT_MUTATING_TOOLS.has(toolCallPart.name)) {
-      queryClient.invalidateQueries({ queryKey: ['searchEventsFn'] })
+      const events = (
+        Array.isArray(toolCallPart.output)
+          ? toolCallPart.output
+          : [toolCallPart.output]
+      ) as EventRow[]
+
+      updateQueryCachesWithEvents(queryClient, events)
     }
   }, [messages, queryClient])
 
@@ -113,6 +74,8 @@ export function ChatPanel() {
   }, [messages, expanded])
 
   const hasMessages = messages.length > 0
+
+  console.log(messages)
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-2 py-2">
@@ -218,12 +181,12 @@ export function ChatPanel() {
                         }
 
                         return part.output === undefined ? (
-                          <div
+                          <span
                             key={idx}
                             className="text-xs text-gray-400 italic my-1"
                           >
                             Working…
-                          </div>
+                          </span>
                         ) : null
                       }
                       return null
@@ -288,7 +251,9 @@ export function ChatPanel() {
                 type="button"
                 onClick={toggleListening}
                 className={`px-2 py-1.5 text-sm rounded-lg transition-colors ${isListening ? 'bg-red-500 text-white hover:bg-red-600' : 'text-gray-400 hover:text-gray-600'}`}
-                aria-label={isListening ? 'Stop listening' : 'Start voice input'}
+                aria-label={
+                  isListening ? 'Stop listening' : 'Start voice input'
+                }
               >
                 🎤
               </button>
@@ -315,4 +280,103 @@ export function ChatPanel() {
       </div>
     </div>
   )
+}
+
+type EventRow = {
+  id: number
+  type: 'event' | 'todo' | 'shopping'
+  title?: string | null
+  begin?: string | null
+  end?: string | null
+  completed?: number | null
+  [key: string]: unknown
+}
+
+const TYPE_ICON: Record<string, string> = {
+  event: '📅',
+  todo: '☑',
+  shopping: '🛒',
+}
+
+function EventCard({
+  item,
+  action,
+}: {
+  item: EventRow
+  action: 'created' | 'updated'
+}) {
+  const icon = TYPE_ICON[item.type] ?? '•'
+  const dateStr =
+    item.end && item.end !== item.begin
+      ? `${item.begin} → ${item.end}`
+      : (item.begin ?? null)
+
+  return (
+    <div className="mt-1.5 px-2.5 py-2 bg-blue-50 border border-blue-100 rounded-lg text-xs flex items-start gap-2">
+      <span className="text-sm leading-none mt-0.5">{icon}</span>
+      <div className="min-w-0 flex-1">
+        <div className="font-medium text-gray-800 truncate">
+          {item.title ?? '(untitled)'}
+        </div>
+        {dateStr && <div className="text-gray-500 mt-0.5">{dateStr}</div>}
+      </div>
+      <span className="text-gray-400 shrink-0 capitalize">{action}</span>
+    </div>
+  )
+}
+
+const EVENT_MUTATING_TOOLS = new Set(['create_event', 'update_event'])
+
+function updateQueryCachesWithEvents(
+  queryClient: ReturnType<typeof useQueryClient>,
+  events: EventRow[],
+) {
+  const eventMap = new Map(events.map((e) => [e.id, e]))
+
+  queryClient
+    .getQueriesData({ queryKey: ['searchEventsFn'] })
+    .forEach(([queryKey, data]) => {
+      if (Array.isArray(data)) {
+        const eventIds = new Set((data as EventRow[]).map((e) => e.id))
+        let updated = (data as EventRow[]).map((e) => eventMap.get(e.id) || e)
+
+        events.forEach((e) => {
+          if (!eventIds.has(e.id)) {
+            updated.push(e)
+          }
+        })
+
+        updated = updated.sort((a, b) =>
+          (a.begin ?? '').localeCompare(b.begin ?? ''),
+        )
+        queryClient.setQueryData(queryKey, updated)
+      }
+    })
+
+  queryClient
+    .getQueriesData({
+      predicate: (query) => {
+        const key = query.queryKey
+        return (
+          Array.isArray(key) &&
+          (key[1] === 'unscheduled' ||
+            key[1] === 'overdue' ||
+            key[1] === 'done')
+        )
+      },
+    })
+    .forEach(([queryKey, data]) => {
+      if (Array.isArray(data)) {
+        const eventIds = new Set((data as EventRow[]).map((e) => e.id))
+        let updated = (data as EventRow[]).map((e) => eventMap.get(e.id) || e)
+
+        events.forEach((e) => {
+          if (!eventIds.has(e.id) && e.type === queryKey[0]) {
+            updated.push(e)
+          }
+        })
+
+        queryClient.setQueryData(queryKey, updated)
+      }
+    })
 }
