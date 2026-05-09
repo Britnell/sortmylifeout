@@ -213,7 +213,7 @@ export default function CheckList({
             <option value="upcoming">Scheduled</option>
             <option value="done">Finished</option>
           </select>
-          <div className="hidden sm:flex border border-gray-300 rounded-md overflow-hidden">
+          <div className="hidden sm:flex border border-gray-300 rounded-md overflow-hidden bg-white">
             <button
               onClick={() => setTab('unscheduled')}
               className={`px-4 py-2 text-sm font-medium transition-colors ${tab === 'unscheduled' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
@@ -257,7 +257,7 @@ export default function CheckList({
           return (
             <div
               key={ev.id}
-              className={`border rounded-md transition-all ${isEditing ? 'border-blue-300 bg-blue-50/30' : 'border-gray-200 hover:border-gray-300'}`}
+              className={`border rounded-md transition-all bg-white ${isEditing ? 'border-blue-300 bg-blue-50/30' : 'border-gray-200 hover:border-gray-300'}`}
             >
               <div
                 className="flex items-center gap-3 px-3 py-2.5 cursor-pointer"
@@ -297,7 +297,6 @@ export default function CheckList({
                   </p>
                 )}
               </div>
-
               {isEditing && (
                 <div className="px-3 pb-3 space-y-2">
                   <input

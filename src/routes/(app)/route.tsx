@@ -29,7 +29,7 @@ function RouteComponent() {
 
   return (
     <>
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen bg-gray-100">
         {/* Main content */}
         <div className="flex-1 min-w-0 px-2 sm:px-4">
           <header className="py-1 flex justify-between items-center">

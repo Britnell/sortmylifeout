@@ -39,7 +39,7 @@ export default function CalViewSwitcher() {
       </select>
 
       {/* Desktop: button group */}
-      <div className="hidden md:flex border border-gray-300 rounded-md overflow-hidden">
+      <div className="hidden md:flex border border-gray-300 rounded-md overflow-hidden bg-white">
         {views.map((view, i) => (
           <Link
             key={view.to}

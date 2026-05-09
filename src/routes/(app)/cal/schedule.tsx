@@ -195,7 +195,7 @@ function RouteComponent() {
         </button>
       </div>
 
-      <div className="h-[calc(100vh-180px)] overflow-y-auto scroll-smooth">
+      <div className="h-[calc(100vh-180px)] overflow-y-auto scroll-smooth space-y-2">
         {sortedDates.map(([dateStr, dayEvents]) => {
           const d = parseDate(dateStr)
           const isToday = isSameDay(d, today)
@@ -209,7 +209,7 @@ function RouteComponent() {
           return (
             <div
               key={dateStr}
-              className={`xx border-b py-3 px-2 ${isToday ? 'bg-blue-300' : ''}`}
+              className={` py-3 px-2 rounded ${isToday ? 'bg-blue-300' : ' bg-white'}`}
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
