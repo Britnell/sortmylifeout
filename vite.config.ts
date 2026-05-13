@@ -9,6 +9,11 @@ import { cloudflare } from '@cloudflare/vite-plugin'
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
+  ssr: {
+    optimizeDeps: {
+      exclude: ['@cloudflare/tanstack-ai', '@tanstack/react-devtools'],
+    },
+  },
   plugins: [
     devtools(),
     tailwindcss(),
