@@ -113,12 +113,11 @@ export function createChatStream(
   })
 }
 
-export function agentMessage(messages: string[], userId: string) {
-  return chat({
+export async function agentMessage(messages: string[], userId: string): Promise<string> {
+  const stream = chat({
     adapter: getAdapter(),
     systemPrompts: [SYSTEM_PROMPT(userId)],
     messages: messages.map((content) => ({ role: 'user', content })),
-    stream: false,
     tools: [
       createSearchEventsTool(userId),
       createCreateEventTool(userId),
@@ -126,4 +125,12 @@ export function agentMessage(messages: string[], userId: string) {
       createDisplayEventsTool(),
     ],
   })
+
+  let text = ''
+  for await (const chunk of stream) {
+    if (chunk.type === 'content') {
+      text += chunk.delta
+    }
+  }
+  return text
 }
