@@ -6,7 +6,12 @@ export async function replyToWhatsapp(
   userId: string,
   phone: string,
 ) {
-  const reply = await agentMessage(messages, userId)
-  console.log({ reply })
-  return sendWhatsAppMessage(phone, reply)
+  try {
+    const reply = await agentMessage(messages, userId)
+    console.log({ reply })
+    return sendWhatsAppMessage(phone, reply)
+  } catch (err) {
+    console.error('[replyToWhatsapp] error:', err)
+    throw err
+  }
 }
