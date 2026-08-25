@@ -20,7 +20,8 @@
     "doctor": "npx -y react-doctor . --verbose --yes --fail-on error",
     "health": "npx fallow health",
     "dead": "npx fallow dead-code",
-    "dupes": "npx fallow dupes"
+    "dupes": "npx fallow dupes",
+    "test:wazap": "bun scripts/test-wazap.ts"
   },
   "dependencies": {
     "@cloudflare/tanstack-ai": "^0.1.9",
