@@ -74,6 +74,8 @@ export default function CalendarEventDialog({
   const [endTime, setEndTime] = useState<string>('')
   const [duration, setDuration] = useState<string>('0')
   const [localEditing, setLocalEditing] = useState<CalendarEvent | null>(null)
+  const [title, setTitle] = useState('')
+  const [detail, setDetail] = useState('')
   const timeRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -94,6 +96,8 @@ export default function CalendarEventDialog({
       )
       setDuration('')
       setShowDeleteConfirm(false)
+      setTitle(editingEvent.title ?? '')
+      setDetail(editingEvent.detail ?? '')
     } else {
       setLocalEditing(null)
       setItemType('event')
@@ -105,6 +109,8 @@ export default function CalendarEventDialog({
       setEndDate(ed)
       setEndTime('')
       setShowDeleteConfirm(false)
+      setTitle('')
+      setDetail('')
     }
   }, [isOpen, editingEvent, selectedDate])
 
@@ -115,9 +121,7 @@ export default function CalendarEventDialog({
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    const title = formData.get('title') as string
-    const detail = (formData.get('detail') as string) || undefined
+    const detailValue = detail.trim() ? detail : undefined
 
     let end: string | undefined
     if (endDate) {
@@ -138,7 +142,7 @@ export default function CalendarEventDialog({
         begin: begin ?? localEditing.begin ?? '',
         allDay,
         title,
-        detail,
+        detail: detailValue,
         type: itemType,
         end,
         completed: localEditing.completed ? true : undefined,
@@ -149,7 +153,7 @@ export default function CalendarEventDialog({
         allDay,
         end,
         title,
-        detail,
+        detail: detailValue,
         type: itemType,
       })
     }
@@ -215,8 +219,8 @@ export default function CalendarEventDialog({
           type="text"
           name="title"
           required
-          defaultValue={localEditing?.title ?? ''}
-          key={localEditing?.id ?? 'new'}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Title"
         />
@@ -395,7 +399,8 @@ export default function CalendarEventDialog({
         <textarea
           name="detail"
           rows={3}
-          defaultValue={localEditing?.detail ?? ''}
+          value={detail}
+          onChange={(e) => setDetail(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Description"
         />
