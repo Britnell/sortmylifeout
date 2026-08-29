@@ -106,6 +106,8 @@ export function ChatPanel() {
     lastHandledToolCallId.current = null
   }
 
+  console.log(messages)
+
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 px-3 sm:pb-3">
       <div
@@ -220,9 +222,31 @@ export function ChatPanel() {
 
 type Part = UIMessage['parts'][number]
 
+function ToolCallTag() {
+  return (
+    <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-blue-600 bg-blue-50 ring-1 ring-blue-100 rounded px-1.5 py-0.5 mb-1">
+      <span className="inline-flex items-center w-3 h-3">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-full h-full">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+        </svg>
+      </span>
+      action
+    </span>
+  )
+}
+
 function MessagePart({ part }: { part: Part }) {
   if (part.type === 'thinking') {
-    return <span className="text-xs text-gray-400 italic mb-1">...</span>
+    return (
+      <details className="text-xs text-gray-400 mb-1">
+        <summary className="cursor-pointer select-none italic">
+          thinking...
+        </summary>
+        <div className="mt-1 whitespace-pre-wrap pl-1 border-l-2 border-gray-100">
+          {part.content}
+        </div>
+      </details>
+    )
   }
 
   if (part.type === 'text') {
@@ -230,6 +254,8 @@ function MessagePart({ part }: { part: Part }) {
   }
 
   if (part.type === 'tool-call') {
+    const tag = <ToolCallTag />
+
     if (part.name === 'display_events') {
       let items: EventRow[] | undefined
       try {
@@ -248,7 +274,8 @@ function MessagePart({ part }: { part: Part }) {
         )
       }
       return (
-        <div>
+        <div className="flex flex-col gap-1">
+          {tag}
           {items.map((item, i) => (
             <EventCard key={i} item={item} action={null} />
           ))}
@@ -263,7 +290,8 @@ function MessagePart({ part }: { part: Part }) {
           Array.isArray(part.output) ? part.output : [part.output]
         ) as EventRow[]
         return (
-          <div>
+          <div className="flex flex-col gap-1">
+            {tag}
             {items.map((item, i) => (
               <EventCard key={i} item={item} action={action} />
             ))}
@@ -271,15 +299,26 @@ function MessagePart({ part }: { part: Part }) {
         )
       }
       return (
-        <div className="text-xs text-gray-400 italic my-1">
+        <span className="text-xs text-gray-400 italic my-1">
+          {tag}
           {part.name === 'create_event' ? 'Creating…' : 'Updating…'}
-        </div>
+        </span>
       )
     }
 
     if (part.output === undefined) {
-      return <span className="text-xs text-gray-400 italic my-1">Working…</span>
+      return (
+        <span className="text-xs text-gray-400 italic my-1">
+          {tag} Working…
+        </span>
+      )
     }
+
+    return (
+      <div className="flex flex-col gap-1">
+        {tag}
+      </div>
+    )
   }
 
   return null
