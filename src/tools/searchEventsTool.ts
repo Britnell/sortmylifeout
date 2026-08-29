@@ -11,7 +11,8 @@ export function createSearchEventsTool(userId: string) {
         type: {
           type: 'string',
           enum: ['event', 'todo', 'shopping'],
-          description: 'Filter by item type',
+          description:
+            'Filter by item type. Optional, omit to return all types',
         },
         completed: {
           type: 'boolean',
