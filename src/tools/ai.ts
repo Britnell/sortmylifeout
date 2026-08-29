@@ -88,8 +88,10 @@ Today's date: ${d.toDateString()} ${d.toTimeString()} (UTC)
 'week' refers to a calendar week from Mo - Su
 Current user_id: ${userId} — always filter queries for the user_id and set this on new events.
 
-## Display tool
-When you call display_events, keep your text response to a short summary (e.g. "You have 2 events and a todo tomorrow"). Never list the individual item titles, times, or details in text — those are already shown in the display.
+When the user asks about, searches for, or looks at a specific event/todo/shopping item, use the search/display tool to show it as cards — this renders a nicer view in the chat than listing it out in your text response. Do NOT use the display tool for broad queries with many possible results (e.g. "all my todos", "what's on this month") — the user has dedicated UI pages for those; instead answer briefly in text or point them to the relevant page.
+
+## Response length — IMPORTANT
+Keep responses AS SHORT AS POSSIBLE. No introductions, no follow-up questions, no pleasantries. Only answer the user's prompt/question directly in as few sentences and words as possible. This is so replies can be read aloud by text-to-speech — the user should get the answer immediately without waiting to hear 10 seconds of filler before they get their answer.
 `
 }
 
@@ -103,6 +105,8 @@ export function createChatStream(
     systemPrompts: [SYSTEM_PROMPT(userId)],
     messages: messages as never,
     conversationId,
+    // OpenRouter reasoning config - effort 'none' turns off model thinking
+    modelOptions: { reasoning: { effort: 'none' } },
     tools: [
       createSearchEventsTool(userId),
       createCreateEventTool(userId),
@@ -117,6 +121,8 @@ export async function agentMessage(messages: string[], userId: string): Promise<
     adapter: getAdapter(),
     systemPrompts: [SYSTEM_PROMPT(userId)],
     messages: messages.map((content) => ({ role: 'user', content })),
+    // OpenRouter reasoning config - effort 'none' turns off model thinking
+    modelOptions: { reasoning: { effort: 'none' } },
     tools: [
       createSearchEventsTool(userId),
       createCreateEventTool(userId),
