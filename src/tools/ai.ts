@@ -11,20 +11,19 @@ import { createDisplayEventsTool } from '@/tools/displayEventsTool'
 const models = {
   cloudflare: { gemma: '@cf/google/gemma-4-26b-a4b-it' },
   openrouter: {
-    deepseek: 'deepseek/deepseek-v3.2',
-    gemma26: 'google/gemma-4-26b-a4b-it',
-    gemma31: 'google/gemma-4-31b-it',
+    deepseek: 'deepseek/deepseek-v4-flash-0731', // 0.03
+    gemma26: 'google/gemma-4-26b-a4b-it',  // 0.042
+    gemma31: 'google/gemma-4-31b-it', // 0.07
   },
 } as const
 
-export const MODEL = models.cloudflare.gemma
 
 export function getAdapter() {
   return createOpenRouterText(
-    models.openrouter.gemma31,
+    models.openrouter.deepseek,
     process.env.OPENROUTER_API_KEY!,
   )
-  // return createWorkersAiChat(MODEL, { binding: env.AI })
+  // return createWorkersAiChat(models.cloudflare.gemma, { binding: env.AI })
 }
 
 export const SYSTEM_PROMPT = (userId: string) => {
