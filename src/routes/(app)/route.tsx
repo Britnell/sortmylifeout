@@ -3,6 +3,7 @@ import {
   Link,
   Outlet,
   useNavigate,
+  useRouterState,
 } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { authClient } from '../../lib/auth-client'
@@ -19,7 +20,13 @@ export const Route = createFileRoute('/(app)')({
 function RouteComponent() {
   const { data, isPending } = authClient.useSession()
   const navigate = useNavigate()
+  const location = useRouterState({ select: (s) => s.location })
   const [sidebarOpen] = useAtom(sidebarOpenAtom)
+
+  const hideSidebar =
+    location.pathname.startsWith('/todo') ||
+    location.pathname.startsWith('/shopping')
+
 
   useEffect(() => {
     if (!isPending && !data) navigate({ to: '/login' })
@@ -48,7 +55,7 @@ function RouteComponent() {
         {/* Right sidebar */}
         <aside
           className={`flex-shrink-0 transition-all duration-200 overflow-hidden border-l border-gray-200 dark:border-gray-700 bg-white -900 ${
-            sidebarOpen ? 'w-72' : 'w-0'
+            hideSidebar ? 'hidden' : sidebarOpen ? 'w-72' : 'w-0'
           }`}
         >
           <Sidebar />
