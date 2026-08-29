@@ -1,9 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import CalViewSwitcher from '@/components/CalViewSwitcher'
-import { useAtom } from 'jotai'
-import { sidebarOpenAtom } from '@/lib/atoms'
-import Icon from '@/components/Icon'
+import SidebarToggleButton from '@/components/SidebarToggleButton'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
   searchEventsFn,
@@ -20,7 +18,6 @@ export const Route = createFileRoute('/(app)/cal/week')({
 })
 
 function RouteComponent() {
-  const [sidebarOpen, setSidebarOpen] = useAtom(sidebarOpenAtom)
   const [weekOffset] = useState(0)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -125,17 +122,7 @@ function RouteComponent() {
       <div className="flex items-center gap-4 mb-4">
         <CalViewSwitcher />
         <h2 className="text-xl font-semibold mr-auto">{weekLabel}</h2>
-        <button
-          onClick={() => setSidebarOpen((o) => !o)}
-          className="hidden  md:flex items-center justify-center rounded hover:bg-gray-100 px-2 "
-          aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-        >
-          Todos
-          <Icon
-            name="chevron"
-            className={`text-lg ${sidebarOpen ? 'rotate-180' : ''}`}
-          />
-        </button>
+        <SidebarToggleButton />
       </div>
 
       <div className="grid grid-cols-7 sm:gap-1">

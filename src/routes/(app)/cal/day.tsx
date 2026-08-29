@@ -9,6 +9,7 @@ import {
   deleteEventFn,
 } from '@/serverFn/queries.functions'
 import CalendarEventDialog from '@/components/CalendarEventDialog'
+import SidebarToggleButton from '@/components/SidebarToggleButton'
 import type { CalendarEvent } from '@/components/CalendarEventDialog'
 import { isSameDay } from '#/lib/date'
 
@@ -186,12 +187,15 @@ function RouteComponent() {
           </button>
         </div>
 
-        <button
-          className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          onClick={openCreate}
-        >
-          + Add
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            onClick={openCreate}
+          >
+            + Add
+          </button>
+          <SidebarToggleButton />
+        </div>
       </div>
 
       {/* All-day events */}
