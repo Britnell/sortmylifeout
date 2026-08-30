@@ -42,11 +42,11 @@ function RouteComponent() {
           <header className="py-1 flex justify-between items-center">
             <span className="x">App!</span>
             <Link
-              to="/profile"
-              aria-label="Profile"
+              to={location.pathname === '/profile' ? '/todo' : '/profile'}
+              aria-label={location.pathname === '/profile' ? 'Close profile' : 'Profile'}
               className="px-2 grid place-items-center"
             >
-              <Icon name="hamburger" />
+              <Icon name={location.pathname === '/profile' ? 'chevron' : 'hamburger'} />
             </Link>
           </header>
           {data && <Outlet />}
