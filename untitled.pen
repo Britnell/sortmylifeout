@@ -58,10 +58,12 @@
           "type": "frame",
           "id": "qulQk",
           "name": "Tab Month",
+          "gap": 6,
           "padding": [
             8,
             16
           ],
+          "alignItems": "center",
           "children": [
             {
               "type": "text",
@@ -72,6 +74,16 @@
               "fontFamily": "Geist",
               "fontSize": 13,
               "fontWeight": "500"
+            },
+            {
+              "type": "icon",
+              "id": "oXZv1",
+              "name": "Icon",
+              "width": 14,
+              "height": 14,
+              "icon": "calendar-days",
+              "library": "lucide",
+              "fill": "#666666"
             }
           ]
         },
@@ -80,10 +92,12 @@
           "id": "yIiK7",
           "name": "Tab Week",
           "fill": "$--primary",
+          "gap": 6,
           "padding": [
             8,
             16
           ],
+          "alignItems": "center",
           "children": [
             {
               "type": "text",
@@ -94,6 +108,16 @@
               "fontFamily": "Geist",
               "fontSize": 13,
               "fontWeight": "500"
+            },
+            {
+              "type": "icon",
+              "id": "hJLDh",
+              "name": "Icon",
+              "width": 14,
+              "height": 14,
+              "icon": "columns-3",
+              "library": "lucide",
+              "fill": "#111111"
             }
           ]
         },
@@ -101,10 +125,12 @@
           "type": "frame",
           "id": "gJgGl",
           "name": "Tab Day",
+          "gap": 6,
           "padding": [
             8,
             16
           ],
+          "alignItems": "center",
           "children": [
             {
               "type": "text",
@@ -115,6 +141,16 @@
               "fontFamily": "Geist",
               "fontSize": 13,
               "fontWeight": "500"
+            },
+            {
+              "type": "icon",
+              "id": "xCWhW",
+              "name": "Icon",
+              "width": 14,
+              "height": 14,
+              "icon": "alarm-clock",
+              "library": "lucide",
+              "fill": "#666666"
             }
           ]
         },
@@ -122,10 +158,12 @@
           "type": "frame",
           "id": "w8MbTW",
           "name": "Tab Schedule",
+          "gap": 6,
           "padding": [
             8,
             16
           ],
+          "alignItems": "center",
           "children": [
             {
               "type": "text",
@@ -136,6 +174,16 @@
               "fontFamily": "Geist",
               "fontSize": 13,
               "fontWeight": "500"
+            },
+            {
+              "type": "icon",
+              "id": "S2MhaK",
+              "name": "Icon",
+              "width": 14,
+              "height": 14,
+              "icon": "list",
+              "library": "lucide",
+              "fill": "#666666"
             }
           ]
         }
@@ -3012,7 +3060,7 @@
               "id": "xRbcg",
               "name": "Chat Bar Wrap",
               "width": "fill_container",
-              "justifyContent": "center",
+              "alignItems": "end",
               "children": [
                 {
                   "id": "jPr0U",
@@ -3020,7 +3068,7 @@
                   "ref": "pcYdu",
                   "name": "Chat Bar",
                   "width": 320,
-                  "x": 560,
+                  "x": 0,
                   "y": 0
                 }
               ]
@@ -3033,8 +3081,8 @@
       "type": "frame",
       "id": "A0Wri",
       "x": -1683,
-      "y": 2310,
-      "name": "01 Cal Week",
+      "y": 2338,
+      "name": "01a Cal week - create dialog",
       "layout": "vertical",
       "gap": 20,
       "children": [
@@ -5932,7 +5980,7 @@
                                   "id": "dJ9ml",
                                   "name": "Delete",
                                   "fill": "$--destructive",
-                                  "content": "Create",
+                                  "content": "Cancel",
                                   "fontFamily": "$--font-secondary",
                                   "fontSize": 14,
                                   "fontWeight": "600"
@@ -7217,10 +7265,10 @@
                                     {
                                       "type": "frame",
                                       "id": "DbuYb",
-                                      "x": 4,
+                                      "x": 0,
                                       "y": 88,
                                       "name": "Event Standup · 09:00",
-                                      "width": 344,
+                                      "width": 360,
                                       "height": 22,
                                       "fill": "#FFFFFF",
                                       "cornerRadius": 4,
@@ -7255,10 +7303,10 @@
                                     {
                                       "type": "frame",
                                       "id": "XIkDk",
-                                      "x": 4,
-                                      "y": 176,
+                                      "x": 1,
+                                      "y": 177,
                                       "name": "Event Dentist",
-                                      "width": 344,
+                                      "width": 359,
                                       "height": 66,
                                       "fill": "#FFFFFF",
                                       "cornerRadius": 4,
@@ -7303,10 +7351,10 @@
                                     {
                                       "type": "frame",
                                       "id": "i7JRf",
-                                      "x": 4,
+                                      "x": 0,
                                       "y": 352,
                                       "name": "Event Deep work",
-                                      "width": 344,
+                                      "width": 360,
                                       "height": 44,
                                       "fill": "#FFFFFF",
                                       "cornerRadius": 4,
@@ -7351,10 +7399,10 @@
                                     {
                                       "type": "frame",
                                       "id": "HGKUI",
-                                      "x": 4,
+                                      "x": 1,
                                       "y": 484,
                                       "name": "Event Pick up kids · 18:00",
-                                      "width": 344,
+                                      "width": 359,
                                       "height": 22,
                                       "fill": "#FFFFFF",
                                       "cornerRadius": 4,
@@ -9511,101 +9559,10 @@
                           "fontWeight": "600"
                         },
                         {
-                          "type": "frame",
-                          "id": "OG2dT",
-                          "name": "Column Tabs",
-                          "clip": true,
-                          "fill": "#FFFFFF",
-                          "cornerRadius": 8,
-                          "stroke": "#CBCCC9",
-                          "strokeWidth": 1,
-                          "children": [
-                            {
-                              "type": "frame",
-                              "id": "KndBp",
-                              "name": "Tab To Do",
-                              "fill": "$--primary",
-                              "padding": [
-                                8,
-                                16
-                              ],
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "SDpun",
-                                  "name": "To Do",
-                                  "fill": "#111111",
-                                  "content": "To Do",
-                                  "fontFamily": "Geist",
-                                  "fontSize": 13,
-                                  "fontWeight": "500"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "j7zPp",
-                              "name": "Tab Scheduled",
-                              "padding": [
-                                8,
-                                16
-                              ],
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "BmTbj",
-                                  "name": "Scheduled",
-                                  "fill": "#666666",
-                                  "content": "Scheduled",
-                                  "fontFamily": "Geist",
-                                  "fontSize": 13,
-                                  "fontWeight": "500"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "a8FBO",
-                              "name": "Tab Later",
-                              "padding": [
-                                8,
-                                16
-                              ],
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "A0tZw4",
-                                  "name": "Later",
-                                  "fill": "#666666",
-                                  "content": "Later",
-                                  "fontFamily": "Geist",
-                                  "fontSize": 13,
-                                  "fontWeight": "500"
-                                }
-                              ]
-                            },
-                            {
-                              "type": "frame",
-                              "id": "WnxMX",
-                              "name": "Tab Finished",
-                              "padding": [
-                                8,
-                                16
-                              ],
-                              "children": [
-                                {
-                                  "type": "text",
-                                  "id": "WNpXL",
-                                  "name": "Finished",
-                                  "fill": "#666666",
-                                  "content": "Finished",
-                                  "fontFamily": "Geist",
-                                  "fontSize": 13,
-                                  "fontWeight": "500"
-                                }
-                              ]
-                            }
-                          ]
+                          "id": "tVip4",
+                          "type": "ref",
+                          "ref": "k60s03",
+                          "name": "Column Tabs"
                         },
                         {
                           "type": "frame",
@@ -12324,8 +12281,19 @@
                           "type": "frame",
                           "id": "mGMSp",
                           "name": "Center",
+                          "gap": 8,
                           "alignItems": "center",
                           "children": [
+                            {
+                              "type": "icon",
+                              "id": "BEYuB",
+                              "name": "Chevron Left",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "chevron-left",
+                              "library": "lucide",
+                              "fill": "#888888"
+                            },
                             {
                               "type": "text",
                               "id": "Z5sli",
@@ -12335,6 +12303,16 @@
                               "fontFamily": "Geist",
                               "fontSize": 16,
                               "fontWeight": "600"
+                            },
+                            {
+                              "type": "icon",
+                              "id": "JuY3R",
+                              "name": "Chevron Right",
+                              "width": 14,
+                              "height": 14,
+                              "icon": "chevron-right",
+                              "library": "lucide",
+                              "fill": "#888888"
                             }
                           ]
                         },
@@ -15372,6 +15350,7 @@
                           "type": "frame",
                           "id": "k60s03",
                           "name": "Column Tabs",
+                          "reusable": true,
                           "clip": true,
                           "fill": "#FFFFFF",
                           "cornerRadius": 8,
@@ -15383,10 +15362,12 @@
                               "id": "DBfMh",
                               "name": "Tab To Do",
                               "fill": "$--primary",
+                              "gap": 6,
                               "padding": [
                                 8,
                                 16
                               ],
+                              "alignItems": "center",
                               "children": [
                                 {
                                   "type": "text",
@@ -15397,6 +15378,16 @@
                                   "fontFamily": "Geist",
                                   "fontSize": 13,
                                   "fontWeight": "500"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "Vjzz7",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "square",
+                                  "library": "lucide",
+                                  "fill": "#111111"
                                 }
                               ]
                             },
@@ -15404,10 +15395,12 @@
                               "type": "frame",
                               "id": "XS1a1",
                               "name": "Tab Scheduled",
+                              "gap": 6,
                               "padding": [
                                 8,
                                 16
                               ],
+                              "alignItems": "center",
                               "children": [
                                 {
                                   "type": "text",
@@ -15418,6 +15411,16 @@
                                   "fontFamily": "Geist",
                                   "fontSize": 13,
                                   "fontWeight": "500"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "MPXXH",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "calendar-days",
+                                  "library": "lucide",
+                                  "fill": "#666666"
                                 }
                               ]
                             },
@@ -15425,10 +15428,12 @@
                               "type": "frame",
                               "id": "N33PM",
                               "name": "Tab Later",
+                              "gap": 6,
                               "padding": [
                                 8,
                                 16
                               ],
+                              "alignItems": "center",
                               "children": [
                                 {
                                   "type": "text",
@@ -15439,6 +15444,16 @@
                                   "fontFamily": "Geist",
                                   "fontSize": 13,
                                   "fontWeight": "500"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "o52Pmt",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "alarm-clock",
+                                  "library": "lucide",
+                                  "fill": "#666666"
                                 }
                               ]
                             },
@@ -15446,10 +15461,12 @@
                               "type": "frame",
                               "id": "YtVHL",
                               "name": "Tab Finished",
+                              "gap": 6,
                               "padding": [
                                 8,
                                 16
                               ],
+                              "alignItems": "center",
                               "children": [
                                 {
                                   "type": "text",
@@ -15460,6 +15477,16 @@
                                   "fontFamily": "Geist",
                                   "fontSize": 13,
                                   "fontWeight": "500"
+                                },
+                                {
+                                  "type": "icon",
+                                  "id": "RgxH7",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "check-check",
+                                  "library": "lucide",
+                                  "fill": "#666666"
                                 }
                               ]
                             }
