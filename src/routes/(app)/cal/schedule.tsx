@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { List } from 'lucide-react'
 import { createFileRoute } from '@tanstack/react-router'
 import CalendarMenuBar from '#/components/CalendarMenuBar'
 import { useQuery, useMutation } from '@tanstack/react-query'
@@ -187,12 +188,15 @@ function RouteComponent() {
     <div className="">
       <div className="mb-4">
         <CalendarMenuBar onAdd={openCreate} />
-        <div className="mt-3 flex items-center border-y border-[#E7E8E5] py-2">
-          <span className="text-base font-semibold text-[#111111]">Schedule</span>
+        <div className="mt-3 flex items-center border-y border-[#E7E8E5] py-2 px-4">
+          <span className="flex items-center gap-1.5 text-base font-semibold text-[#111111]">
+            <List size={14} strokeWidth={2} className="shrink-0" />
+            Schedule
+          </span>
         </div>
       </div>
 
-      <div className="h-[calc(100vh-180px)] overflow-y-auto scroll-smooth space-y-2">
+      <div className="h-[calc(100vh-180px)] overflow-y-auto scroll-smooth space-y-2 px-4">
         {sortedDates.map(([dateStr, dayEvents]) => {
           const d = parseDate(dateStr)
           const isToday = isSameDay(d, today)

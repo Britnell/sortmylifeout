@@ -10,7 +10,7 @@ export default function CalendarMenuBar({
 	onAdd: () => void
 }) {
 	return (
-		<div className="flex flex-row items-center gap-4 bg-white px-4 py-2 w-full">
+		<div className="flex flex-row items-center gap-4 bg-white pl-4 py-2 w-full">
 			<span className="text-[16px] font-semibold text-[#111111]">Events</span>
 
 			<CalViewSwitcher />

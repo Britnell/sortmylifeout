@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { AlarmClock } from 'lucide-react'
 import { createFileRoute } from '@tanstack/react-router'
 import CalendarMenuBar from '#/components/CalendarMenuBar'
 import { useQuery, useMutation } from '@tanstack/react-query'
@@ -156,8 +157,11 @@ function RouteComponent() {
       {/* Header */}
       <div className="mb-3 shrink-0">
         <CalendarMenuBar onAdd={openCreate} />
-        <div className="mt-3 flex items-center justify-between border-y border-[#E7E8E5] py-2">
-          <span className="text-base font-semibold text-[#111111]">Day</span>
+        <div className="mt-3 flex items-center justify-between border-y border-[#E7E8E5] py-2 px-4">
+          <span className="flex items-center gap-1.5 text-base font-semibold text-[#111111]">
+            <AlarmClock size={14} strokeWidth={2} className="shrink-0" />
+            Day
+          </span>
           <div className="flex items-center gap-1 mx-auto">
             <button
               className="flex items-center text-[#666666] hover:text-black px-1"
@@ -191,7 +195,7 @@ function RouteComponent() {
 
       {/* All-day events */}
       {allDayEvs.length > 0 && (
-        <div className="shrink-0 mb-2 pl-12 space-y-1">
+        <div className="shrink-0 mb-2 pl-12 space-y-1 px-4">
           {allDayEvs.map((ev) =>
             ev.type === 'todo' ? (
               <div
@@ -235,7 +239,7 @@ function RouteComponent() {
       )}
 
       {/* Timeline */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto px-4">
         <div className="relative flex">
           {/* Hour labels */}
           <div className="shrink-0 w-10 select-none">
