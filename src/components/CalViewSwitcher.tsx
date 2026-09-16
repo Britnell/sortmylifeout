@@ -1,12 +1,13 @@
 import { Link, useRouterState, useNavigate } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { useLocalStorage } from '@/lib/useLocalStorage'
+import { CalendarDays, Columns3, AlarmClock, List } from 'lucide-react'
 
 const views = [
-  { label: 'Month', to: '/cal/month' },
-  { label: 'Week', to: '/cal/week' },
-  { label: 'Day', to: '/cal/day' },
-  { label: 'Schedule', to: '/cal/schedule' },
+  { label: 'Month', to: '/cal/month', Icon: CalendarDays },
+  { label: 'Week', to: '/cal/week', Icon: Columns3 },
+  { label: 'Day', to: '/cal/day', Icon: AlarmClock },
+  { label: 'Schedule', to: '/cal/schedule', Icon: List },
 ] as const
 
 export type CalView = (typeof views)[number]['to']
@@ -45,12 +46,13 @@ export default function CalViewSwitcher() {
           <Link
             key={view.to}
             to={view.to}
-            className={`px-4 py-2 text-[13px] font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium transition-colors ${
               view.to === active.to
                 ? 'bg-[var(--primary)] text-[#111111]'
                 : 'text-[#666666] hover:bg-[#F2F3F0]'
             }`}
           >
+            <view.Icon size={14} strokeWidth={2} className="shrink-0" />
             {view.label}
           </Link>
         ))}

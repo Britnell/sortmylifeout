@@ -1,7 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import CalViewSwitcher from '@/components/CalViewSwitcher'
-import SidebarToggleButton from '@/components/SidebarToggleButton'
+import CalendarHeaderBar from '@/components/CalendarHeaderBar'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
   searchEventsFn,
@@ -124,37 +123,25 @@ function RouteComponent() {
   return (
     <div className="flex flex-col gap-3">
       {/* Toolbar */}
-      <div className="flex items-center gap-4">
-        <CalViewSwitcher />
-        <div className="flex items-center gap-4 mx-auto">
-          <button
-            className="text-[#666666] hover:text-black"
-            onClick={() => setWeekOffset((o) => o - 1)}
-            aria-label="Previous week"
-          >
-            <Icon name="chevron" className="rotate-90 text-lg" />
-          </button>
-          <h2 className="text-base font-semibold text-[#111111]">
-            {weekLabel}
-          </h2>
-          <button
-            className="text-[#666666] hover:text-black"
-            onClick={() => setWeekOffset((o) => o + 1)}
-            aria-label="Next week"
-          >
-            <Icon name="chevron" className="-rotate-90 text-lg" />
-          </button>
-        </div>
-        <div className="flex items-center gap-3.5">
-          <button
-            className="px-4 py-2 text-[13px] font-medium bg-[var(--primary)] text-[var(--primary-foreground)] rounded-md"
-            onClick={() => openCreate(fmtDate(today))}
-          >
-            Add
-          </button>
-          <SidebarToggleButton />
-        </div>
-      </div>
+      <CalendarHeaderBar onAdd={() => openCreate(fmtDate(today))}>
+        <button
+          className="text-[#666666] hover:text-black"
+          onClick={() => setWeekOffset((o) => o - 1)}
+          aria-label="Previous week"
+        >
+          <Icon name="chevron" className="rotate-90 text-lg" />
+        </button>
+        <h2 className="text-base font-semibold text-[#111111]">
+          {weekLabel}
+        </h2>
+        <button
+          className="text-[#666666] hover:text-black"
+          onClick={() => setWeekOffset((o) => o + 1)}
+          aria-label="Next week"
+        >
+          <Icon name="chevron" className="-rotate-90 text-lg" />
+        </button>
+      </CalendarHeaderBar>
 
       {/* Week grid */}
       <div className="flex flex-col gap-1 flex-1 min-h-[640px]">

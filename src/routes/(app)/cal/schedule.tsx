@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import CalViewSwitcher from '@/components/CalViewSwitcher'
+import CalendarHeaderBar from '@/components/CalendarHeaderBar'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
   searchEventsFn,
@@ -9,7 +9,6 @@ import {
   deleteEventFn,
 } from '@/serverFn/queries.functions'
 import CalendarEventDialog from '@/components/CalendarEventDialog'
-import SidebarToggleButton from '@/components/SidebarToggleButton'
 import type { CalendarEvent } from '@/components/CalendarEventDialog'
 import { fmtDate, isSameDay } from '#/lib/date'
 
@@ -186,17 +185,8 @@ function RouteComponent() {
 
   return (
     <div className="">
-      <div className="flex items-center justify-between mb-4">
-        <CalViewSwitcher />
-        <div className="flex items-center gap-2">
-          <button
-            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            onClick={openCreate}
-          >
-            + Add
-          </button>
-          <SidebarToggleButton />
-        </div>
+      <div className="mb-4">
+        <CalendarHeaderBar onAdd={openCreate} />
       </div>
 
       <div className="h-[calc(100vh-180px)] overflow-y-auto scroll-smooth space-y-2">
