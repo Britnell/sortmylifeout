@@ -524,7 +524,7 @@
           "clip": true,
           "width": 1440,
           "height": 1024,
-          "fill": "#F2F3F0",
+          "fill": "$bg-col",
           "cornerRadius": 12,
           "stroke": "#CBCCC9",
           "strokeWidth": 1,
@@ -703,7 +703,6 @@
                           "type": "frame",
                           "id": "bceW4",
                           "name": "Week Prev",
-                          "opacity": 0.55,
                           "width": "fill_container",
                           "height": 160,
                           "layout": "vertical",
@@ -722,7 +721,7 @@
                                   "name": "Day 25",
                                   "width": "fill_container",
                                   "height": 160,
-                                  "fill": "#F2F3F0",
+                                  "fill": "#F8F9F6",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -748,7 +747,7 @@
                                   "name": "Day 26",
                                   "width": "fill_container",
                                   "height": 160,
-                                  "fill": "#F2F3F0",
+                                  "fill": "#F8F9F6",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -774,7 +773,7 @@
                                   "name": "Day 27",
                                   "width": "fill_container",
                                   "height": 160,
-                                  "fill": "#F2F3F0",
+                                  "fill": "#F8F9F6",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -836,7 +835,7 @@
                                   "name": "Day 28",
                                   "width": "fill_container",
                                   "height": 160,
-                                  "fill": "#F2F3F0",
+                                  "fill": "#F8F9F6",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -907,7 +906,7 @@
                                   "name": "Day 29",
                                   "width": "fill_container",
                                   "height": 160,
-                                  "fill": "#F2F3F0",
+                                  "fill": "#F8F9F6",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -1046,7 +1045,7 @@
                                   "name": "Day 30",
                                   "width": "fill_container",
                                   "height": 160,
-                                  "fill": "#F2F3F0",
+                                  "fill": "#F8F9F6",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -1097,7 +1096,7 @@
                                   "name": "Day 31",
                                   "width": "fill_container",
                                   "height": 160,
-                                  "fill": "#F2F3F0",
+                                  "fill": "#F8F9F6",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -1887,7 +1886,6 @@
                           "type": "frame",
                           "id": "ZZnWH",
                           "name": "Week Next",
-                          "opacity": 0.55,
                           "width": "fill_container",
                           "height": 160,
                           "layout": "vertical",
@@ -1906,7 +1904,7 @@
                                   "name": "Day 8",
                                   "width": "fill_container",
                                   "height": 160,
-                                  "fill": "#F2F3F0",
+                                  "fill": "#F8F9F6",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -1932,7 +1930,7 @@
                                   "name": "Day 9",
                                   "width": "fill_container",
                                   "height": 160,
-                                  "fill": "#F2F3F0",
+                                  "fill": "#F8F9F6",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -1958,7 +1956,7 @@
                                   "name": "Day 10",
                                   "width": "fill_container",
                                   "height": 160,
-                                  "fill": "#F2F3F0",
+                                  "fill": "#F8F9F6",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -1984,7 +1982,7 @@
                                   "name": "Day 11",
                                   "width": "fill_container",
                                   "height": 160,
-                                  "fill": "#F2F3F0",
+                                  "fill": "#F8F9F6",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -2056,7 +2054,7 @@
                                   "name": "Day 12",
                                   "width": "fill_container",
                                   "height": 160,
-                                  "fill": "#F2F3F0",
+                                  "fill": "#F8F9F6",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -2082,7 +2080,7 @@
                                   "name": "Day 13",
                                   "width": "fill_container",
                                   "height": 160,
-                                  "fill": "#F2F3F0",
+                                  "fill": "#F8F9F6",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -2108,7 +2106,7 @@
                                   "name": "Day 14",
                                   "width": "fill_container",
                                   "height": 160,
-                                  "fill": "#F2F3F0",
+                                  "fill": "#F8F9F6",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -2212,7 +2210,7 @@
           "clip": true,
           "width": 1440,
           "height": 1024,
-          "fill": "#F2F3F0",
+          "fill": "$bg-col",
           "cornerRadius": 12,
           "stroke": "#CBCCC9",
           "strokeWidth": 1,
@@ -2814,7 +2812,7 @@
           "clip": true,
           "width": 1440,
           "height": 1024,
-          "fill": "#F2F3F0",
+          "fill": "$bg-col",
           "cornerRadius": 12,
           "stroke": "#CBCCC9",
           "strokeWidth": 1,
@@ -3124,7 +3122,7 @@
           "clip": true,
           "width": 1440,
           "height": 1024,
-          "fill": "#F2F3F0",
+          "fill": "$bg-col",
           "cornerRadius": 12,
           "stroke": "#CBCCC9",
           "strokeWidth": 1,
@@ -3189,14 +3187,6 @@
                         },
                         {
                           "type": "frame",
-                          "id": "cSRxh",
-                          "name": "Spacer Left",
-                          "width": "fill_container",
-                          "height": 1,
-                          "fill": "#CBCCC9"
-                        },
-                        {
-                          "type": "frame",
                           "id": "kU6Fk",
                           "name": "Date Nav",
                           "gap": 12,
@@ -3256,14 +3246,6 @@
                               "fontWeight": "500"
                             }
                           ]
-                        },
-                        {
-                          "type": "frame",
-                          "id": "j7aPT",
-                          "name": "Spacer Right",
-                          "width": "fill_container",
-                          "height": 1,
-                          "fill": "#CBCCC9"
                         }
                       ]
                     },
@@ -3340,6 +3322,14 @@
                                     0,
                                     0
                                   ],
+                                  "stroke": {
+                                    "type": "color",
+                                    "color": "#000000",
+                                    "enabled": false
+                                  },
+                                  "strokeWidth": {
+                                    "bottom": 1
+                                  },
                                   "padding": [
                                     10,
                                     12
@@ -3409,7 +3399,7 @@
                                       "type": "frame",
                                       "id": "cIuKK",
                                       "name": "All-day Water plants",
-                                      "fill": "#FFFFFF",
+                                      "fill": "#E7E8E5",
                                       "cornerRadius": 6,
                                       "gap": 8,
                                       "padding": [
@@ -3443,24 +3433,22 @@
                                     },
                                     {
                                       "type": "frame",
-                                      "id": "PYqyw",
-                                      "name": "Frame 1",
-                                      "clip": true,
-                                      "width": 287,
-                                      "height": 7,
-                                      "stroke": "#b5b5b5ff",
+                                      "id": "trbtY",
+                                      "name": "Timed Standup",
+                                      "width": "fill_container",
+                                      "stroke": "#E2E3E0",
                                       "strokeWidth": {
                                         "top": 1
                                       },
                                       "strokeAlignment": "inner",
-                                      "layout": "none"
-                                    },
-                                    {
-                                      "type": "frame",
-                                      "id": "trbtY",
-                                      "name": "Timed Standup",
                                       "layout": "vertical",
                                       "gap": 2,
+                                      "padding": [
+                                        8,
+                                        0,
+                                        0,
+                                        0
+                                      ],
                                       "children": [
                                         {
                                           "type": "text",
@@ -3476,7 +3464,7 @@
                                           "type": "frame",
                                           "id": "p0yHL",
                                           "name": "Chip",
-                                          "fill": "#FFFFFF",
+                                          "fill": "#E7E8E5",
                                           "cornerRadius": 6,
                                           "gap": 8,
                                           "padding": [
@@ -3513,8 +3501,20 @@
                                       "type": "frame",
                                       "id": "E1lAn",
                                       "name": "Timed Dentist",
+                                      "width": "fill_container",
+                                      "stroke": "#E2E3E0",
+                                      "strokeWidth": {
+                                        "top": 1
+                                      },
+                                      "strokeAlignment": "inner",
                                       "layout": "vertical",
                                       "gap": 2,
+                                      "padding": [
+                                        8,
+                                        0,
+                                        0,
+                                        0
+                                      ],
                                       "children": [
                                         {
                                           "type": "text",
@@ -3530,7 +3530,7 @@
                                           "type": "frame",
                                           "id": "kce5N",
                                           "name": "Chip",
-                                          "fill": "#FFFFFF",
+                                          "fill": "#E7E8E5",
                                           "cornerRadius": 6,
                                           "gap": 8,
                                           "padding": [
@@ -3573,6 +3573,13 @@
                               "ref": "nw2II",
                               "name": "Day Saturday",
                               "descendants": {
+                                "GNQdI": {
+                                  "fill": "#F2F3F0",
+                                  "stroke": "#E2E3E0",
+                                  "strokeWidth": {
+                                    "bottom": 1
+                                  }
+                                },
                                 "Z9tUp": {
                                   "content": "Saturday"
                                 },
@@ -3625,6 +3632,13 @@
                               "ref": "nw2II",
                               "name": "Day Monday",
                               "descendants": {
+                                "GNQdI": {
+                                  "fill": "#F2F3F0",
+                                  "stroke": "#E2E3E0",
+                                  "strokeWidth": {
+                                    "bottom": 1
+                                  }
+                                },
                                 "Z9tUp": {
                                   "content": "Monday"
                                 },
@@ -3668,6 +3682,13 @@
                               "ref": "nw2II",
                               "name": "Day Wednesday",
                               "descendants": {
+                                "GNQdI": {
+                                  "fill": "#F2F3F0",
+                                  "stroke": "#E2E3E0",
+                                  "strokeWidth": {
+                                    "bottom": 1
+                                  }
+                                },
                                 "Z9tUp": {
                                   "content": "Wednesday"
                                 },
@@ -3686,6 +3707,9 @@
                                 "sZtYF": {
                                   "content": "07:30"
                                 },
+                                "p0yHL": {
+                                  "fill": "#E7E8E5"
+                                },
                                 "G8OuOf": {
                                   "content": "Gym"
                                 },
@@ -3694,10 +3718,10 @@
                                 },
                                 "E1lAn": {
                                   "enabled": true,
-                                  "name": "All-day Call plumber"
+                                  "name": "Timed Call plumber"
                                 },
                                 "ABipa": {
-                                  "enabled": false
+                                  "enabled": true
                                 },
                                 "kce5N": {
                                   "fill": "#E7E8E5"
@@ -3716,6 +3740,13 @@
                               "ref": "nw2II",
                               "name": "Day Friday",
                               "descendants": {
+                                "GNQdI": {
+                                  "fill": "#F2F3F0",
+                                  "stroke": "#E2E3E0",
+                                  "strokeWidth": {
+                                    "bottom": 1
+                                  }
+                                },
                                 "Z9tUp": {
                                   "content": "Friday"
                                 },
@@ -3734,6 +3765,9 @@
                                 "sZtYF": {
                                   "content": "12:30"
                                 },
+                                "p0yHL": {
+                                  "fill": "#E7E8E5"
+                                },
                                 "G8OuOf": {
                                   "content": "Team lunch"
                                 },
@@ -3742,6 +3776,9 @@
                                 },
                                 "E1lAn": {
                                   "enabled": false
+                                },
+                                "kce5N": {
+                                  "fill": "#E7E8E5"
                                 }
                               }
                             },
@@ -3751,6 +3788,13 @@
                               "ref": "nw2II",
                               "name": "Day Monday",
                               "descendants": {
+                                "GNQdI": {
+                                  "fill": "#F2F3F0",
+                                  "stroke": "#E2E3E0",
+                                  "strokeWidth": {
+                                    "bottom": 1
+                                  }
+                                },
                                 "Z9tUp": {
                                   "content": "Monday"
                                 },
@@ -3873,7 +3917,7 @@
           "clip": true,
           "width": 1440,
           "height": 1024,
-          "fill": "#F2F3F0",
+          "fill": "$bg-col",
           "cornerRadius": 12,
           "stroke": "#CBCCC9",
           "strokeWidth": 1,
@@ -4002,7 +4046,7 @@
           "clip": true,
           "width": 1440,
           "height": 1024,
-          "fill": "#F2F3F0",
+          "fill": "$bg-col",
           "cornerRadius": 12,
           "stroke": "#CBCCC9",
           "strokeWidth": 1,
@@ -4847,7 +4891,7 @@
           "clip": true,
           "width": 1440,
           "height": 1024,
-          "fill": "#F2F3F0",
+          "fill": "$bg-col",
           "cornerRadius": 12,
           "stroke": "#CBCCC9",
           "strokeWidth": 1,
@@ -5801,7 +5845,7 @@
                                           "id": "MP7ZW",
                                           "name": "Chip",
                                           "width": "fill_container",
-                                          "fill": "#FFFFFF",
+                                          "fill": "#E7E8E5",
                                           "cornerRadius": 3,
                                           "gap": 4,
                                           "padding": [
@@ -5847,7 +5891,7 @@
                                           "id": "FTH3O",
                                           "name": "Chip",
                                           "width": "fill_container",
-                                          "fill": "#FFFFFF",
+                                          "fill": "#E7E8E5",
                                           "cornerRadius": 3,
                                           "gap": 4,
                                           "padding": [
@@ -5862,7 +5906,7 @@
                                               "name": "Checkbox",
                                               "width": 11,
                                               "height": 11,
-                                              "fill": "#FFFFFF",
+                                              "fill": "#E7E8E5",
                                               "cornerRadius": 3,
                                               "stroke": "#999999",
                                               "strokeWidth": 1
@@ -8006,7 +8050,7 @@
           "clip": true,
           "width": 1440,
           "height": 1024,
-          "fill": "#F2F3F0",
+          "fill": "$bg-col",
           "cornerRadius": 12,
           "stroke": "#CBCCC9",
           "strokeWidth": 1,
@@ -8348,7 +8392,7 @@
                                   "id": "IRXV3",
                                   "name": "Item Book dentist",
                                   "width": "fill_container",
-                                  "fill": "#FFFFFF",
+                                  "fill": "#E7E8E5",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -8387,7 +8431,7 @@
                                   "id": "X60sHW",
                                   "name": "Item Renew passport (editing)",
                                   "width": "fill_container",
-                                  "fill": "#FFFFFF",
+                                  "fill": "#E7E8E5",
                                   "cornerRadius": 6,
                                   "stroke": "#111111",
                                   "strokeWidth": 1,
@@ -8641,7 +8685,7 @@
                                   "id": "oOyjA",
                                   "name": "Item Water plants",
                                   "width": "fill_container",
-                                  "fill": "#FFFFFF",
+                                  "fill": "#E7E8E5",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -8813,7 +8857,7 @@
                                       "id": "NBRAW",
                                       "name": "Todo Standup",
                                       "width": "fill_container",
-                                      "fill": "#FFFFFF",
+                                      "fill": "#E7E8E5",
                                       "cornerRadius": 6,
                                       "stroke": "#CBCCC9",
                                       "strokeWidth": 1,
@@ -8864,7 +8908,7 @@
                                       "id": "X3mJ3",
                                       "name": "Todo Book dentist",
                                       "width": "fill_container",
-                                      "fill": "#FFFFFF",
+                                      "fill": "#E7E8E5",
                                       "cornerRadius": 6,
                                       "stroke": "#CBCCC9",
                                       "strokeWidth": 1,
@@ -8915,7 +8959,7 @@
                                       "id": "QzOB6",
                                       "name": "Todo Gym",
                                       "width": "fill_container",
-                                      "fill": "#FFFFFF",
+                                      "fill": "#E7E8E5",
                                       "cornerRadius": 6,
                                       "stroke": "#CBCCC9",
                                       "strokeWidth": 1,
@@ -8966,7 +9010,7 @@
                                       "id": "fWbM4",
                                       "name": "Todo Dinner with Alex",
                                       "width": "fill_container",
-                                      "fill": "#FFFFFF",
+                                      "fill": "#E7E8E5",
                                       "cornerRadius": 6,
                                       "stroke": "#CBCCC9",
                                       "strokeWidth": 1,
@@ -9043,7 +9087,7 @@
                                       "id": "x89xoH",
                                       "name": "Todo Farmers market",
                                       "width": "fill_container",
-                                      "fill": "#FFFFFF",
+                                      "fill": "#E7E8E5",
                                       "cornerRadius": 6,
                                       "stroke": "#CBCCC9",
                                       "strokeWidth": 1,
@@ -9094,7 +9138,7 @@
                                       "id": "yP8XA",
                                       "name": "Todo Lunch w/ Maya",
                                       "width": "fill_container",
-                                      "fill": "#FFFFFF",
+                                      "fill": "#E7E8E5",
                                       "cornerRadius": 6,
                                       "stroke": "#CBCCC9",
                                       "strokeWidth": 1,
@@ -9145,7 +9189,7 @@
                                       "id": "M9gHp",
                                       "name": "Todo Shopping run",
                                       "width": "fill_container",
-                                      "fill": "#FFFFFF",
+                                      "fill": "#E7E8E5",
                                       "cornerRadius": 6,
                                       "stroke": "#CBCCC9",
                                       "strokeWidth": 1,
@@ -9222,7 +9266,7 @@
                                       "id": "tyNQc",
                                       "name": "Todo Standup",
                                       "width": "fill_container",
-                                      "fill": "#FFFFFF",
+                                      "fill": "#E7E8E5",
                                       "cornerRadius": 6,
                                       "stroke": "#CBCCC9",
                                       "strokeWidth": 1,
@@ -9273,7 +9317,7 @@
                                       "id": "wdxJk",
                                       "name": "Todo Design review",
                                       "width": "fill_container",
-                                      "fill": "#FFFFFF",
+                                      "fill": "#E7E8E5",
                                       "cornerRadius": 6,
                                       "stroke": "#CBCCC9",
                                       "strokeWidth": 1,
@@ -9324,7 +9368,7 @@
                                       "id": "C71hGQ",
                                       "name": "Todo Call plumber",
                                       "width": "fill_container",
-                                      "fill": "#FFFFFF",
+                                      "fill": "#E7E8E5",
                                       "cornerRadius": 6,
                                       "stroke": "#CBCCC9",
                                       "strokeWidth": 1,
@@ -9375,7 +9419,7 @@
                                       "id": "g4lVf",
                                       "name": "Todo Yoga",
                                       "width": "fill_container",
-                                      "fill": "#FFFFFF",
+                                      "fill": "#E7E8E5",
                                       "cornerRadius": 6,
                                       "stroke": "#CBCCC9",
                                       "strokeWidth": 1,
@@ -9537,7 +9581,7 @@
                                   "id": "JcxbD",
                                   "name": "Item Milk",
                                   "width": "fill_container",
-                                  "fill": "#FFFFFF",
+                                  "fill": "#E7E8E5",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -9588,7 +9632,7 @@
                                   "id": "LxaYF",
                                   "name": "Item Coffee beans",
                                   "width": "fill_container",
-                                  "fill": "#FFFFFF",
+                                  "fill": "#E7E8E5",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -9639,7 +9683,7 @@
                                   "id": "fP5rV",
                                   "name": "Item Bread",
                                   "width": "fill_container",
-                                  "fill": "#FFFFFF",
+                                  "fill": "#E7E8E5",
                                   "cornerRadius": 6,
                                   "stroke": "#CBCCC9",
                                   "strokeWidth": 1,
@@ -10855,7 +10899,7 @@
                       "name": "Event 1",
                       "width": 311,
                       "height": 22,
-                      "fill": "#FFFFFF",
+                      "fill": "#E7E8E5",
                       "cornerRadius": 4,
                       "gap": 8,
                       "padding": [
@@ -10868,18 +10912,28 @@
                           "type": "frame",
                           "id": "S4HSn",
                           "name": "Col",
-                          "layout": "vertical",
-                          "gap": 2,
+                          "gap": 6,
+                          "alignItems": "center",
                           "children": [
                             {
                               "type": "text",
                               "id": "uRZXp",
                               "name": "Title",
                               "fill": "#111111",
-                              "content": "Standup · 09:00",
+                              "content": "Standup",
                               "fontFamily": "Geist",
                               "fontSize": 12,
                               "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "PGrkD",
+                              "name": "Duration",
+                              "fill": "#666666",
+                              "content": "30m",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 10,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -10893,7 +10947,7 @@
                       "name": "Event 2",
                       "width": 311,
                       "height": 43,
-                      "fill": "#FFFFFF",
+                      "fill": "#E7E8E5",
                       "cornerRadius": 4,
                       "gap": 8,
                       "padding": [
@@ -10906,8 +10960,8 @@
                           "type": "frame",
                           "id": "Tven1",
                           "name": "Col",
-                          "layout": "vertical",
-                          "gap": 2,
+                          "gap": 6,
+                          "alignItems": "center",
                           "children": [
                             {
                               "type": "text",
@@ -10924,7 +10978,7 @@
                               "id": "pAWSb",
                               "name": "Time",
                               "fill": "#666666",
-                              "content": "11:00 – 12:00",
+                              "content": "1h",
                               "fontFamily": "JetBrains Mono",
                               "fontSize": 10,
                               "fontWeight": "normal"
@@ -10941,7 +10995,7 @@
                       "name": "Event 3",
                       "width": 311,
                       "height": 44,
-                      "fill": "#FFFFFF",
+                      "fill": "#E7E8E5",
                       "cornerRadius": 4,
                       "gap": 8,
                       "padding": [
@@ -10954,8 +11008,8 @@
                           "type": "frame",
                           "id": "ZYR9k",
                           "name": "Col",
-                          "layout": "vertical",
-                          "gap": 2,
+                          "gap": 6,
+                          "alignItems": "center",
                           "children": [
                             {
                               "type": "text",
@@ -10972,7 +11026,7 @@
                               "id": "c5ldUP",
                               "name": "Time",
                               "fill": "#666666",
-                              "content": "15:00 – 16:00",
+                              "content": "1h",
                               "fontFamily": "JetBrains Mono",
                               "fontSize": 10,
                               "fontWeight": "normal"
@@ -10989,7 +11043,7 @@
                       "name": "Event 4",
                       "width": 311,
                       "height": 22,
-                      "fill": "#FFFFFF",
+                      "fill": "#E7E8E5",
                       "cornerRadius": 4,
                       "gap": 8,
                       "padding": [
@@ -11002,18 +11056,28 @@
                           "type": "frame",
                           "id": "w2owg",
                           "name": "Col",
-                          "layout": "vertical",
-                          "gap": 2,
+                          "gap": 6,
+                          "alignItems": "center",
                           "children": [
                             {
                               "type": "text",
                               "id": "difn3",
                               "name": "Title",
                               "fill": "#111111",
-                              "content": "Pick up kids · 18:00",
+                              "content": "Pick up kids",
                               "fontFamily": "Geist",
                               "fontSize": 12,
                               "fontWeight": "500"
+                            },
+                            {
+                              "type": "text",
+                              "id": "f2qAD",
+                              "name": "Duration",
+                              "fill": "#666666",
+                              "content": "30m",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 10,
+                              "fontWeight": "normal"
                             }
                           ]
                         }
@@ -11468,6 +11532,10 @@
           }
         }
       ]
+    },
+    "bg-col": {
+      "type": "color",
+      "value": "#E6E7E3"
     }
   },
   "fileToken": "64e08c71-1d4e-4ac1-b78b-31eeb9e4b959"
