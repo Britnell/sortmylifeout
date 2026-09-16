@@ -15,3 +15,7 @@
 - use tabs not spaces - important! you have edit errors all the time with edit tool
 - i have `npm dev` running
 - pckg manager bun
+
+## Style & Design
+- we have design & style system in pen.dev (formerly pencil)
+- see `./untitled.pen`

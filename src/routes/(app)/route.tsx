@@ -24,7 +24,7 @@ function RouteComponent() {
   const navigate = useNavigate()
   const location = useRouterState({ select: (s) => s.location })
   const [sidebarOpen] = useAtom(sidebarOpenAtom)
-  const [lastCalView] = useLocalStorage<CalView>('cal-last-view', '/cal/week')
+  const [lastCalView] = useLocalStorage<CalView>('cal-last-view', '/cal/month')
 
   const hideSidebar =
     location.pathname.startsWith('/todo') ||

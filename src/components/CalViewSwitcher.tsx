@@ -3,9 +3,10 @@ import { useEffect } from 'react'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 
 const views = [
+  { label: 'Month', to: '/cal/month' },
   { label: 'Week', to: '/cal/week' },
-  { label: 'Schedule', to: '/cal/schedule' },
   { label: 'Day', to: '/cal/day' },
+  { label: 'Schedule', to: '/cal/schedule' },
 ] as const
 
 export type CalView = (typeof views)[number]['to']
@@ -16,7 +17,7 @@ export default function CalViewSwitcher() {
   const active = views.find((v) => pathname.startsWith(v.to)) ?? views[0]
   const [, setLastCalView] = useLocalStorage<CalView>(
     'cal-last-view',
-    '/cal/week',
+    '/cal/month',
   )
 
   useEffect(() => {

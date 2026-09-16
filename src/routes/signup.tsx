@@ -35,7 +35,7 @@ function SignupPage() {
       return
     }
 
-    navigate({ to: '/cal/week' })
+    navigate({ to: '/cal/month' })
   }
 
   return (

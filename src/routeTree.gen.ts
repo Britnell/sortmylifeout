@@ -26,6 +26,7 @@ import { Route as appProfileRouteImport } from './routes/(app)/profile'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as appCalWeekRouteImport } from './routes/(app)/cal/week'
 import { Route as appCalScheduleRouteImport } from './routes/(app)/cal/schedule'
+import { Route as appCalMonthRouteImport } from './routes/(app)/cal/month'
 import { Route as appCalDayRouteImport } from './routes/(app)/cal/day'
 
 const SignupRoute = SignupRouteImport.update({
@@ -112,6 +113,11 @@ const appCalScheduleRoute = appCalScheduleRouteImport.update({
   path: '/cal/schedule',
   getParentRoute: () => appRouteRoute,
 } as any)
+const appCalMonthRoute = appCalMonthRouteImport.update({
+  id: '/cal/month',
+  path: '/cal/month',
+  getParentRoute: () => appRouteRoute,
+} as any)
 const appCalDayRoute = appCalDayRouteImport.update({
   id: '/cal/day',
   path: '/cal/day',
@@ -133,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/api/test': typeof ApiTestRoute
   '/api/wazap': typeof ApiWazapRoute
   '/cal/day': typeof appCalDayRoute
+  '/cal/month': typeof appCalMonthRoute
   '/cal/schedule': typeof appCalScheduleRoute
   '/cal/week': typeof appCalWeekRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/api/test': typeof ApiTestRoute
   '/api/wazap': typeof ApiWazapRoute
   '/cal/day': typeof appCalDayRoute
+  '/cal/month': typeof appCalMonthRoute
   '/cal/schedule': typeof appCalScheduleRoute
   '/cal/week': typeof appCalWeekRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -173,6 +181,7 @@ export interface FileRoutesById {
   '/api/test': typeof ApiTestRoute
   '/api/wazap': typeof ApiWazapRoute
   '/(app)/cal/day': typeof appCalDayRoute
+  '/(app)/cal/month': typeof appCalMonthRoute
   '/(app)/cal/schedule': typeof appCalScheduleRoute
   '/(app)/cal/week': typeof appCalWeekRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -194,6 +203,7 @@ export interface FileRouteTypes {
     | '/api/test'
     | '/api/wazap'
     | '/cal/day'
+    | '/cal/month'
     | '/cal/schedule'
     | '/cal/week'
     | '/api/auth/$'
@@ -213,6 +223,7 @@ export interface FileRouteTypes {
     | '/api/test'
     | '/api/wazap'
     | '/cal/day'
+    | '/cal/month'
     | '/cal/schedule'
     | '/cal/week'
     | '/api/auth/$'
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/api/test'
     | '/api/wazap'
     | '/(app)/cal/day'
+    | '/(app)/cal/month'
     | '/(app)/cal/schedule'
     | '/(app)/cal/week'
     | '/api/auth/$'
@@ -374,6 +386,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appCalScheduleRouteImport
       parentRoute: typeof appRouteRoute
     }
+    '/(app)/cal/month': {
+      id: '/(app)/cal/month'
+      path: '/cal/month'
+      fullPath: '/cal/month'
+      preLoaderRoute: typeof appCalMonthRouteImport
+      parentRoute: typeof appRouteRoute
+    }
     '/(app)/cal/day': {
       id: '/(app)/cal/day'
       path: '/cal/day'
@@ -389,6 +408,7 @@ interface appRouteRouteChildren {
   appShoppingRoute: typeof appShoppingRoute
   appTodoRoute: typeof appTodoRoute
   appCalDayRoute: typeof appCalDayRoute
+  appCalMonthRoute: typeof appCalMonthRoute
   appCalScheduleRoute: typeof appCalScheduleRoute
   appCalWeekRoute: typeof appCalWeekRoute
 }
@@ -398,6 +418,7 @@ const appRouteRouteChildren: appRouteRouteChildren = {
   appShoppingRoute: appShoppingRoute,
   appTodoRoute: appTodoRoute,
   appCalDayRoute: appCalDayRoute,
+  appCalMonthRoute: appCalMonthRoute,
   appCalScheduleRoute: appCalScheduleRoute,
   appCalWeekRoute: appCalWeekRoute,
 }

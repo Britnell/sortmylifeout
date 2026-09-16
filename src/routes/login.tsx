@@ -13,7 +13,7 @@ function LoginPage() {
 
   const { data } = authClient.useSession()
   useEffect(() => {
-    if (data?.user) navigate({ to: '/cal/week' })
+    if (data?.user) navigate({ to: '/cal/month' })
   }, [data])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -33,7 +33,7 @@ function LoginPage() {
       return
     }
 
-    navigate({ to: '/cal/week' })
+    navigate({ to: '/cal/month' })
   }
 
   return (

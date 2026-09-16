@@ -16,6 +16,29 @@ export function getWeekDays(weekOffset: number): Date[] {
   })
 }
 
+export function getMonthDays(monthOffset: number): Date[][] {
+	const now = new Date()
+	const first = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1)
+	const dayOfWeek = first.getDay()
+	const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+	const gridStart = new Date(first)
+	gridStart.setDate(gridStart.getDate() + mondayOffset)
+	const weeks: Date[][] = []
+	let cur = gridStart
+	while (cur < first || cur.getMonth() === first.getMonth()) {
+		weeks.push(
+			Array.from({ length: 7 }, (_, i) => {
+				const d = new Date(cur)
+				d.setDate(d.getDate() + i)
+				return d
+			}),
+		)
+		cur = new Date(cur)
+		cur.setDate(cur.getDate() + 7)
+	}
+	return weeks
+}
+
 export function fmtDate(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
