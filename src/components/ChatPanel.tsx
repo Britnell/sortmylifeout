@@ -8,6 +8,7 @@ import {
   EVENT_MUTATING_TOOLS,
 } from '../lib/queryCache'
 import { EventCard, type EventRow } from './EventCard'
+import { Mic, X } from 'lucide-react'
 
 export function ChatPanel() {
   const [input, setInput] = useState('')
@@ -96,20 +97,10 @@ export function ChatPanel() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 px-3 sm:pb-3">
+    <div className="fixed bottom-3 right-3 z-50 pr-2 sm:bottom-4 sm:right-4">
       <div
-        className={`mx-auto shadow-2xl rounded-lg overflow-hidden border border-gray-200 bg-white transition-[width] duration-200 max-w-full ${isActive ? 'w-[540px]' : 'w-[320px]'}`}
+        className={`rounded-xl overflow-hidden border border-[#CBCCC9] bg-[var(--primary)] shadow-2xl transition-[width] duration-200 max-w-[calc(100vw-1.5rem)] ${isActive ? 'w-[546px]' : 'w-[320px]'}`}
       >
-        {hasMessages && !expanded && (
-          <button
-            onClick={() => setExpanded(true)}
-            className="flex items-center justify-between px-4 py-2 bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors"
-          >
-            <span>Assistant</span>
-            <span className="opacity-75">▴</span>
-          </button>
-        )}
-
         {expanded && hasMessages && (
           <MessageList
             messages={messages}
@@ -119,9 +110,9 @@ export function ChatPanel() {
           />
         )}
 
-        <form onSubmit={handleSubmit} className="flex flex-col">
+        <form onSubmit={handleSubmit} className="flex flex-col bg-[var(--primary)]">
           {/* Mobile only: input gets its own top row */}
-          <div className="flex min-[500px]:hidden items-center px-2 pt-1.5 pb-0.5">
+          <div className="flex min-[500px]:hidden items-center px-2 pt-2 pb-0">
             <input
               type="search"
               value={input}
@@ -129,20 +120,20 @@ export function ChatPanel() {
               onFocus={handleFocus}
               onBlur={handleBlur}
               placeholder="Ask anything…"
-              className="flex-1 min-w-0 py-2 px-3 text-sm bg-gray-50 ring-1 ring-gray-200 rounded-lg focus:outline-none placeholder:text-gray-400 text-gray-800"
+              className="flex-1 min-w-0 py-1.5 px-2.5 text-[13px] bg-white rounded-md focus:outline-none placeholder:text-[#111]/60 text-[#111]"
             />
           </div>
 
-          {/* Bar: mic + nav + (desktop: input) + send */}
-          <div className="flex items-center gap-1.5 px-2 py-1.5">
-            {/* Mic: after nav on mobile, after input on desktop */}
+          {/* Bar: mic + (desktop: input) + send */}
+          <div className="flex items-center gap-1.5 p-2">
+            {/* Mic */}
             <button
               type="button"
               onClick={toggleListening}
-              className={`shrink-0 flex items-center justify-center w-8 h-8 rounded-lg transition-colors order-2 min-[500px]:order-3 ${isListening ? 'bg-red-500 text-white' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+              className={`shrink-0 flex items-center justify-center w-9 h-9 rounded-md transition-colors order-2 min-[500px]:order-1 ${isListening ? 'bg-[#111] text-white' : 'text-[#111] hover:bg-white/50'}`}
               aria-label={isListening ? 'Stop listening' : 'Voice input'}
             >
-              🎤
+              <Mic size={18} strokeWidth={1.5} />
             </button>
 
             {/* Desktop only: input fills remaining space */}
@@ -153,7 +144,7 @@ export function ChatPanel() {
               onFocus={handleFocus}
               onBlur={handleBlur}
               placeholder="Ask anything…"
-              className={`hidden min-[500px]:block flex-1 min-w-0 py-1.5 px-2 text-sm rounded-lg focus:outline-none placeholder:text-gray-400 text-gray-800 min-[500px]:order-2 ${isActive ? 'bg-gray-50 ring-1 ring-gray-200' : 'bg-transparent'}`}
+              className={`hidden min-[500px]:block flex-1 min-w-0 h-9 px-2.5 text-[13px] rounded-md focus:outline-none placeholder:text-[#111]/60 text-[#111] min-[500px]:order-2 ${isActive ? 'bg-white' : 'bg-transparent'}`}
             />
 
             {/* Send/Stop: last in bar */}
@@ -162,7 +153,7 @@ export function ChatPanel() {
                 <button
                   type="button"
                   onClick={stop}
-                  className="shrink-0 px-3 py-1.5 text-xs bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors font-medium order-3 min-[500px]:order-4"
+                  className="shrink-0 px-3.5 py-1.5 text-xs bg-[#111] text-white rounded-full hover:opacity-80 transition-opacity font-medium order-3"
                 >
                   Stop
                 </button>
@@ -170,7 +161,7 @@ export function ChatPanel() {
                 <button
                   type="submit"
                   disabled={!input.trim()}
-                  className="shrink-0 px-3 py-1.5 text-xs bg-blue-600 text-white rounded-full disabled:opacity-30 hover:bg-blue-700 transition-colors font-medium order-3 min-[500px]:order-4"
+                  className="shrink-0 px-3.5 py-1.5 text-xs bg-white text-[#111] rounded-full disabled:opacity-30 hover:opacity-80 transition-opacity font-medium order-3"
                 >
                   Send
                 </button>
@@ -186,12 +177,7 @@ type Part = UIMessage['parts'][number]
 
 function ToolCallTag() {
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-blue-600 bg-blue-50 ring-1 ring-blue-100 rounded px-1.5 py-0.5 mb-1">
-      <span className="inline-flex items-center w-3 h-3">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-full h-full">
-          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-        </svg>
-      </span>
+    <span className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[1px] text-[#111] border border-[#FF8400] rounded px-1.5 py-0.5">
       action
     </span>
   )
@@ -200,11 +186,11 @@ function ToolCallTag() {
 function MessagePart({ part }: { part: Part }) {
   if (part.type === 'thinking') {
     return (
-      <details className="text-xs text-gray-400 mb-1">
+      <details className="text-[11px] italic text-[#666]">
         <summary className="cursor-pointer select-none italic">
-          thinking...
+          thinking…
         </summary>
-        <div className="mt-1 whitespace-pre-wrap pl-1 border-l-2 border-gray-100">
+        <div className="mt-1 whitespace-pre-wrap pl-1 border-l-2 border-[#CBCCC9]">
           {part.content}
         </div>
       </details>
@@ -232,7 +218,7 @@ function MessagePart({ part }: { part: Part }) {
 
       if (!items?.length) {
         return (
-          <span className="text-xs text-gray-400 italic my-1">Loading…</span>
+          <span className="text-[11px] text-[#666] italic my-1">Loading…</span>
         )
       }
       return (
@@ -261,7 +247,7 @@ function MessagePart({ part }: { part: Part }) {
         )
       }
       return (
-        <span className="text-xs text-gray-400 italic my-1">
+        <span className="text-[11px] text-[#666] italic my-1">
           {tag}
           {part.name === 'create_event' ? 'Creating…' : 'Updating…'}
         </span>
@@ -270,7 +256,7 @@ function MessagePart({ part }: { part: Part }) {
 
     if (part.output === undefined) {
       return (
-        <span className="text-xs text-gray-400 italic my-1">
+        <span className="text-[11px] text-[#666] italic my-1">
           {tag} Working…
         </span>
       )
@@ -298,35 +284,33 @@ function MessageList({
   messagesEndRef: React.RefObject<HTMLDivElement | null>
 }) {
   return (
-    <div className="border-b border-gray-100">
+    <div className="bg-white">
       <div className="flex justify-between items-center px-3 pt-2 pb-1">
         <button
           onClick={onNewChat}
-          className="text-gray-400 hover:text-gray-600 text-xs"
+          className="text-xs text-[#666] hover:text-[#111]"
           aria-label="New chat"
         >
           New chat
         </button>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-600 text-sm"
+          className="text-[#666] hover:text-[#111]"
           aria-label="Close"
         >
-          ✕
+          <X size={14} />
         </button>
       </div>
-      <div className="overflow-y-auto max-h-72 px-3 pb-3 flex flex-col gap-3">
+      <div className="h-px bg-[#CBCCC9]" />
+      <div className="overflow-y-auto max-h-72 p-3 flex flex-col gap-3">
         {messages.map((message, idx) => (
-          <div
-            key={message.id}
-            className={`text-sm ${message.role === 'assistant' ? 'text-blue-700' : 'text-gray-800'}`}
-          >
+          <div key={message.id} className="flex flex-col gap-1">
             {messages[idx - 1]?.role !== message.role && (
-              <div className="font-semibold mb-0.5 text-xs uppercase tracking-wide opacity-60">
+              <div className="text-[10px] font-semibold uppercase tracking-[1px] text-[#666]">
                 {message.role === 'assistant' ? 'Assistant' : 'You'}
               </div>
             )}
-            <div>
+            <div className="text-[13px] text-[#111]">
               {message.parts.map((part: Part, i: number) => (
                 <MessagePart key={i} part={part} />
               ))}
