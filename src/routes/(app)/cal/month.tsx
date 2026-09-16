@@ -178,11 +178,12 @@ function RouteComponent() {
                   day={day}
                   monthDate={monthDate}
                   dayEvents={eventsByDate.get(fmtDate(day)) || []}
-                  onOpen={(rect) => {
+                  onMore={(rect) => {
                     setAnchorRect(rect)
                     setExpandedDay(fmtDate(day))
                   }}
                   onCreate={() => openCreate(fmtDate(day))}
+                  onEdit={openEdit}
                 />
               ))}
             </div>
@@ -221,14 +222,16 @@ function DayCell({
   day,
   monthDate,
   dayEvents,
-  onOpen,
+  onMore,
   onCreate,
+  onEdit,
 }: {
   day: Date
   monthDate: Date
   dayEvents: CalendarEvent[]
-  onOpen: (rect: DOMRect) => void
+  onMore: (rect: DOMRect) => void
   onCreate: () => void
+  onEdit: (ev: CalendarEvent, e?: React.MouseEvent) => void
 }) {
   const today = new Date()
   const isToday = isSameDay(day, today)
@@ -241,8 +244,10 @@ function DayCell({
   const rest = sorted.length - visible.length
 
   const Chip = ({ ev }: { ev: CalendarEvent }) => (
-    <div
-      className={`flex items-center gap-1 w-full px-1.5 py-[3px] rounded-[3px] bg-[#E7E8E5]`}
+    <button
+      type="button"
+      className="flex items-center gap-1 w-full text-left px-1.5 py-[3px] rounded-[3px] bg-[#E7E8E5] hover:bg-[#D8D9D6]"
+      onClick={(e) => onEdit(ev, e)}
     >
       {ev.type === 'todo' && (
         <input
@@ -253,7 +258,7 @@ function DayCell({
         />
       )}
       <span className="text-[11px] text-[#111111] truncate">{ev.title}</span>
-    </div>
+    </button>
   )
 
   const EventItem = ({ ev }: { ev: CalendarEvent }) =>
@@ -270,12 +275,8 @@ function DayCell({
 
   return (
     <div
-      className={`flex flex-col text-left w-full cursor-pointer rounded-md border bg-white border-[#CBCCC9] ${!inMonth && 'bg-[#F2F3F0]'}`}
-      onClick={(e) =>
-        dayEvents.length === 0
-          ? onCreate()
-          : onOpen(e.currentTarget.getBoundingClientRect())
-      }
+      className="flex flex-col text-left w-full cursor-pointer rounded-md border bg-white border-[#CBCCC9] ${!inMonth && 'bg-[#F2F3F0]'}"
+      onClick={() => onCreate()}
     >
       <span
         className={`w-full text-left text-sm font-semibold pt-1 pb-0.5 px-1.5 rounded-t-sm ${
@@ -289,9 +290,15 @@ function DayCell({
           <EventItem key={ev.id} ev={ev} />
         ))}
         {rest > 0 && (
-          <span className="text-[11px] text-[#666666]">
+          <button
+            className="text-left text-[11px] text-[#666666] hover:text-black hover:bg-[#E7E8E5] rounded px-1 w-full"
+            onClick={(e) => {
+              e.stopPropagation()
+              onMore(e.currentTarget.getBoundingClientRect())
+            }}
+          >
             +{rest} more
-          </span>
+          </button>
         )}
       </div>
     </div>
