@@ -163,16 +163,27 @@ export default function CalendarEventDialog({
 
   return (
     <Dialog isOpen={isOpen} onClose={handleClose} closeOnOutsideClick>
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <h3 className="text-lg font-semibold">
-          {localEditing
-            ? `Edit ${itemType === 'todo' ? 'Todo' : 'Event'}`
-            : 'Create'}
-        </h3>
+      <form onSubmit={handleSubmit}>
+        <div className="flex items-center justify-between bg-[var(--primary)] px-3 py-2">
+          <h3 className="text-lg font-semibold text-[#111]">
+            {localEditing
+              ? `Edit ${itemType === 'todo' ? 'Todo' : 'Event'}`
+              : 'Create Event'}
+          </h3>
+          <button
+            type="button"
+            className="text-[#999] text-base leading-none hover:text-[#666]"
+            onClick={handleClose}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
 
-        <div className="flex gap-0 border border-gray-300 rounded-md overflow-hidden">
+        <div className="flex flex-col gap-[13px] p-[13px]">
+        <div className="flex gap-[3px] h-[38px] rounded-lg bg-[#F2F3F0] p-[3px]">
           <label
-            className={`flex-1 py-2 px-4 text-sm cursor-pointer text-center font-medium transition-colors ${itemType === 'event' ? 'bg-blue-50 border-r border-gray-300 text-blue-700' : 'border-r border-gray-300 text-gray-600 '}`}
+            className={`flex-1 rounded-md flex items-center justify-center text-[13px] font-medium cursor-pointer transition-colors ${itemType === 'event' ? 'bg-white text-[#111]' : 'text-[#888]'}`}
           >
             <input
               type="radio"
@@ -185,7 +196,7 @@ export default function CalendarEventDialog({
             Event
           </label>
           <label
-            className={`flex-1 py-2 px-4 text-sm cursor-pointer text-center font-medium transition-colors ${itemType === 'todo' ? 'bg-blue-50 text-blue-700' : 'text-gray-600 '}`}
+            className={`flex-1 rounded-md flex items-center justify-center text-[13px] font-medium cursor-pointer transition-colors ${itemType === 'todo' ? 'bg-white text-[#111]' : 'text-[#888]'}`}
           >
             <input
               type="radio"
@@ -200,7 +211,7 @@ export default function CalendarEventDialog({
         </div>
 
         {localEditing?.type === 'todo' && (
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <label className="flex items-center gap-1.5 text-[13px] cursor-pointer text-[#666]">
             <input
               type="checkbox"
               checked={!!localEditing.completed}
@@ -221,18 +232,18 @@ export default function CalendarEventDialog({
           required
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
           placeholder="Title"
         />
 
         <div>
-          <label className="block mb-1 text-sm font-medium text-gray-700">
+          <label className="block mb-1.5 text-xs font-medium text-[#666]">
             {itemType === 'todo' ? 'Date' : 'Start'}
           </label>
           {itemType === 'todo' && !beginDate ? (
             <button
               type="button"
-              className="w-full py-2 px-3 border border-gray-300 rounded-md text-sm text-gray-600 hover:bg-gray-50"
+              className="w-full h-9 rounded-lg border border-[#DDDDD8] text-[13px] text-[#666] hover:bg-[#F2F3F0]"
               onClick={() => {
                 const today = fmtDate(new Date())
                 setBeginDate(today)
@@ -242,12 +253,12 @@ export default function CalendarEventDialog({
               + Add date
             </button>
           ) : (
-            <div className="grid grid-cols-3 gap-2">
+            <div className="flex gap-2 items-center">
               <input
                 type="date"
                 value={beginDate}
                 required={itemType === 'event'}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="flex-1 h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 onChange={(e) => {
                   setBeginDate(e.target.value)
                   if (duration) {
@@ -266,7 +277,7 @@ export default function CalendarEventDialog({
                 ref={timeRef}
                 type="time"
                 value={beginTime}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="flex-1 h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 onChange={(e) => {
                   const t = e.target.value
                   setBeginTime(t)
@@ -288,7 +299,7 @@ export default function CalendarEventDialog({
               {itemType === 'todo' && (
                 <button
                   type="button"
-                  className="px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm font-medium text-gray-600"
+                  className="h-9 px-3 rounded-lg border border-[#DDDDD8] hover:bg-[#F2F3F0] text-[13px] font-medium text-[#666]"
                   onClick={() => {
                     setBeginDate('')
                     setBeginTime('')
@@ -301,7 +312,7 @@ export default function CalendarEventDialog({
                 </button>
               )}
               {itemType === 'event' && (
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <label className="flex items-center gap-1.5 text-[13px] cursor-pointer text-[#666]">
                   <input
                     type="checkbox"
                     checked={allDay}
@@ -334,15 +345,15 @@ export default function CalendarEventDialog({
 
         {itemType !== 'todo' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-[#666] mb-1.5">
               End
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="flex gap-2 items-center">
               <input
                 type="date"
                 value={endDate}
                 required={itemType === 'event'}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="flex-1 h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 onChange={(e) => {
                   setEndDate(e.target.value)
                   setDuration('')
@@ -352,7 +363,7 @@ export default function CalendarEventDialog({
                 type="time"
                 value={endTime}
                 required={itemType === 'event' && !allDay}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="flex-1 h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 onChange={(e) => {
                   setEndTime(e.target.value)
                   setDuration('')
@@ -360,7 +371,7 @@ export default function CalendarEventDialog({
               />
               <select
                 value={duration}
-                className="w-full px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="flex-1 h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] text-[#888] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 onChange={(e) => {
                   const d = e.target.value
                   setDuration(d)
@@ -401,54 +412,63 @@ export default function CalendarEventDialog({
           rows={3}
           value={detail}
           onChange={(e) => setDetail(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2.5 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] resize-none placeholder:text-[#AAA]"
           placeholder="Description"
         />
 
-        <button
-          type="submit"
-          disabled={isPending}
-          className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50"
-        >
-          {isPending
-            ? localEditing
-              ? 'Saving...'
-              : 'Creating...'
-            : localEditing
-              ? 'Save'
-              : `Create ${itemType === 'todo' ? 'Todo' : 'Event'}`}
-        </button>
+        {localEditing && !showDeleteConfirm && (
+          <button
+            type="button"
+            className="self-start h-7 px-3 rounded-md border border-[#DDDDD8] text-xs text-[#888] hover:bg-[#F2F3F0] hover:text-red-600"
+            onClick={() => setShowDeleteConfirm(true)}
+          >
+            Delete
+          </button>
+        )}
 
-        {localEditing &&
-          (showDeleteConfirm ? (
-            <div className="pt-2">
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  className="flex-1 py-2 px-4 border rounded-md hover:bg-gray-50"
-                  onClick={() => setShowDeleteConfirm(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="flex-1 py-2 px-4 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 disabled:opacity-50"
-                  disabled={deleteMutation.isPending}
-                  onClick={() => deleteMutation.mutate(localEditing.id)}
-                >
-                  {deleteMutation.isPending ? 'Deleting...' : 'Yes, delete'}
-                </button>
-              </div>
-            </div>
-          ) : (
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className="flex-1 h-[38px] rounded-lg border border-[#DDDDD8] text-sm font-semibold text-[#666] hover:bg-[#F2F3F0]"
+            onClick={handleClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isPending}
+            className="flex-1 h-[38px] rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold text-sm hover:opacity-90 disabled:opacity-50"
+          >
+            {isPending
+              ? localEditing
+                ? 'Saving...'
+                : 'Creating...'
+              : localEditing
+                ? 'Save'
+                : `Create ${itemType === 'todo' ? 'Todo' : 'Event'}`}
+          </button>
+        </div>
+
+        {localEditing && showDeleteConfirm && (
+          <div className="flex gap-2">
             <button
               type="button"
-              className="w-full py-2 px-4 bg-red-600 text-white font-medium rounded-md hover:bg-red-700"
-              onClick={() => setShowDeleteConfirm(true)}
+              className="flex-1 h-[38px] rounded-lg border border-[#DDDDD8] text-[13px] font-semibold text-[#666] hover:bg-[#F2F3F0]"
+              onClick={() => setShowDeleteConfirm(false)}
             >
-              Delete
+              Cancel
             </button>
-          ))}
+            <button
+              type="button"
+              className="flex-1 h-[38px] rounded-lg border border-red-500 text-red-500 font-semibold text-sm hover:bg-red-50 disabled:opacity-50"
+              disabled={deleteMutation.isPending}
+              onClick={() => deleteMutation.mutate(localEditing.id)}
+            >
+              {deleteMutation.isPending ? 'Deleting...' : 'Yes, delete'}
+            </button>
+          </div>
+        )}
+        </div>
       </form>
     </Dialog>
   )
