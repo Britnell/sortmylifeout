@@ -232,11 +232,9 @@ function DayCell({
   const visible = sorted.slice(0, MAX_EVENTS)
   const rest = sorted.length - visible.length
 
-  const chipBg = isToday ? 'bg-white' : 'bg-[#E7E8E5]'
-
   const Chip = ({ ev }: { ev: CalendarEvent }) => (
     <div
-      className={`flex items-center gap-1 w-full px-1.5 py-[3px] rounded-[3px] ${chipBg}`}
+      className={`flex items-center gap-1 w-full px-1.5 py-[3px] rounded-[3px] bg-[#E7E8E5]`}
     >
       {ev.type === 'todo' && (
         <input
@@ -264,7 +262,7 @@ function DayCell({
 
   return (
     <div
-      className={`flex flex-col gap-1 p-1.5 text-left w-full cursor-pointer rounded-md border bg-white border-[#CBCCC9] ${!inMonth && 'bg-[#F2F3F0]'}`}
+      className={`flex flex-col text-left w-full cursor-pointer rounded-md border bg-white border-[#CBCCC9] ${!inMonth && 'bg-[#F2F3F0]'}`}
       onClick={(e) =>
         dayEvents.length === 0
           ? onCreate()
@@ -272,17 +270,13 @@ function DayCell({
       }
     >
       <span
-        className={`text-[13px] font-semibold ${
-          isToday
-            ? '-mx-1.5 -mt-1.5 mb-[-2px] rounded-t-[5px] bg-[var(--primary)] text-[var(--primary-foreground)] px-1.5 pt-1 pb-[5px]'
-            : inMonth
-              ? 'text-[#111111]'
-              : 'text-[#666666]'
-        }`}
+        className={`w-full text-left text-sm font-semibold pt-1 pb-0.5 px-1.5 rounded-t-sm ${
+          inMonth ? 'text-[#111111]' : 'text-[#666666]'
+        } ${isToday && 'bg-[var(--primary)]'}`}
       >
         {day.getDate()}
       </span>
-      <div className="flex flex-col gap-1 overflow-hidden flex-1">
+      <div className="flex flex-col gap-1 overflow-hidden flex-1 p-1.5">
         {visible.map((ev) => (
           <EventItem key={ev.id} ev={ev} />
         ))}
@@ -334,7 +328,6 @@ function DayPopover({
     .sort((a, b) => (a.begin ?? '').localeCompare(b.begin ?? ''))
 
   const label = new Date(dateStr + 'T12:00:00').toLocaleDateString('default', {
-    weekday: 'short',
     month: 'short',
     day: 'numeric',
   })
