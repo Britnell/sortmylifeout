@@ -12,8 +12,7 @@
     {
       "binding": "sortinglifedb",
       "database_name": "sortinglifedb",
-      "database_id": "55c30877-0a91-410b-a4a8-00b7a976dd2e",
-      "remote": true,
+
     },
   ],
   "observability": {

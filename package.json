@@ -13,6 +13,7 @@
     "lint": "eslint",
     "format": "prettier --check .",
     "check": "prettier --write . && eslint --fix",
+    "seed:local": "bun scripts/seed-local.ts",
     "migration": "wrangler d1 execute sortinglifedb --file=src/db/migration.sql --remote",
     "deploy": "bun run build && wrangler deploy",
     "logs": "wrangler tail",
