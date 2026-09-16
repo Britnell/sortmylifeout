@@ -27,8 +27,6 @@ export const Route = createFileRoute('/(app)/cal/day')({
   component: RouteComponent,
 })
 
-const DAY_RANGE = 60
-
 const SLOT_HEIGHT = 22 // px per 30-min slot
 const SLOTS_PER_HOUR = 2
 const TOTAL_SLOTS = 24 * SLOTS_PER_HOUR // 48
@@ -76,18 +74,22 @@ function RouteComponent() {
 
   const today = useMemo(() => getDayDate(0), [])
 
+  const [selY, selM, selD] = selectedDate.split('-').map(Number)
+  const selectedDay = new Date(selY, selM - 1, selD)
+
+  const queryRange = useMemo(
+    () => ({
+      from: fmtDate(selectedDay),
+      to: fmtDate(addDays(selectedDay, 6)),
+    }),
+    [selectedDate],
+  )
+
   const { data: events = [], refetch: invalidate } = useQuery({
-    queryKey: [
-      'searchEventsFn',
-      fmtDate(getDayDate(-DAY_RANGE)),
-      fmtDate(getDayDate(DAY_RANGE)),
-    ],
+    queryKey: ['searchEventsFn', queryRange.from, queryRange.to],
     queryFn: () =>
       searchEventsFn({
-        data: {
-          date_from: fmtDate(getDayDate(-DAY_RANGE)),
-          date_to: fmtDate(getDayDate(DAY_RANGE)),
-        },
+        data: { date_from: queryRange.from, date_to: queryRange.to },
       }),
   })
 
@@ -102,8 +104,6 @@ function RouteComponent() {
     return map
   }, [events])
 
-  const [selY, selM, selD] = selectedDate.split('-').map(Number)
-  const selectedDay = new Date(selY, selM - 1, selD)
   const days = Array.from({ length: 7 }, (_, i) => addDays(selectedDay, i))
 
   const closeDialog = () => {
