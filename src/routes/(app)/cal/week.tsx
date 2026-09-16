@@ -356,7 +356,9 @@ function DayCell({
   )
 
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       className={`group flex flex-col text-left w-full cursor-pointer rounded-md border overflow-hidden ${
         isCurrentWeek
           ? 'bg-white border-[#CBCCC9]'
@@ -391,7 +393,7 @@ function DayCell({
           {day.getDate()}
         </span>
       )}
-    </button>
+    </div>
   )
 }
 

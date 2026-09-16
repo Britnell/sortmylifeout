@@ -274,7 +274,7 @@ function DayCell({
 
   return (
     <div
-      className="flex flex-col text-left w-full cursor-pointer rounded-md border bg-white border-[#CBCCC9] ${!inMonth && 'bg-[#F2F3F0]'}"
+      className={`flex flex-col text-left w-full cursor-pointer rounded-md border ${inMonth ? 'bg-white' : 'bg-[#F2F3F0]'} border-[#CBCCC9]`}
       onClick={() => onCreate()}
     >
       <span
