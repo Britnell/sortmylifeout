@@ -263,14 +263,8 @@ function DayCell({
     )
 
   return (
-    <button
-      className={`flex flex-col gap-1 p-1.5 text-left w-full cursor-pointer rounded-md border ${
-        isToday
-          ? 'bg-[var(--primary)] border-[#FFC98A]'
-          : inMonth
-            ? 'bg-white border-[#CBCCC9]'
-            : 'bg-[#F2F3F0] border-[#CBCCC9] opacity-55'
-      }`}
+    <div
+      className={`flex flex-col gap-1 p-1.5 text-left w-full cursor-pointer rounded-md border bg-white border-[#CBCCC9] ${!inMonth && 'bg-[#F2F3F0]'}`}
       onClick={(e) =>
         dayEvents.length === 0
           ? onCreate()
@@ -278,19 +272,27 @@ function DayCell({
       }
     >
       <span
-        className={`text-[13px] font-semibold ${isToday ? 'text-[var(--primary-foreground)]' : inMonth ? 'text-[#111111]' : 'text-[#666666]'}`}
+        className={`text-[13px] font-semibold ${
+          isToday
+            ? '-mx-1.5 -mt-1.5 mb-[-2px] rounded-t-[5px] bg-[var(--primary)] text-[var(--primary-foreground)] px-1.5 pt-1 pb-[5px]'
+            : inMonth
+              ? 'text-[#111111]'
+              : 'text-[#666666]'
+        }`}
       >
         {day.getDate()}
       </span>
-      <div className="flex flex-col gap-1 overflow-hidden">
+      <div className="flex flex-col gap-1 overflow-hidden flex-1">
         {visible.map((ev) => (
           <EventItem key={ev.id} ev={ev} />
         ))}
         {rest > 0 && (
-          <span className="text-[11px] text-[#666666]">+{rest} more</span>
+          <span className="text-[11px] text-[#666666]">
+            +{rest} more
+          </span>
         )}
       </div>
-    </button>
+    </div>
   )
 }
 

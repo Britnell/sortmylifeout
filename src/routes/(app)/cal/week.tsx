@@ -114,8 +114,8 @@ function RouteComponent() {
     setDialogOpen(true)
   }
 
-  const firstDay = allWeekDays[0][0]
-  const lastDay = allWeekDays[2][6]
+  const firstDay = allWeekDays[1][0]
+  const lastDay = allWeekDays[1][6]
   const weekLabel = `${firstDay.toLocaleDateString('default', { month: 'short', day: 'numeric' })} - ${lastDay.toLocaleDateString('default', { month: 'short', day: 'numeric', year: 'numeric' })}`
 
   const fmtMonth = (d: Date) =>
@@ -160,7 +160,7 @@ function RouteComponent() {
           return (
             <div
               key={wi}
-              className={`flex flex-col gap-1 ${isCurrentWeek ? 'bg-white rounded-md flex-1' : 'opacity-55'}`}
+              className={`flex flex-col gap-1 ${isCurrentWeek ? 'flex-1' : 'opacity-55'}`}
             >
               <div className="grid grid-cols-7 gap-1 flex-1">
                 {weekDays.map((day) => (
@@ -249,8 +249,8 @@ function DayCell({
     weekdays[(day.getDay() + 6) % 7] ??
     day.toLocaleDateString('default', { weekday: 'short' })
 
-  const chipBg = isToday ? 'bg-white' : 'bg-[#E7E8E5]'
-  const dividerColor = isToday ? 'bg-[#111111]' : 'bg-[#CBCCC9]'
+  const chipBg = 'bg-[#E7E8E5]'
+  const dividerColor = 'bg-[#CBCCC9]'
 
   const Chip = ({
     ev,
@@ -285,12 +285,10 @@ function DayCell({
 
   return (
     <button
-      className={`group flex flex-col gap-1 p-1.5 text-left w-full cursor-pointer rounded-md border ${
-        isToday
-          ? 'bg-[var(--primary)] border-[#FFC98A]'
-          : isCurrentWeek
-            ? 'bg-white border-[#CBCCC9]'
-            : 'bg-[#F2F3F0] border-[#CBCCC9] h-40'
+      className={`group flex flex-col text-left w-full cursor-pointer rounded-md border overflow-hidden ${
+        isCurrentWeek
+          ? 'bg-white border-[#CBCCC9]'
+          : 'bg-[#F2F3F0] border-[#CBCCC9] h-40'
       }`}
       onClick={(e) =>
         fewEvents
@@ -300,40 +298,51 @@ function DayCell({
     >
       {isCurrentWeek ? (
         <>
-          <div className="flex items-center justify-center gap-1">
-            <span
-              className={`text-[13px] font-semibold ${isToday ? 'text-[var(--primary-foreground)]' : 'text-[#111111]'}`}
-            >
+          <div
+            className={`flex items-center gap-1 px-2 pt-1.5 pb-1 ${isToday ? 'bg-[var(--primary)] border-b border-[#CBCCC9]' : ''}`}
+          >
+            <span className="text-[13px] font-semibold text-[#111111]">
               {day.getDate()}
             </span>
-            <span
-              className={`text-[13px] font-semibold ${isToday ? 'text-[var(--primary-foreground)]' : 'text-[#111111]'}`}
-            >
+            <span className="text-[13px] font-semibold text-[#111111]">
               {weekday}
             </span>
+            {isToday && (
+              <span className="text-[13px] font-semibold text-[#111111]">
+                Today
+              </span>
+            )}
           </div>
-          <div className="min-h-6 flex flex-col gap-1">
-            {allDayEvs.map((ev) => (
-              <Chip key={ev.id} ev={ev} checkbox={ev.type === 'todo'} />
-            ))}
-          </div>
-          <div className={`h-px ${dividerColor}`} />
+          <div className="flex flex-col gap-1 flex-1 p-1.5 pt-1">
+            <div className="min-h-6 flex flex-col gap-1">
+              {allDayEvs.map((ev) => (
+                <Chip key={ev.id} ev={ev} checkbox={ev.type === 'todo'} />
+              ))}
+            </div>
+            <div className={`h-px ${dividerColor}`} />
           <div className="flex flex-col gap-1 flex-1">
-            <div className="flex flex-col gap-1 pt-0.5 pb-1.5">
+            <span className="text-[8px] font-mono text-[#8A8B87] leading-none">
+              am
+            </span>
+            <div className="flex flex-col gap-1 flex-1 pt-0.5 pb-1.5">
               {amEvs.map((ev) => (
                 <EventItem key={ev.id} ev={ev} />
               ))}
             </div>
             <div className={`h-px ${dividerColor}`} />
-            <div className="flex flex-col gap-1 pt-1.5">
+            <span className="text-[8px] font-mono text-[#8A8B87] leading-none">
+              pm
+            </span>
+            <div className="flex flex-col gap-1 flex-1 pt-1.5">
               {pmEvs.map((ev) => (
                 <EventItem key={ev.id} ev={ev} />
               ))}
             </div>
           </div>
+          </div>
         </>
       ) : (
-        <span className="text-[13px] font-semibold text-[#666666]">
+        <span className="text-[13px] font-semibold text-[#666666] px-2 pt-1.5">
           {day.getDate()}
         </span>
       )}
