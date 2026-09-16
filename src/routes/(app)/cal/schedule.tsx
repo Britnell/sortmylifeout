@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react'
-import { List } from 'lucide-react'
+import { useState } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { createFileRoute } from '@tanstack/react-router'
 import CalendarMenuBar from '#/components/CalendarMenuBar'
 import { useQuery, useMutation } from '@tanstack/react-query'
@@ -51,40 +51,50 @@ function getDuration(begin: string, end: string): string {
   return m ? `${h}h ${m}m` : `${h}h`
 }
 
-function parseDate(dateStr: string): Date {
-  const [y, m, d] = dateStr.split('-').map(Number)
-  return new Date(y, m - 1, d)
+function addDays(d: Date, n: number): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n)
+}
+
+function fmtHeadingDate(d: Date): string {
+  const weekday = d.toLocaleDateString('default', { weekday: 'short' })
+  const day = d.getDate()
+  const month = d.toLocaleDateString('default', { month: 'short' })
+  return `${weekday}, ${day} ${month}`
 }
 
 function RouteComponent() {
-  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [selectedDate, setSelectedDate] = useState(() => fmtDate(new Date()))
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
 
   const today = new Date()
 
-  const dayFrom = getDayDate(-DAY_RANGE)
-  const dayTo = getDayDate(DAY_RANGE)
-  const date_from = fmtDate(dayFrom)
-  const date_to = fmtDate(dayTo)
-
   const { data: events = [], refetch: invalidate } = useQuery({
-    queryKey: ['searchEventsFn', date_from, date_to],
-    queryFn: () => searchEventsFn({ data: { date_from, date_to } }),
+    queryKey: [
+      'searchEventsFn',
+      fmtDate(getDayDate(-DAY_RANGE)),
+      fmtDate(getDayDate(DAY_RANGE)),
+    ],
+    queryFn: () =>
+      searchEventsFn({
+        data: {
+          date_from: fmtDate(getDayDate(-DAY_RANGE)),
+          date_to: fmtDate(getDayDate(DAY_RANGE)),
+        },
+      }),
   })
 
-  const sortedDates = useMemo(() => {
-    const map = new Map<string, CalendarEvent[]>()
-    ;(events as CalendarEvent[]).forEach((ev) => {
-      const dateKey = ev.begin?.split('T')[0]
-      if (!dateKey) return
-      if (!map.has(dateKey)) map.set(dateKey, [])
-      map.get(dateKey)!.push(ev)
-    })
-    const todayKey = fmtDate(today)
-    if (!map.has(todayKey)) map.set(todayKey, [])
-    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b))
-  }, [events])
+  const eventsByDate = new Map<string, CalendarEvent[]>()
+  ;(events as CalendarEvent[]).forEach((ev) => {
+    const dateKey = ev.begin?.split('T')[0]
+    if (!dateKey) return
+    if (!eventsByDate.has(dateKey)) eventsByDate.set(dateKey, [])
+    eventsByDate.get(dateKey)!.push(ev)
+  })
+
+  const [selY, selM, selD] = selectedDate.split('-').map(Number)
+  const selectedDay = new Date(selY, selM - 1, selD)
+  const days = Array.from({ length: 7 }, (_, i) => addDays(selectedDay, i))
 
   const closeDialog = () => {
     setDialogOpen(false)
@@ -132,7 +142,6 @@ function RouteComponent() {
   })
 
   const openCreate = () => {
-    setSelectedDate(null)
     setEditingEvent(null)
     setDialogOpen(true)
   }
@@ -143,148 +152,204 @@ function RouteComponent() {
     setDialogOpen(true)
   }
 
-  const renderEvent = (ev: CalendarEvent) =>
-    ev.type === 'todo' ? (
+  const toggleTodo = (ev: CalendarEvent, checked: boolean) => {
+    updateMutation.mutate({
+      id: ev.id,
+      begin: ev.begin ?? '',
+      allDay: !ev.begin?.includes('T'),
+      title: ev.title,
+      detail: ev.detail ?? undefined,
+      completed: checked,
+    })
+  }
+
+  const renderAllDayItem = (ev: CalendarEvent) => {
+    const isTodo = ev.type === 'todo'
+    const done = isTodo && !!ev.completed
+    return (
       <div
         key={ev.id}
-        className="text-sm bg-gray-100 text-gray-800 p-2 rounded flex items-center gap-2 cursor-pointer hover:bg-gray-200"
+        className={`flex items-center gap-2 rounded-md px-2.5 py-1.5 cursor-pointer ${
+          done || !isTodo ? 'bg-[#E7E8E5]' : 'bg-white'
+        }`}
         onClick={(e) => openEdit(ev, e)}
       >
-        <input
-          type="checkbox"
-          checked={!!ev.completed}
-          className="shrink-0"
-          onChange={(e) => {
-            updateMutation.mutate({
-              id: ev.id,
-              begin: ev.begin ?? '',
-              allDay: !ev.begin?.includes('T'),
-              title: ev.title,
-              detail: ev.detail ?? undefined,
-              completed: e.target.checked,
-            })
-          }}
-          onClick={(e) => e.stopPropagation()}
-        />
-        <span>{ev.title}</span>
-      </div>
-    ) : (
-      <div
-        key={ev.id}
-        className="text-sm bg-blue-100 text-blue-800 p-2 rounded cursor-pointer hover:bg-blue-200"
-        onClick={(e) => openEdit(ev, e)}
-      >
-        <div className="font-medium">{ev.title}</div>
-        {ev.begin?.includes('T') && (
-          <div className="text-xs text-blue-600">
-            {ev.begin.split('T')[1].slice(0, 5)}
-            {ev.end?.includes('T') && ` - ${ev.end.split('T')[1].slice(0, 5)}`}
-          </div>
+        {isTodo && (
+          <button
+            className={`h-3.5 w-3.5 shrink-0 rounded-[3px] border border-[#CBCCC9] flex items-center justify-center ${
+              done ? 'bg-[#111111] border-[#111111]' : 'bg-white'
+            }`}
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleTodo(ev, !ev.completed)
+            }}
+          >
+            {done && (
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                <path
+					d="M20 6 9 17l-5-5"
+					stroke="#FFFFFF"
+					strokeWidth="3"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+				/>
+              </svg>
+            )}
+          </button>
         )}
+        <span className="text-[13px] text-[#111111]">{ev.title}</span>
       </div>
     )
+  }
 
-  return (
-    <div className="">
-      <div className="mb-4">
-        <CalendarMenuBar onAdd={openCreate} />
-        <div className="mt-3 flex items-center border-y border-[#E7E8E5] py-2 px-4">
-          <span className="flex items-center gap-1.5 text-base font-semibold text-[#111111]">
-            <List size={14} strokeWidth={2} className="shrink-0" />
-            Schedule
-          </span>
+  const renderTimedItem = (ev: CalendarEvent) => {
+    const isTodo = ev.type === 'todo'
+    const done = isTodo && !!ev.completed
+    return (
+      <div key={ev.id} className="flex flex-col gap-0.5">
+        <span className="font-mono text-[10px] text-[#666666]">
+          {ev.begin!.split('T')[1].slice(0, 5)}
+        </span>
+        <div
+          className={`flex items-center gap-2 rounded-md px-2.5 py-1.5 w-fit cursor-pointer ${
+            done || !isTodo ? 'bg-[#E7E8E5]' : 'bg-white'
+          }`}
+          onClick={(e) => openEdit(ev, e)}
+        >
+          {isTodo && (
+            <button
+              className={`h-3.5 w-3.5 shrink-0 rounded-[3px] border border-[#CBCCC9] flex items-center justify-center ${
+                done ? 'bg-[#111111] border-[#111111]' : 'bg-white'
+              }`}
+              onClick={(e) => {
+                e.stopPropagation()
+                toggleTodo(ev, !ev.completed)
+              }}
+            >
+              {done && (
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M20 6 9 17l-5-5"
+                    stroke="#FFFFFF"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+            </button>
+          )}
+          <span className="text-[13px] text-[#111111]">{ev.title}</span>
+          {ev.end?.includes('T') && (
+            <span className="text-[11px] text-[#666666]">
+              {getDuration(ev.begin!, ev.end)}
+            </span>
+          )}
         </div>
       </div>
+    )
+  }
 
-      <div className="h-[calc(100vh-180px)] overflow-y-auto scroll-smooth space-y-2 px-4">
-        {sortedDates.map(([dateStr, dayEvents]) => {
-          const d = parseDate(dateStr)
-          const isToday = isSameDay(d, today)
-          const allDayEvs = dayEvents.filter(
-            (ev) => ev.all_day || !ev.begin?.includes('T'),
-          )
-          const timedEvs = dayEvents
-            .filter((ev) => !ev.all_day && ev.begin?.includes('T'))
-            .sort((a, b) => (a.begin ?? '').localeCompare(b.begin ?? ''))
+  let prevMonth = -1
 
-          return (
-            <div
-              key={dateStr}
-              className={` py-3 px-2 rounded ${isToday ? 'bg-blue-300' : ' bg-white'}`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`text-sm font-semibold ${isToday ? '' : ' '}`}
-                  >
-                    {d.toLocaleDateString('default', { weekday: 'long' })}
-                  </span>
-                  <span
-                    className={`text-sm font-semibold ${isToday ? '' : ' '}`}
-                  >
-                    {ordinal(d.getDate())}
-                  </span>
-                </div>
-                {(() => {
-                  const rel = getRelativeLabel(d, today)
-                  return rel ? (
-                    <span className="text-sm text-gray-500">{rel}</span>
-                  ) : null
-                })()}
+  return (
+    <div>
+      <div className="mb-4">
+        <CalendarMenuBar onAdd={openCreate} />
+      </div>
 
-                <span className="text-sm text-gray-500">
-                  {d.toLocaleDateString('default', { month: 'long' })}
-                </span>
-              </div>
-              <div className="space-y-1">
-                {allDayEvs.map(renderEvent)}
-                {timedEvs.map((ev) => (
-                  <div key={ev.id}>
-                    <div className="text-xs text-gray-500 mb-0.5">
-                      {ev.begin!.split('T')[1].slice(0, 5)}
+      <div className="flex items-center gap-4 px-4 py-3">
+        <h1 className="text-[28px] font-bold text-[#111111]">schedule</h1>
+        <div className="flex-1 h-px bg-[#CBCCC9]" />
+        <div className="flex items-center gap-3">
+          <button
+            className="text-[#666666] hover:text-[#111111]"
+            onClick={() => setSelectedDate(fmtDate(addDays(selectedDay, -1)))}
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <span className="text-[15px] font-semibold text-[#111111]">
+            {fmtHeadingDate(selectedDay)}
+          </span>
+          <button
+            className="text-[#666666] hover:text-[#111111]"
+            onClick={() => setSelectedDate(fmtDate(addDays(selectedDay, 1)))}
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+        <button
+          className="text-[12px] font-medium text-[#111111] bg-[var(--primary)] rounded-md px-3 py-1.5"
+          onClick={() => setSelectedDate(fmtDate(today))}
+        >
+          Today
+        </button>
+        <div className="flex-1 h-px bg-[#CBCCC9]" />
+      </div>
+
+      <div className="h-[calc(100vh-180px)] overflow-y-auto scroll-smooth pb-4">
+        <div className="flex flex-col items-center gap-2 pt-1 px-4">
+          {days.map((d) => {
+            const dateKey = fmtDate(d)
+            const dayEvents = eventsByDate.get(dateKey) ?? []
+            const isToday = isSameDay(d, today)
+            // skip empty days (keep today + selected always)
+            if (dayEvents.length === 0 && !isToday && dateKey !== selectedDate)
+              return null
+
+            const allDayEvs = dayEvents.filter(
+              (ev) => ev.all_day || !ev.begin?.includes('T'),
+            )
+            const timedEvs = dayEvents
+              .filter((ev) => !ev.all_day && ev.begin?.includes('T'))
+              .sort((a, b) => (a.begin ?? '').localeCompare(b.begin ?? ''))
+
+            const showMonthRow = d.getMonth() !== prevMonth
+            prevMonth = d.getMonth()
+
+            return (
+              <div key={dateKey} className="w-[560px] max-w-full">
+                {showMonthRow && (
+                  <div className="flex justify-end">
+                    <span className="text-[16px] font-semibold text-[#111111]">
+                      {d.toLocaleDateString('default', { month: 'long' })}
+                    </span>
+                  </div>
+                )}
+                <div className="mt-2 bg-white rounded-lg border border-[#CBCCC9]">
+                  <div className="flex items-center justify-between bg-[var(--primary)] rounded-t-lg px-3 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-[#111111]">
+                        {d.toLocaleDateString('default', { weekday: 'long' })}
+                      </span>
+                      <span className="text-sm font-semibold text-[#111111]">
+                        {ordinal(d.getDate())}
+                      </span>
                     </div>
-                    {ev.type === 'todo' ? (
-                      <div
-                        className="text-sm bg-gray-100 text-gray-800 p-2 rounded flex items-center gap-2 cursor-pointer hover:bg-gray-200"
-                        onClick={(e) => openEdit(ev, e)}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={!!ev.completed}
-                          className="shrink-0"
-                          onChange={(e) => {
-                            updateMutation.mutate({
-                              id: ev.id,
-                              begin: ev.begin ?? '',
-                              allDay: false,
-                              title: ev.title,
-                              detail: ev.detail ?? undefined,
-                              completed: e.target.checked,
-                            })
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                        <span>{ev.title}</span>
-                      </div>
+                    {(() => {
+                      const rel = getRelativeLabel(d, today)
+                      return rel ? (
+                        <span className="text-xs text-[#666666]">{rel}</span>
+                      ) : null
+                    })()}
+                  </div>
+                  <div className="flex flex-col gap-2 p-3">
+                    {dayEvents.length === 0 ? (
+                      <span className="text-[13px] text-[#666666]">
+                        Nothing scheduled
+                      </span>
                     ) : (
-                      <div
-                        className="text-sm bg-blue-100 text-blue-800 p-2 rounded cursor-pointer hover:bg-blue-200"
-                        onClick={(e) => openEdit(ev, e)}
-                      >
-                        <div className="font-medium">{ev.title}</div>
-                        {ev.begin && ev.end?.includes('T') && (
-                          <div className="text-xs text-blue-600">
-                            {getDuration(ev.begin, ev.end)}
-                          </div>
-                        )}
-                      </div>
+                      <>
+                        {allDayEvs.map(renderAllDayItem)}
+                        {timedEvs.map(renderTimedItem)}
+                      </>
                     )}
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
 
       <CalendarEventDialog
