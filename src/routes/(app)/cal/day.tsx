@@ -157,13 +157,15 @@ function RouteComponent() {
       <div className="mb-3 shrink-0">
         <CalendarMenuBar onAdd={openCreate} />
         <div className="mt-3 flex items-center justify-between border-y border-[#E7E8E5] py-2">
-          <button
-            className="text-[#666666] hover:text-black px-1"
-            onClick={() => goDay(-1)}
-            aria-label="Previous day"
-          >
-            <span className="text-lg">‹</span>
-          </button>
+          <span className="text-base font-semibold text-[#111111]">Day</span>
+          <div className="flex items-center gap-1 mx-auto">
+            <button
+              className="flex items-center text-[#666666] hover:text-black px-1"
+              onClick={() => goDay(-1)}
+              aria-label="Previous day"
+            >
+              <span className="text-lg">‹</span>
+            </button>
           <div className="text-center">
             <div className="text-sm font-semibold text-[#111111]">
               {getDayLabel(currentDate, today)}
@@ -176,13 +178,14 @@ function RouteComponent() {
               })}
             </div>
           </div>
-          <button
-            className="text-[#666666] hover:text-black px-1"
-            onClick={() => goDay(1)}
-            aria-label="Next day"
-          >
-            <span className="text-lg">›</span>
-          </button>
+            <button
+              className="flex items-center text-[#666666] hover:text-black px-1"
+              onClick={() => goDay(1)}
+              aria-label="Next day"
+            >
+              <span className="text-lg">›</span>
+            </button>
+          </div>
         </div>
       </div>
 

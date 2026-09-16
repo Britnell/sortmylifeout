@@ -92,9 +92,9 @@ function RouteComponent() {
 
         <div className="flex flex-1">
           {/* Main content */}
-          <div className="flex-1 min-w-0">
+          <main className="flex-1 min-w-0">
             {data && <Outlet />}
-          </div>
+          </main>
 
           {/* Right sidebar */}
           <aside

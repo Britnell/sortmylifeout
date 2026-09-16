@@ -123,23 +123,26 @@ function RouteComponent() {
 
       {/* Date stepper row */}
       <div className="flex items-center justify-between border-y border-[#E7E8E5] py-2">
-        <button
-          className="text-[#666666] hover:text-black px-1"
-          onClick={() => setMonthOffset((o) => o - 1)}
-          aria-label="Previous month"
-        >
-          <Icon name="chevron" className="rotate-90 text-lg" />
-        </button>
-        <h2 className="text-base font-semibold text-[#111111]">
-          {monthLabel}
-        </h2>
-        <button
-          className="text-[#666666] hover:text-black px-1"
-          onClick={() => setMonthOffset((o) => o + 1)}
-          aria-label="Next month"
-        >
-          <Icon name="chevron" className="-rotate-90 text-lg" />
-        </button>
+        <span className="text-base font-semibold text-[#111111]">Month</span>
+        <div className="flex items-center gap-1 mx-auto">
+          <button
+            className="flex items-center text-[#666666] hover:text-black px-1"
+            onClick={() => setMonthOffset((o) => o - 1)}
+            aria-label="Previous month"
+          >
+            <Icon name="chevron" className="text-lg" />
+          </button>
+          <h2 className="text-base font-semibold text-[#111111]">
+            {monthLabel}
+          </h2>
+          <button
+            className="flex items-center text-[#666666] hover:text-black px-1"
+            onClick={() => setMonthOffset((o) => o + 1)}
+            aria-label="Next month"
+          >
+            <Icon name="chevron" className="rotate-180 text-lg" />
+          </button>
+        </div>
       </div>
 
       {/* Month grid */}

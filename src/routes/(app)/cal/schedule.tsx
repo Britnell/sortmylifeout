@@ -187,6 +187,9 @@ function RouteComponent() {
     <div className="">
       <div className="mb-4">
         <CalendarMenuBar onAdd={openCreate} />
+        <div className="mt-3 flex items-center border-y border-[#E7E8E5] py-2">
+          <span className="text-base font-semibold text-[#111111]">Schedule</span>
+        </div>
       </div>
 
       <div className="h-[calc(100vh-180px)] overflow-y-auto scroll-smooth space-y-2">
