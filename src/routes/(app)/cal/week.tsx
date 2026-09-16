@@ -1,8 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { Columns3 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Columns3 } from 'lucide-react'
 import { createFileRoute } from '@tanstack/react-router'
 import CalendarMenuBar from '#/components/CalendarMenuBar'
-import Icon from '@/components/Icon'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
   searchEventsFn,
@@ -115,8 +114,12 @@ function RouteComponent() {
   }
 
   const firstDay = allWeekDays[1][0]
-  const lastDay = allWeekDays[1][6]
-  const weekLabel = `${firstDay.toLocaleDateString('default', { month: 'short', day: 'numeric' })} - ${lastDay.toLocaleDateString('default', { month: 'short', day: 'numeric', year: 'numeric' })}`
+  const weekLabel = firstDay.toLocaleDateString('default', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
 
   const fmtMonth = (d: Date) =>
     d.toLocaleDateString('default', { month: 'long' })
@@ -127,28 +130,28 @@ function RouteComponent() {
       <CalendarMenuBar onAdd={() => openCreate(fmtDate(today))} />
 
       {/* Date stepper row */}
-      <div className="mb-2 flex items-center justify-between border-y border-[#E7E8E5] py-2 px-4">
+      <div className="mb-2 flex items-center gap-4 border-y border-[#E7E8E5] py-2 px-4">
         <span className="flex items-center gap-1.5 text-base font-semibold text-[#111111]">
           <Columns3 size={14} strokeWidth={2} className="shrink-0" />
           Week
         </span>
-        <div className="flex items-center gap-1 mx-auto">
+        <div className="flex items-center gap-3 mx-auto">
           <button
-            className="flex items-center text-[#666666] hover:text-black px-1"
+            className="flex items-center rounded-md p-1 text-[#666666] hover:bg-[#F0F0EE] hover:text-black"
             onClick={() => setWeekOffset((o) => o - 1)}
             aria-label="Previous week"
           >
-            <Icon name="chevron" className="text-lg" />
+            <ChevronLeft size={18} />
           </button>
-          <h2 className="text-base font-semibold text-[#111111]">
+          <h2 className="min-w-[16ch] text-center text-[15px] font-semibold text-[#111111]">
             {weekLabel}
           </h2>
           <button
-            className="flex items-center text-[#666666] hover:text-black px-1"
+            className="flex items-center rounded-md p-1 text-[#666666] hover:bg-[#F0F0EE] hover:text-black"
             onClick={() => setWeekOffset((o) => o + 1)}
             aria-label="Next week"
           >
-            <Icon name="chevron" className="rotate-180 text-lg" />
+            <ChevronRight size={18} />
           </button>
           <button
             className={`text-[12px] font-medium text-[#111111] ${
@@ -209,7 +212,7 @@ function RouteComponent() {
 
         <div className="flex items-center gap-2 px-0.5 py-0.5">
           <span className="text-[11px] font-semibold tracking-wide text-[#666666] shrink-0">
-            {fmtMonth(lastDay)}
+            {fmtMonth(allWeekDays[2][6])}
           </span>
           <div className="h-px bg-[#CBCCC9] flex-1" />
         </div>

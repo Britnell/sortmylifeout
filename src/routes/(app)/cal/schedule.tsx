@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarClock, ChevronLeft, ChevronRight } from 'lucide-react'
 import { createFileRoute } from '@tanstack/react-router'
 import CalendarMenuBar from '#/components/CalendarMenuBar'
 import { useQuery, useMutation } from '@tanstack/react-query'
@@ -249,20 +249,23 @@ function RouteComponent() {
     <div>
       <CalendarMenuBar onAdd={openCreate} />
 
-      <div className="flex items-center gap-4 px-4 py-3">
-        <h1 className="text-[28px] font-bold text-[#111111]">schedule</h1>
+      <div className="mb-2 flex items-center gap-4 border-y border-[#E7E8E5] py-2 px-4">
+        <span className="flex items-center gap-1.5 text-base font-semibold text-[#111111]">
+          <CalendarClock size={14} strokeWidth={2} className="shrink-0" />
+          Schedule
+        </span>
         <div className="flex items-center gap-3 mx-auto">
           <button
-            className="text-[#666666] hover:text-[#111111]"
+            className="rounded-md p-1 text-[#666666] hover:bg-[#F0F0EE] hover:text-[#111111]"
             onClick={() => setSelectedDate(fmtDate(addDays(selectedDay, -1)))}
           >
             <ChevronLeft size={18} />
           </button>
-          <span className="text-[15px] font-semibold text-[#111111]">
+          <span className="min-w-[11ch] text-center text-[15px] font-semibold text-[#111111]">
             {fmtHeadingDate(selectedDay)}
           </span>
           <button
-            className="text-[#666666] hover:text-[#111111]"
+            className="rounded-md p-1 text-[#666666] hover:bg-[#F0F0EE] hover:text-[#111111]"
             onClick={() => setSelectedDate(fmtDate(addDays(selectedDay, 1)))}
           >
             <ChevronRight size={18} />

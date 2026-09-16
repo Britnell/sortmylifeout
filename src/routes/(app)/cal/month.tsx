@@ -1,8 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { CalendarDays } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import { createFileRoute } from '@tanstack/react-router'
 import CalendarMenuBar from '#/components/CalendarMenuBar'
-import Icon from '@/components/Icon'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
   searchEventsFn,
@@ -123,28 +122,28 @@ function RouteComponent() {
       <CalendarMenuBar onAdd={() => openCreate(fmtDate(today))} />
 
       {/* Date stepper row */}
-      <div className="mb-2 flex items-center justify-between border-y border-[#E7E8E5] py-2 px-4">
+      <div className="mb-2 flex items-center gap-4 border-y border-[#E7E8E5] py-2 px-4">
         <span className="flex items-center gap-1.5 text-base font-semibold text-[#111111]">
           <CalendarDays size={14} strokeWidth={2} className="shrink-0" />
           Month
         </span>
-        <div className="flex items-center gap-1 mx-auto">
+        <div className="flex items-center gap-3 mx-auto">
           <button
-            className="flex items-center text-[#666666] hover:text-black px-1"
+            className="flex items-center rounded-md p-1 text-[#666666] hover:bg-[#F0F0EE] hover:text-black"
             onClick={() => setMonthOffset((o) => o - 1)}
             aria-label="Previous month"
           >
-            <Icon name="chevron" className="text-lg" />
+            <ChevronLeft size={18} />
           </button>
-          <h2 className="text-base font-semibold text-[#111111]">
+          <h2 className="min-w-[17ch] text-center text-[15px] font-semibold text-[#111111]">
             {monthLabel}
           </h2>
           <button
-            className="flex items-center text-[#666666] hover:text-black px-1"
+            className="flex items-center rounded-md p-1 text-[#666666] hover:bg-[#F0F0EE] hover:text-black"
             onClick={() => setMonthOffset((o) => o + 1)}
             aria-label="Next month"
           >
-            <Icon name="chevron" className="rotate-180 text-lg" />
+            <ChevronRight size={18} />
           </button>
           <button
             className={`text-[12px] font-medium text-[#111111] ${

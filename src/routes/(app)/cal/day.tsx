@@ -367,19 +367,19 @@ function RouteComponent() {
         <CalendarMenuBar onAdd={openCreate} />
       </div>
 
-      <div className="flex items-center gap-4 px-4 py-3">
-        <h1 className="flex items-center gap-1.5 text-[28px] font-bold text-[#111111]">
-          <AlarmClock size={20} strokeWidth={2} className="shrink-0" />
-          day
-        </h1>
+      <div className="mb-2 flex items-center gap-4 border-y border-[#E7E8E5] py-2 px-4">
+        <span className="flex items-center gap-1.5 text-base font-semibold text-[#111111]">
+          <AlarmClock size={14} strokeWidth={2} className="shrink-0" />
+          Day
+        </span>
         <div className="flex items-center gap-3 mx-auto">
           <button
-            className="text-[#666666] hover:text-[#111111]"
+            className="rounded-md p-1 text-[#666666] hover:bg-[#F0F0EE] hover:text-[#111111]"
             onClick={() => setSelectedDate(fmtDate(addDays(selectedDay, -1)))}
           >
             <ChevronLeft size={18} />
           </button>
-          <span className="text-[15px] font-semibold text-[#111111]">
+          <span className="min-w-[11ch] text-center text-[15px] font-semibold text-[#111111]">
             {selectedDay.toLocaleDateString('default', {
               weekday: 'short',
               month: 'short',
@@ -387,7 +387,7 @@ function RouteComponent() {
             })}
           </span>
           <button
-            className="text-[#666666] hover:text-[#111111]"
+            className="rounded-md p-1 text-[#666666] hover:bg-[#F0F0EE] hover:text-[#111111]"
             onClick={() => setSelectedDate(fmtDate(addDays(selectedDay, 1)))}
           >
             <ChevronRight size={18} />
