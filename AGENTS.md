@@ -18,4 +18,4 @@
 
 ## Style & Design
 - we have design & style system in pen.dev (formerly pencil)
-- see `./untitled.pen`
+- see `./design.pen`
