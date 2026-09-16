@@ -315,7 +315,9 @@ function RouteComponent() {
                   </div>
                 )}
                 <div className="mt-2 bg-white rounded-lg border border-[#CBCCC9]">
-                  <div className="flex items-center justify-between bg-[var(--primary)] rounded-t-lg px-3 py-2.5">
+                  <div
+                    className={`flex items-center justify-between rounded-t-lg px-3 py-2.5 ${isToday ? 'bg-[var(--primary)]' : 'bg-white border-b border-[#CBCCC9]'}`}
+                  >
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold text-[#111111]">
                         {d.toLocaleDateString('default', { weekday: 'long' })}
