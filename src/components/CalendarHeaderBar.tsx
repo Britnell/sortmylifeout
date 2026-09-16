@@ -11,6 +11,7 @@ export default function CalendarHeaderBar({
 }) {
 	return (
 		<div className="flex items-center gap-4">
+			<span className="text-[16px] font-semibold text-[#111111]">Calendar</span>
 			<CalViewSwitcher />
 			<div className="flex items-center gap-4 mx-auto">{children}</div>
 			<div className="flex items-center gap-3.5">
