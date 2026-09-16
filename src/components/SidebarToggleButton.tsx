@@ -8,14 +8,12 @@ export default function SidebarToggleButton() {
 	return (
 		<button
 			onClick={() => setSidebarOpen((o) => !o)}
-			className="hidden md:flex items-center justify-center rounded hover:bg-gray-100 px-2"
-			aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+			className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 bg-white border border-[#DEDEDE] rounded-l-md text-[13px] text-[#666666] hover:text-[#111111]"			aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
 		>
 			Todos
 			<Icon
 				name="chevron"
-				className={`text-lg ${sidebarOpen ? 'rotate-180' : ''}`}
-			/>
+				className={`text-sm text-[#666666] ${sidebarOpen ? 'rotate-180' : ''}`}			/>
 		</button>
 	)
 }

@@ -3,7 +3,7 @@
 - router: `src/routes/*`
 - app pages `src/routes/(app)/*` (root layout `route.tsx`)
 - api `src/routes/api` are rpc, server code in `src/serverFn/queries.functions.ts`
-- react components `src/components`
+- react components `src/components/*`
 - helper + hooks in `src/lib`
 - ai chat w tool `ai.ts`
 

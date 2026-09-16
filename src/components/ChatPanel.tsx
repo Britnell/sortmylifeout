@@ -3,15 +3,11 @@ import { useChat, fetchServerSentEvents } from '@tanstack/ai-react'
 import type { UIMessage } from '@tanstack/ai-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useSpeechRecognition } from '../lib/useSpeechRecognition'
-import { Link, useMatchRoute, useLocation } from '@tanstack/react-router'
-import { useLocalStorage } from '../lib/useLocalStorage'
 import {
   updateQueryCachesWithEvents,
   EVENT_MUTATING_TOOLS,
 } from '../lib/queryCache'
 import { EventCard, type EventRow } from './EventCard'
-import Icon from './Icon'
-import type { CalView } from './CalViewSwitcher'
 
 export function ChatPanel() {
   const [input, setInput] = useState('')
@@ -35,13 +31,6 @@ export function ChatPanel() {
     },
     [],
   )
-
-  const matchRoute = useMatchRoute()
-  const location = useLocation()
-  const isCal = location.pathname.startsWith('/cal')
-  const isTodo = matchRoute({ to: '/todo' })
-  const isShopping = matchRoute({ to: '/shopping' })
-  const [lastCalView] = useLocalStorage<CalView>('cal-last-view', '/cal/week')
 
   const { isListening, toggleListening } = useSpeechRecognition(
     () => input,
@@ -157,31 +146,6 @@ export function ChatPanel() {
             >
               🎤
             </button>
-
-            {/* Nav: first always */}
-            <nav className="flex gap-0.5 shrink-0 order-1 mr-auto">
-              <Link
-                to={lastCalView}
-                title="Calendar"
-                className={`flex items-center justify-center w-10 h-9 rounded-lg transition-colors ${isCal ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
-              >
-                <Icon name="calendar" />
-              </Link>
-              <Link
-                to="/todo"
-                title="Todo"
-                className={`flex items-center justify-center w-10 h-9 rounded-lg transition-colors ${isTodo ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
-              >
-                <Icon name="todo" />
-              </Link>
-              <Link
-                to="/shopping"
-                title="Shopping"
-                className={`flex items-center justify-center w-10 h-9 rounded-lg transition-colors ${isShopping ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'}`}
-              >
-                <Icon name="shopping" />
-              </Link>
-            </nav>
 
             {/* Desktop only: input fills remaining space */}
             <input

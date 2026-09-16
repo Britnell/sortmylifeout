@@ -38,16 +38,16 @@ export default function CalViewSwitcher() {
         ))}
       </select>
 
-      {/* Desktop: button group */}
-      <div className="hidden md:flex border border-gray-300 rounded-md overflow-hidden bg-white">
-        {views.map((view, i) => (
+      {/* Desktop: segmented control */}
+      <div className="hidden md:flex bg-white border border-[#CBCCC9] rounded-lg overflow-hidden">
+        {views.map((view) => (
           <Link
             key={view.to}
             to={view.to}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${i > 0 ? 'border-l border-gray-300' : ''} ${
+            className={`px-4 py-2 text-[13px] font-medium transition-colors ${
               view.to === active.to
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-600 hover:bg-gray-50'
+                ? 'bg-[var(--primary)] text-[#111111]'
+                : 'text-[#666666] hover:bg-[#F2F3F0]'
             }`}
           >
             {view.label}

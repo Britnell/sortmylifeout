@@ -22,4 +22,9 @@
   button {
     @apply cursor-pointer;
   }
+
+  :root {
+    --primary: #ffdd00;
+    --primary-foreground: #111111;
+  }
 }

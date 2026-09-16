@@ -11,6 +11,7 @@ import {
 } from '@/serverFn/queries.functions'
 import CalendarEventDialog from '@/components/CalendarEventDialog'
 import type { CalendarEvent } from '@/components/CalendarEventDialog'
+import Icon from '@/components/Icon'
 import { fmtDate, getWeekDays, isSameDay, weekdays } from '#/lib/date'
 
 export const Route = createFileRoute('/(app)/cal/week')({
@@ -18,7 +19,7 @@ export const Route = createFileRoute('/(app)/cal/week')({
 })
 
 function RouteComponent() {
-  const [weekOffset] = useState(0)
+  const [weekOffset, setWeekOffset] = useState(0)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
@@ -117,126 +118,78 @@ function RouteComponent() {
   const lastDay = allWeekDays[2][6]
   const weekLabel = `${firstDay.toLocaleDateString('default', { month: 'short', day: 'numeric' })} - ${lastDay.toLocaleDateString('default', { month: 'short', day: 'numeric', year: 'numeric' })}`
 
+  const fmtMonth = (d: Date) =>
+    d.toLocaleDateString('default', { month: 'long' })
+
   return (
-    <div className="">
-      <div className="flex items-center gap-4 mb-4">
+    <div className="flex flex-col gap-3">
+      {/* Toolbar */}
+      <div className="flex items-center gap-4">
         <CalViewSwitcher />
-        <h2 className="text-xl font-semibold mr-auto">{weekLabel}</h2>
-        <SidebarToggleButton />
+        <div className="flex items-center gap-4 mx-auto">
+          <button
+            className="text-[#666666] hover:text-black"
+            onClick={() => setWeekOffset((o) => o - 1)}
+            aria-label="Previous week"
+          >
+            <Icon name="chevron" className="rotate-90 text-lg" />
+          </button>
+          <h2 className="text-base font-semibold text-[#111111]">
+            {weekLabel}
+          </h2>
+          <button
+            className="text-[#666666] hover:text-black"
+            onClick={() => setWeekOffset((o) => o + 1)}
+            aria-label="Next week"
+          >
+            <Icon name="chevron" className="-rotate-90 text-lg" />
+          </button>
+        </div>
+        <div className="flex items-center gap-3.5">
+          <button
+            className="px-4 py-2 text-[13px] font-medium bg-[var(--primary)] text-[var(--primary-foreground)] rounded-md"
+            onClick={() => openCreate(fmtDate(today))}
+          >
+            Add
+          </button>
+          <SidebarToggleButton />
+        </div>
       </div>
 
-      <div className="grid grid-cols-7 sm:gap-1">
-        {weekdays.map((day) => (
-          <div
-            key={day}
-            className="text-center font-medium p-2 text-gray-600 text-sm"
-          >
-            {day}
-          </div>
-        ))}
-
-        {allWeekDays.map((weekDays, wi) =>
-          weekDays.map((day, i) => {
-            const dateStr = fmtDate(day)
-            const dayEvents = eventsByDate.get(dateStr) || []
-            const isToday = isSameDay(day, today)
-
-            const allDayEvs = dayEvents.filter(
-              (ev) => ev.all_day || !ev.begin?.includes('T'),
-            )
-            const timedEvs = dayEvents
-              .filter((ev) => !ev.all_day && ev.begin?.includes('T'))
-              .sort((a, b) => (a.begin ?? '').localeCompare(b.begin ?? ''))
-
-            const renderAllDay = (ev: CalendarEvent) =>
-              ev.type === 'todo' ? (
-                <div
-                  key={ev.id}
-                  className="text-xs bg-gray-100 text-gray-800 p-1 rounded flex items-center gap-1"
-                >
-                  <input
-                    type="checkbox"
-                    checked={!!ev.completed}
-                    className="shrink-0 hidden sm:inline"
-                    readOnly
+      {/* Week grid */}
+      <div className="flex flex-col gap-1 flex-1 min-h-[640px]">
+        {allWeekDays.map((weekDays, wi) => {
+          const isCurrentWeek = wi === 1
+          return (
+            <div
+              key={wi}
+              className={`flex flex-col gap-1 ${isCurrentWeek ? 'bg-white rounded-md flex-1' : 'opacity-55'}`}
+            >
+              <div className="grid grid-cols-7 gap-1 flex-1">
+                {weekDays.map((day) => (
+                  <DayCell
+                    key={fmtDate(day)}
+                    day={day}
+                    isCurrentWeek={isCurrentWeek}
+                    dayEvents={eventsByDate.get(fmtDate(day)) || []}
+                    onOpen={(rect) => {
+                      setAnchorRect(rect)
+                      setExpandedDay(fmtDate(day))
+                    }}
+                    onCreate={() => openCreate(fmtDate(day))}
                   />
-                  <span className="truncate">{ev.title}</span>
-                </div>
-              ) : (
-                <div
-                  key={ev.id}
-                  className="text-xs bg-blue-100 text-blue-800 p-1 rounded truncate"
-                >
-                  {ev.title}
-                </div>
-              )
+                ))}
+              </div>
+            </div>
+          )
+        })}
 
-            const totalEvents = allDayEvs.length + timedEvs.length
-            const fewEvents = totalEvents === 0
-            const MAX_VISIBLE = 3
-            const visibleTimed = timedEvs.slice(0, MAX_VISIBLE)
-            const visibleAllDay = allDayEvs.slice(
-              0,
-              Math.max(0, MAX_VISIBLE - timedEvs.length),
-            )
-            const hasMore = totalEvents > MAX_VISIBLE
-
-            return (
-              <button
-                key={`${wi}-${i}`}
-                className={`group bg-white flex flex-col border border-gray-200 -mt-px -ml-px p-1 min-h-[120px] sm:rounded text-left w-full cursor-pointer ${isToday ? ' bg-blue-200' : ''}`}
-                onClick={(e) => {
-                  if (fewEvents) {
-                    openCreate(dateStr)
-                  } else {
-                    setAnchorRect(e.currentTarget.getBoundingClientRect())
-                    setExpandedDay(dateStr)
-                  }
-                }}
-              >
-                {' '}
-                <div
-                  className={`text-sm font-medium ${isToday ? 'text-blue-600' : ''}`}
-                >
-                  {day.getDate()}
-                </div>
-                <div className="mt-1 space-y-1">
-                  {visibleTimed.map((ev) => (
-                    <div key={ev.id}>
-                      <span className="text-[10px] text-gray-500 leading-tight block">
-                        {ev.begin!.split('T')[1].slice(0, 5)}
-                      </span>
-                      <div
-                        className={`text-xs p-1 rounded overflow-hidden ${ev.type === 'todo' ? 'flex items-center gap-1' : ''}`}
-                      >
-                        {ev.type === 'todo' && (
-                          <input
-                            type="checkbox"
-                            checked={!!ev.completed}
-                            className="shrink-0 hidden sm:inline "
-                            readOnly
-                          />
-                        )}
-                        <span className="block truncate">{ev.title}</span>
-                      </div>
-                    </div>
-                  ))}
-                  {visibleAllDay.map(renderAllDay)}
-                  {hasMore && (
-                    <div className="text-xs text-gray-400 px-1">
-                      +{totalEvents - MAX_VISIBLE} more
-                    </div>
-                  )}
-                  {fewEvents && (
-                    <div className="invisible group-hover:visible w-full text-xs p-1 rounded bg-gray-100 text-gray-500 flex items-center justify-center">
-                      +
-                    </div>
-                  )}
-                </div>
-              </button>
-            )
-          }),
-        )}
+        <div className="flex items-center gap-2 px-0.5 py-0.5">
+          <span className="text-[11px] font-semibold tracking-wide text-[#666666] shrink-0">
+            {fmtMonth(lastDay)}
+          </span>
+          <div className="h-px bg-[#CBCCC9] flex-1" />
+        </div>
       </div>
 
       <CalendarEventDialog
@@ -261,6 +214,133 @@ function RouteComponent() {
         />
       )}
     </div>
+  )
+}
+
+function DayCell({
+  day,
+  isCurrentWeek,
+  dayEvents,
+  onOpen,
+  onCreate,
+}: {
+  day: Date
+  isCurrentWeek: boolean
+  dayEvents: CalendarEvent[]
+  onOpen: (rect: DOMRect) => void
+  onCreate: () => void
+}) {
+  const today = new Date()
+  const isToday = isSameDay(day, today)
+
+  const allDayEvs = dayEvents.filter(
+    (ev) => ev.all_day || !ev.begin?.includes('T'),
+  )
+  const timedEvs = dayEvents
+    .filter((ev) => !ev.all_day && ev.begin?.includes('T'))
+    .sort((a, b) => (a.begin ?? '').localeCompare(b.begin ?? ''))
+
+  const amEvs = timedEvs.filter(
+    (ev) => Number(ev.begin!.split('T')[1].slice(0, 2)) < 12,
+  )
+  const pmEvs = timedEvs.filter(
+    (ev) => Number(ev.begin!.split('T')[1].slice(0, 2)) >= 12,
+  )
+
+  const fewEvents = dayEvents.length === 0
+  const weekday =
+    weekdays[(day.getDay() + 6) % 7] ??
+    day.toLocaleDateString('default', { weekday: 'short' })
+
+  const chipBg = isToday ? 'bg-white' : 'bg-[#E7E8E5]'
+  const dividerColor = isToday ? 'bg-[#111111]' : 'bg-[#CBCCC9]'
+
+  const Chip = ({
+    ev,
+    checkbox,
+  }: {
+    ev: CalendarEvent
+    checkbox?: boolean
+  }) => (
+    <div
+      className={`flex items-center gap-1 w-full px-1.5 py-[3px] rounded-[3px] ${chipBg}`}
+    >
+      {checkbox && (
+        <input
+          type="checkbox"
+          checked={!!ev.completed}
+          className="shrink-0 size-[11px] accent-white rounded-[3px]"
+          readOnly
+        />
+      )}
+      <span className="text-[11px] text-[#111111] truncate">{ev.title}</span>
+    </div>
+  )
+
+  const EventItem = ({ ev }: { ev: CalendarEvent }) => (
+    <div className="flex flex-col gap-0.5 w-full">
+      <span className="text-[9px] font-mono text-[#666666] leading-none">
+        {ev.begin!.split('T')[1].slice(0, 5)}
+      </span>
+      <Chip ev={ev} checkbox={ev.type === 'todo'} />
+    </div>
+  )
+
+  return (
+    <button
+      className={`group flex flex-col gap-1 p-1.5 text-left w-full cursor-pointer rounded-md border ${
+        isToday
+          ? 'bg-[var(--primary)] border-[#FFC98A]'
+          : isCurrentWeek
+            ? 'bg-white border-[#CBCCC9]'
+            : 'bg-[#F2F3F0] border-[#CBCCC9] h-40'
+      }`}
+      onClick={(e) =>
+        fewEvents
+          ? onCreate()
+          : onOpen(e.currentTarget.getBoundingClientRect())
+      }
+    >
+      {isCurrentWeek ? (
+        <>
+          <div className="flex items-center justify-center gap-1">
+            <span
+              className={`text-[13px] font-semibold ${isToday ? 'text-[var(--primary-foreground)]' : 'text-[#111111]'}`}
+            >
+              {day.getDate()}
+            </span>
+            <span
+              className={`text-[13px] font-semibold ${isToday ? 'text-[var(--primary-foreground)]' : 'text-[#111111]'}`}
+            >
+              {weekday}
+            </span>
+          </div>
+          <div className="min-h-6 flex flex-col gap-1">
+            {allDayEvs.map((ev) => (
+              <Chip key={ev.id} ev={ev} checkbox={ev.type === 'todo'} />
+            ))}
+          </div>
+          <div className={`h-px ${dividerColor}`} />
+          <div className="flex flex-col gap-1 flex-1">
+            <div className="flex flex-col gap-1 pt-0.5 pb-1.5">
+              {amEvs.map((ev) => (
+                <EventItem key={ev.id} ev={ev} />
+              ))}
+            </div>
+            <div className={`h-px ${dividerColor}`} />
+            <div className="flex flex-col gap-1 pt-1.5">
+              {pmEvs.map((ev) => (
+                <EventItem key={ev.id} ev={ev} />
+              ))}
+            </div>
+          </div>
+        </>
+      ) : (
+        <span className="text-[13px] font-semibold text-[#666666]">
+          {day.getDate()}
+        </span>
+      )}
+    </button>
   )
 }
 
