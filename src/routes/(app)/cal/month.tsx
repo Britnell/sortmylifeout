@@ -118,12 +118,12 @@ function RouteComponent() {
   })
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="">
       {/* Toolbar */}
       <CalendarMenuBar onAdd={() => openCreate(fmtDate(today))} />
 
       {/* Date stepper row */}
-      <div className="flex items-center justify-between border-y border-[#E7E8E5] py-2 px-4">
+      <div className="mb-2 flex items-center justify-between border-y border-[#E7E8E5] py-2 px-4">
         <span className="flex items-center gap-1.5 text-base font-semibold text-[#111111]">
           <CalendarDays size={14} strokeWidth={2} className="shrink-0" />
           Month
@@ -145,6 +145,14 @@ function RouteComponent() {
             aria-label="Next month"
           >
             <Icon name="chevron" className="rotate-180 text-lg" />
+          </button>
+          <button
+            className={`text-[12px] font-medium text-[#111111] ${
+              monthOffset === 0 ? 'bg-[var(--primary)]' : 'bg-white'
+            } rounded-md px-3 py-1.5`}
+            onClick={() => setMonthOffset(0)}
+          >
+            Today
           </button>
         </div>
       </div>

@@ -363,7 +363,7 @@ function RouteComponent() {
 
   return (
     <div>
-      <div className="mb-4">
+      <div className="">
         <CalendarMenuBar onAdd={openCreate} />
       </div>
 
@@ -392,13 +392,17 @@ function RouteComponent() {
           >
             <ChevronRight size={18} />
           </button>
+          <button
+            className={`text-[12px] font-medium text-[#111111] ${
+              isSameDay(selectedDay, today)
+                ? 'bg-[var(--primary)]'
+                : 'bg-white'
+            } rounded-md px-3 py-1.5`}
+            onClick={() => setSelectedDate(fmtDate(today))}
+          >
+            Today
+          </button>
         </div>
-        <button
-          className="text-[12px] font-medium text-[#111111] bg-[var(--primary)] rounded-md px-3 py-1.5"
-          onClick={() => setSelectedDate(fmtDate(today))}
-        >
-          Today
-        </button>
       </div>
 
       <div className="h-[calc(100vh-180px)] overflow-auto scroll-smooth pb-4">

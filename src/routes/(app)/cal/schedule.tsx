@@ -17,12 +17,6 @@ export const Route = createFileRoute('/(app)/cal/schedule')({
   component: RouteComponent,
 })
 
-const DAY_RANGE = 60
-
-function getDayDate(dayOffset: number): Date {
-  const now = new Date()
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset)
-}
 
 function getRelativeLabel(d: Date, today: Date): string | null {
   if (isSameDay(d, today)) return 'Today'
@@ -69,18 +63,19 @@ function RouteComponent() {
 
   const today = new Date()
 
+  const [selY, selM, selD] = selectedDate.split('-').map(Number)
+  const selectedDay = new Date(selY, selM - 1, selD)
+
+  const queryRange = {
+    from: fmtDate(selectedDay),
+    to: fmtDate(addDays(selectedDay, 6)),
+  }
+
   const { data: events = [], refetch: invalidate } = useQuery({
-    queryKey: [
-      'searchEventsFn',
-      fmtDate(getDayDate(-DAY_RANGE)),
-      fmtDate(getDayDate(DAY_RANGE)),
-    ],
+    queryKey: ['searchEventsFn', queryRange.from, queryRange.to],
     queryFn: () =>
       searchEventsFn({
-        data: {
-          date_from: fmtDate(getDayDate(-DAY_RANGE)),
-          date_to: fmtDate(getDayDate(DAY_RANGE)),
-        },
+        data: { date_from: queryRange.from, date_to: queryRange.to },
       }),
   })
 
@@ -92,8 +87,6 @@ function RouteComponent() {
     eventsByDate.get(dateKey)!.push(ev)
   })
 
-  const [selY, selM, selD] = selectedDate.split('-').map(Number)
-  const selectedDay = new Date(selY, selM - 1, selD)
   const days = Array.from({ length: 7 }, (_, i) => addDays(selectedDay, i))
 
   const closeDialog = () => {
@@ -254,9 +247,7 @@ function RouteComponent() {
 
   return (
     <div>
-      <div className="mb-4">
-        <CalendarMenuBar onAdd={openCreate} />
-      </div>
+      <CalendarMenuBar onAdd={openCreate} />
 
       <div className="flex items-center gap-4 px-4 py-3">
         <h1 className="text-[28px] font-bold text-[#111111]">schedule</h1>
@@ -276,13 +267,17 @@ function RouteComponent() {
           >
             <ChevronRight size={18} />
           </button>
+          <button
+            className={`text-[12px] font-medium text-[#111111] ${
+              isSameDay(selectedDay, today)
+                ? 'bg-[var(--primary)]'
+                : 'bg-white'
+            } rounded-md px-3 py-1.5`}
+            onClick={() => setSelectedDate(fmtDate(today))}
+          >
+            Today
+          </button>
         </div>
-        <button
-          className="text-[12px] font-medium text-[#111111] bg-[var(--primary)] rounded-md px-3 py-1.5"
-          onClick={() => setSelectedDate(fmtDate(today))}
-        >
-          Today
-        </button>
       </div>
 
       <div className="h-[calc(100vh-180px)] overflow-y-auto scroll-smooth pb-4">
