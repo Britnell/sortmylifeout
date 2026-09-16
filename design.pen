@@ -701,6 +701,106 @@
                       "children": [
                         {
                           "type": "frame",
+                          "id": "qHZUG",
+                          "name": "Weekdays",
+                          "width": "fill_container",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "yKXc4",
+                              "name": "Day Mo",
+                              "fill": "#666666",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Mo",
+                              "textAlign": "center",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Cazkg",
+                              "name": "Day Tu",
+                              "fill": "#666666",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Tu",
+                              "textAlign": "center",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "YKg6B",
+                              "name": "Day We",
+                              "fill": "#666666",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "We",
+                              "textAlign": "center",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "nWYHT",
+                              "name": "Day Th",
+                              "fill": "#666666",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Th",
+                              "textAlign": "center",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "NUy2F",
+                              "name": "Day Fr",
+                              "fill": "#666666",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Fr",
+                              "textAlign": "center",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "bHkgP",
+                              "name": "Day Sa",
+                              "fill": "#666666",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Sa",
+                              "textAlign": "center",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "baFPw",
+                              "name": "Day Su",
+                              "fill": "#666666",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "Su",
+                              "textAlign": "center",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
                           "id": "bceW4",
                           "name": "Week Prev",
                           "width": "fill_container",
@@ -1179,7 +1279,10 @@
                                         {
                                           "type": "text",
                                           "id": "goXkk",
+                                          "x": 18,
+                                          "y": 6,
                                           "name": "Weekday",
+                                          "enabled": false,
                                           "fill": "#111111",
                                           "content": "Mo",
                                           "fontFamily": "Geist",
@@ -1432,7 +1535,10 @@
                                         {
                                           "type": "text",
                                           "id": "D23JR",
+                                          "x": 21,
+                                          "y": 6,
                                           "name": "Weekday",
+                                          "enabled": false,
                                           "fill": "#111111",
                                           "content": "Tu",
                                           "fontFamily": "Geist",
