@@ -13,15 +13,28 @@ import CalendarEventDialog from '@/components/CalendarEventDialog'
 import type { CalendarEvent } from '@/components/CalendarEventDialog'
 import { fmtDate, isSameDay } from '#/lib/date'
 
+function getDuration(begin: string, end: string): string {
+  const diffMin = Math.round(
+    (new Date(end).getTime() - new Date(begin).getTime()) / 60000,
+  )
+  if (diffMin < 60) return `${diffMin}m`
+  const h = Math.floor(diffMin / 60)
+  const m = diffMin % 60
+  return m ? `${h}h ${m}m` : `${h}h`
+}
+
 export const Route = createFileRoute('/(app)/cal/day')({
   component: RouteComponent,
 })
 
 const DAY_RANGE = 60
 
-const SLOT_HEIGHT = 28 // px per 30-min slot
+const SLOT_HEIGHT = 22 // px per 30-min slot
 const SLOTS_PER_HOUR = 2
 const TOTAL_SLOTS = 24 * SLOTS_PER_HOUR // 48
+const START_HOUR = 7
+const END_HOUR = 20
+const VISIBLE_SLOTS = (END_HOUR - START_HOUR) * SLOTS_PER_HOUR
 
 function getDayDate(dayOffset: number): Date {
   const now = new Date()
@@ -199,7 +212,10 @@ function RouteComponent() {
     )
   }
 
-  const hours = Array.from({ length: 24 }, (_, i) => i)
+  const hours = Array.from(
+    { length: END_HOUR - START_HOUR },
+    (_, i) => i + START_HOUR,
+  )
 
   const renderDay = (d: Date) => {
     const dateKey = fmtDate(d)
@@ -214,119 +230,129 @@ function RouteComponent() {
       .sort((a, b) => (a.begin ?? '').localeCompare(b.begin ?? ''))
 
     return (
-      <div key={dateKey} className="w-[560px] max-w-full">
-        <div className="bg-white rounded-lg border border-[#CBCCC9]">
-          <div className="flex items-center justify-between bg-[var(--primary)] rounded-t-lg px-3 py-2.5">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-[#111111]">
-                {d.toLocaleDateString('default', { weekday: 'long' })}
-              </span>
-              <span className="text-sm font-semibold text-[#111111]">
-                {ordinal(d.getDate())}
-              </span>
-            </div>
-            {(() => {
-              const rel = getRelativeLabel(d, today)
-              return rel ? (
-                <span className="text-xs text-[#666666]">{rel}</span>
-              ) : null
-            })()}
+      <div
+        key={dateKey}
+        className="w-[560px] shrink-0 bg-white rounded-lg border border-[#CBCCC9]"
+      >
+        <div className="sticky top-0 z-20 flex items-center justify-between bg-[var(--primary)] rounded-t-lg px-3 py-2.5">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-[#111111]">
+              {d.toLocaleDateString('default', { weekday: 'long' })}
+            </span>
+            <span className="text-sm font-semibold text-[#111111]">
+              {ordinal(d.getDate())}
+            </span>
+          </div>
+          {(() => {
+            const rel = getRelativeLabel(d, today)
+            return rel ? (
+              <span className="text-xs text-[#666666]">{rel}</span>
+            ) : null
+          })()}
+        </div>
+
+        {/* All-day events */}
+        {allDayEvs.length > 0 && (
+          <div className="flex flex-col gap-2 p-3 pb-0">
+            {allDayEvs.map(renderAllDayItem)}
+          </div>
+        )}
+
+        {/* Hourly timeline */}
+        <div className="relative flex p-3 pt-2">
+          {/* Hour labels */}
+          <div className="shrink-0 w-8 select-none">
+            {hours.map((h) => (
+              <div
+                key={h}
+                style={{ height: SLOT_HEIGHT * SLOTS_PER_HOUR }}
+                className="flex items-start justify-end pr-1.5 pt-0.5"
+              >
+                <span className="text-[10px] text-[#8A8B87] leading-none">
+                  {String(h).padStart(2, '0')}:00
+                </span>
+              </div>
+            ))}
           </div>
 
-          {/* All-day events */}
-          {allDayEvs.length > 0 && (
-            <div className="flex flex-col gap-2 p-3 pb-0">
-              {allDayEvs.map(renderAllDayItem)}
-            </div>
-          )}
+          {/* Grid + events */}
+          <div
+            className="flex-1 relative border-l border-[#CBCCC9]"
+            style={{
+              height:
+                (END_HOUR - START_HOUR - 1) * SLOTS_PER_HOUR * SLOT_HEIGHT + 1,
+            }}
+          >
+            {hours.map((h) => (
+              <div
+                key={h}
+                className="absolute left-0 right-0 border-t border-[#CBCCC9]"
+                style={{ top: (h - START_HOUR) * SLOTS_PER_HOUR * SLOT_HEIGHT }}
+              />
+            ))}
 
-          {/* Hourly timeline */}
-          <div className="relative flex p-3">
-            {/* Hour labels */}
-            <div className="shrink-0 w-10 select-none">
-              {hours.map((h) => (
-                <div
-                  key={h}
-                  style={{ height: SLOT_HEIGHT * SLOTS_PER_HOUR }}
-                  className="flex items-start justify-end pr-2 pt-0.5"
-                >
-                  <span className="text-xs text-gray-400 leading-none">
-                    {String(h).padStart(2, '0')}
-                  </span>
-                </div>
-              ))}
-            </div>
+            {/* Now indicator */}
+            {isToday && (
+              <div
+                className="absolute left-0 right-0 border-t border-red-400 z-10"
+                style={{
+                  top:
+                    ((new Date().getHours() * 60 + new Date().getMinutes()) /
+                      30 -
+                      START_HOUR * SLOTS_PER_HOUR) *
+                    SLOT_HEIGHT,
+                }}
+              />
+            )}
 
-            {/* Grid + events */}
-            <div
-              className="flex-1 relative border-l border-gray-200"
-              style={{ height: TOTAL_SLOTS * SLOT_HEIGHT }}
-            >
-              {hours.map((h) => (
-                <div
-                  key={h}
-                  className="absolute left-0 right-0 border-t border-gray-200"
-                  style={{ top: h * SLOTS_PER_HOUR * SLOT_HEIGHT }}
-                />
-              ))}
-              {hours.map((h) => (
-                <div
-                  key={`h${h}`}
-                  className="absolute left-0 right-0 border-t border-gray-100"
-                  style={{ top: (h * SLOTS_PER_HOUR + 1) * SLOT_HEIGHT }}
-                />
-              ))}
+            {timedEvs.map((ev) => {
+              const timeStr = ev.begin!.split('T')[1].slice(0, 5)
+              const startSlot = Math.max(
+                Math.min(
+                  timeToSlot(timeStr) - START_HOUR * SLOTS_PER_HOUR,
+                  TOTAL_SLOTS - 1,
+                ),
+                0,
+              )
+              const endSlot = ev.end?.includes('T')
+                ? Math.max(
+                    Math.min(
+                      timeToSlot(ev.end.split('T')[1].slice(0, 5)) -
+                        START_HOUR * SLOTS_PER_HOUR,
+                      VISIBLE_SLOTS,
+                    ),
+                    startSlot + 1,
+                  )
+                : startSlot + 2
+              const heightSlots = Math.max(endSlot - startSlot, 1)
+              const isTodo = ev.type === 'todo'
+              const done = isTodo && !!ev.completed
 
-              {/* Now indicator */}
-              {isToday && (
+              return (
                 <div
-                  className="absolute left-0 right-0 border-t border-red-400 z-10"
+                  key={ev.id}
+                  className={`absolute left-1 right-1 rounded px-1.5 py-0.5 text-xs cursor-pointer overflow-hidden ${
+                    done || !isTodo
+                      ? 'bg-[#E7E8E5] text-[#111111]'
+                      : 'bg-white text-[#111111] border border-[#CBCCC9] hover:bg-[#F5F5F4]'
+                  }`}
                   style={{
-                    top:
-                      (new Date().getHours() * 60 + new Date().getMinutes()) /
-                      30 *
-                      SLOT_HEIGHT,
+                    top: startSlot * SLOT_HEIGHT + 1,
+                    height: heightSlots * SLOT_HEIGHT - 2,
                   }}
-                />
-              )}
-
-              {timedEvs.map((ev) => {
-                const timeStr = ev.begin!.split('T')[1].slice(0, 5)
-                const startSlot = Math.min(timeToSlot(timeStr), TOTAL_SLOTS - 1)
-                const endSlot = ev.end?.includes('T')
-                  ? Math.min(
-                      timeToSlot(ev.end.split('T')[1].slice(0, 5)),
-                      TOTAL_SLOTS,
-                    )
-                  : startSlot + 2
-                const heightSlots = Math.max(endSlot - startSlot, 1)
-                const isTodo = ev.type === 'todo'
-                const done = isTodo && !!ev.completed
-
-                return (
-                  <div
-                    key={ev.id}
-                    className={`absolute left-1 right-1 rounded px-1.5 py-0.5 text-xs cursor-pointer overflow-hidden ${
-                      done || !isTodo
-                        ? 'bg-[#E7E8E5] text-[#111111]'
-                        : 'bg-white text-[#111111] border border-[#CBCCC9] hover:bg-[#F5F5F4]'
-                    }`}
-                    style={{
-                      top: startSlot * SLOT_HEIGHT + 1,
-                      height: heightSlots * SLOT_HEIGHT - 2,
-                    }}
-                    onClick={(e) => openEdit(ev, e)}
-                  >
+                  onClick={(e) => openEdit(ev, e)}
+                >
+                  <div className="flex items-baseline gap-1.5">
                     <div className="font-medium truncate">{ev.title}</div>
-                    <div className="text-[#666666]">
-                      {timeStr}
-                      {ev.end?.includes('T') &&
-                        ` – ${ev.end.split('T')[1].slice(0, 5)}`}
-                    </div>
+                    {ev.end?.includes('T') && (
+                      <span className="text-[#666666] shrink-0">
+                        {getDuration(ev.begin!, ev.end)}
+                      </span>
+                    )}
                   </div>
-                )
-              })}
-            </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>
@@ -375,8 +401,8 @@ function RouteComponent() {
         <div className="flex-1 h-px bg-[#CBCCC9]" />
       </div>
 
-      <div className="h-[calc(100vh-180px)] overflow-y-auto scroll-smooth pb-4">
-        <div className="flex flex-col items-center gap-2 pt-1 px-4">
+      <div className="h-[calc(100vh-180px)] overflow-auto scroll-smooth pb-4">
+        <div className="flex gap-3 pt-1 px-4">
           {days.map(renderDay)}
         </div>
       </div>
