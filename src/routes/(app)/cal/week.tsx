@@ -161,6 +161,23 @@ function RouteComponent() {
         </div>
       </div>
 
+      {/* Weekday header */}
+      <div className="grid grid-cols-7 gap-1 px-4 pb-1">
+        {allWeekDays[1].map((day) => {
+          const weekday =
+            weekdays[(day.getDay() + 6) % 7] ??
+            day.toLocaleDateString('default', { weekday: 'short' })
+          return (
+            <div
+              key={fmtDate(day)}
+              className="text-center text-[13px] font-semibold text-[#111111]"
+            >
+              {weekday}
+            </div>
+          )
+        })}
+      </div>
+
       {/* Week grid */}
       <div className="flex flex-col gap-1 flex-1 min-h-[640px] px-4">
         {allWeekDays.map((weekDays, wi) => {
@@ -182,6 +199,7 @@ function RouteComponent() {
                       setExpandedDay(fmtDate(day))
                     }}
                     onCreate={() => openCreate(fmtDate(day))}
+                    onEdit={openEdit}
                   />
                 ))}
               </div>
@@ -228,13 +246,16 @@ function DayCell({
   dayEvents,
   onOpen,
   onCreate,
+  onEdit,
 }: {
   day: Date
   isCurrentWeek: boolean
   dayEvents: CalendarEvent[]
   onOpen: (rect: DOMRect) => void
   onCreate: () => void
+  onEdit: (ev: CalendarEvent, e?: React.MouseEvent) => void
 }) {
+  const MAX_PER_SECTION = 3
   const today = new Date()
   const isToday = isSameDay(day, today)
 
@@ -252,11 +273,6 @@ function DayCell({
     (ev) => Number(ev.begin!.split('T')[1].slice(0, 2)) >= 12,
   )
 
-  const fewEvents = dayEvents.length === 0
-  const weekday =
-    weekdays[(day.getDay() + 6) % 7] ??
-    day.toLocaleDateString('default', { weekday: 'short' })
-
   const chipBg = 'bg-[#E7E8E5]'
   const dividerColor = 'bg-[#CBCCC9]'
 
@@ -267,8 +283,10 @@ function DayCell({
     ev: CalendarEvent
     checkbox?: boolean
   }) => (
-    <div
-      className={`flex items-center gap-1 w-full px-1.5 py-[3px] rounded-[3px] ${chipBg}`}
+    <button
+      type="button"
+      className={`flex items-center gap-1 w-full text-left px-1.5 py-[3px] rounded-[3px] ${chipBg} hover:bg-[#D8D9D6]`}
+      onClick={(e) => onEdit(ev, e)}
     >
       {checkbox && (
         <input
@@ -279,8 +297,51 @@ function DayCell({
         />
       )}
       <span className="text-[11px] text-[#111111] truncate">{ev.title}</span>
-    </div>
+    </button>
   )
+
+  const Section = ({
+    label,
+    evs,
+    className = '',
+  }: {
+    label?: string
+    evs: CalendarEvent[]
+    className?: string
+  }) => {
+    const visible = evs.slice(0, MAX_PER_SECTION)
+    const rest = evs.length - visible.length
+    return (
+      <>
+        {label && (
+          <span className="text-[8px] font-mono text-[#8A8B87] leading-none">
+            {label}
+          </span>
+        )}
+        <div className={`flex flex-col gap-1 pt-0.5 pb-1.5 ${className}`}>
+          {visible.map((ev) =>
+            label ? (
+              <EventItem key={ev.id} ev={ev} />
+            ) : (
+              <Chip key={ev.id} ev={ev} checkbox={ev.type === 'todo'} />
+            ),
+          )}
+          {rest > 0 && (
+            <button
+              type="button"
+              className="text-left text-[11px] text-[#666666] hover:text-black hover:bg-[#E7E8E5] rounded px-1 w-full"
+              onClick={(e) => {
+                e.stopPropagation()
+                onOpen(e.currentTarget.getBoundingClientRect())
+              }}
+            >
+              +{rest} more
+            </button>
+          )}
+        </div>
+      </>
+    )
+  }
 
   const EventItem = ({ ev }: { ev: CalendarEvent }) => (
     <div className="flex flex-col gap-0.5 w-full">
@@ -298,11 +359,7 @@ function DayCell({
           ? 'bg-white border-[#CBCCC9]'
           : 'bg-[#F2F3F0] border-[#CBCCC9] h-40'
       }`}
-      onClick={(e) =>
-        fewEvents
-          ? onCreate()
-          : onOpen(e.currentTarget.getBoundingClientRect())
-      }
+      onClick={onCreate}
     >
       {isCurrentWeek ? (
         <>
@@ -312,9 +369,6 @@ function DayCell({
             <span className="text-[13px] font-semibold text-[#111111]">
               {day.getDate()}
             </span>
-            <span className="text-[13px] font-semibold text-[#111111]">
-              {weekday}
-            </span>
             {isToday && (
               <span className="text-[13px] font-semibold text-[#111111]">
                 Today
@@ -322,31 +376,11 @@ function DayCell({
             )}
           </div>
           <div className="flex flex-col gap-1 flex-1 p-1.5 pt-1">
-            <div className="min-h-6 flex flex-col gap-1">
-              {allDayEvs.map((ev) => (
-                <Chip key={ev.id} ev={ev} checkbox={ev.type === 'todo'} />
-              ))}
-            </div>
+            <Section evs={allDayEvs} className="min-h-6" />
             <div className={`h-px ${dividerColor}`} />
-          <div className="flex flex-col gap-1 flex-1">
-            <span className="text-[8px] font-mono text-[#8A8B87] leading-none">
-              am
-            </span>
-            <div className="flex flex-col gap-1 flex-1 pt-0.5 pb-1.5">
-              {amEvs.map((ev) => (
-                <EventItem key={ev.id} ev={ev} />
-              ))}
-            </div>
+            <Section label="am" evs={amEvs} className="flex-1" />
             <div className={`h-px ${dividerColor}`} />
-            <span className="text-[8px] font-mono text-[#8A8B87] leading-none">
-              pm
-            </span>
-            <div className="flex flex-col gap-1 flex-1 pt-1.5">
-              {pmEvs.map((ev) => (
-                <EventItem key={ev.id} ev={ev} />
-              ))}
-            </div>
-          </div>
+            <Section label="pm" evs={pmEvs} className="flex-1 pt-1.5 pb-1.5" />
           </div>
         </>
       ) : (
