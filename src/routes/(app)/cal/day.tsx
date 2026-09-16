@@ -370,8 +370,7 @@ function RouteComponent() {
           <AlarmClock size={20} strokeWidth={2} className="shrink-0" />
           day
         </h1>
-        <div className="flex-1 h-px bg-[#CBCCC9]" />
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mx-auto">
           <button
             className="text-[#666666] hover:text-[#111111]"
             onClick={() => setSelectedDate(fmtDate(addDays(selectedDay, -1)))}
@@ -398,7 +397,6 @@ function RouteComponent() {
         >
           Today
         </button>
-        <div className="flex-1 h-px bg-[#CBCCC9]" />
       </div>
 
       <div className="h-[calc(100vh-180px)] overflow-auto scroll-smooth pb-4">

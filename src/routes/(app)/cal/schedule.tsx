@@ -260,8 +260,7 @@ function RouteComponent() {
 
       <div className="flex items-center gap-4 px-4 py-3">
         <h1 className="text-[28px] font-bold text-[#111111]">schedule</h1>
-        <div className="flex-1 h-px bg-[#CBCCC9]" />
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mx-auto">
           <button
             className="text-[#666666] hover:text-[#111111]"
             onClick={() => setSelectedDate(fmtDate(addDays(selectedDay, -1)))}
@@ -284,7 +283,6 @@ function RouteComponent() {
         >
           Today
         </button>
-        <div className="flex-1 h-px bg-[#CBCCC9]" />
       </div>
 
       <div className="h-[calc(100vh-180px)] overflow-y-auto scroll-smooth pb-4">
