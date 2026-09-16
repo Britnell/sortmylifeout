@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import CalendarHeaderBar from '@/components/CalendarHeaderBar'
+import CalendarMenuBar from '#/components/CalendarMenuBar'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
   searchEventsFn,
@@ -186,7 +186,7 @@ function RouteComponent() {
   return (
     <div className="">
       <div className="mb-4">
-        <CalendarHeaderBar onAdd={openCreate} />
+        <CalendarMenuBar onAdd={openCreate} />
       </div>
 
       <div className="h-[calc(100vh-180px)] overflow-y-auto scroll-smooth space-y-2">

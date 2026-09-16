@@ -563,7 +563,12 @@
                       "type": "ref",
                       "ref": "K26bnk",
                       "name": "Toolbar",
-                      "width": "fill_container"
+                      "width": "fill_container",
+                      "descendants": {
+                        "H6nNct": {
+                          "content": "Events"
+                        }
+                      }
                     }
                   ]
                 },
@@ -2842,7 +2847,12 @@
                       "type": "ref",
                       "ref": "K26bnk",
                       "name": "Toolbar",
-                      "width": "fill_container"
+                      "width": "fill_container",
+                      "descendants": {
+                        "H6nNct": {
+                          "content": "Events"
+                        }
+                      }
                     },
                     {
                       "type": "frame",
@@ -3147,7 +3157,12 @@
                       "type": "ref",
                       "ref": "K26bnk",
                       "name": "Toolbar",
-                      "width": "fill_container"
+                      "width": "fill_container",
+                      "descendants": {
+                        "H6nNct": {
+                          "content": "Events"
+                        }
+                      }
                     },
                     {
                       "type": "frame",
@@ -3177,7 +3192,8 @@
                           "id": "cSRxh",
                           "name": "Spacer Left",
                           "width": "fill_container",
-                          "height": 1
+                          "height": 1,
+                          "fill": "#CBCCC9"
                         },
                         {
                           "type": "frame",
@@ -3246,7 +3262,8 @@
                           "id": "j7aPT",
                           "name": "Spacer Right",
                           "width": "fill_container",
-                          "height": 1
+                          "height": 1,
+                          "fill": "#CBCCC9"
                         }
                       ]
                     },
@@ -3761,6 +3778,15 @@
                           ]
                         }
                       ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "urHX6",
+                      "fill": "#ffffff",
+                      "content": "t",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
                     }
                   ]
                 },
@@ -4860,7 +4886,12 @@
                         0,
                         16,
                         12
-                      ]
+                      ],
+                      "descendants": {
+                        "H6nNct": {
+                          "content": "Events"
+                        }
+                      }
                     },
                     {
                       "type": "frame",
@@ -11208,6 +11239,16 @@
           ]
         }
       ]
+    },
+    {
+      "id": "cMa5J",
+      "type": "ref",
+      "ref": "fFk1I",
+      "name": "Menu Bar Instance",
+      "x": -72,
+      "y": -463,
+      "width": 1440,
+      "height": 44
     }
   ],
   "themes": {

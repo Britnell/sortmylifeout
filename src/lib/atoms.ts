@@ -4,9 +4,13 @@ import { atom } from 'jotai'
 const atomWithLocalStorage = <T>(key: string, initialValue: T) => {
 	const getInitialValue = () => {
 		if (typeof window === 'undefined') return initialValue
-		const item = localStorage.getItem(key)
-		if (item !== null) {
-			return JSON.parse(item)
+		try {
+			const item = localStorage.getItem(key)
+			if (item !== null) {
+				return JSON.parse(item)
+			}
+		} catch {
+			/* storage unavailable */
 		}
 		return initialValue
 	}
@@ -19,7 +23,11 @@ const atomWithLocalStorage = <T>(key: string, initialValue: T) => {
 					? (update as (prev: T) => T)(get(baseAtom))
 					: update
 			set(baseAtom, nextValue)
-			localStorage.setItem(key, JSON.stringify(nextValue))
+			try {
+				localStorage.setItem(key, JSON.stringify(nextValue))
+			} catch {
+				/* storage unavailable */
+			}
 		},
 	)
 	return derivedAtom

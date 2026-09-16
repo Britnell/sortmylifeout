@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import CalendarHeaderBar from '@/components/CalendarHeaderBar'
+import CalendarMenuBar from '#/components/CalendarMenuBar'
 import Icon from '@/components/Icon'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
@@ -123,7 +123,7 @@ function RouteComponent() {
   return (
     <div className="flex flex-col gap-3">
       {/* Toolbar */}
-      <CalendarHeaderBar onAdd={() => openCreate(fmtDate(today))} />
+      <CalendarMenuBar onAdd={() => openCreate(fmtDate(today))} />
 
       {/* Date stepper row */}
       <div className="flex items-center justify-between border-y border-[#E7E8E5] py-2">

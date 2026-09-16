@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import CalendarHeaderBar from '@/components/CalendarHeaderBar'
+import CalendarMenuBar from '#/components/CalendarMenuBar'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
   searchEventsFn,
@@ -155,7 +155,7 @@ function RouteComponent() {
     <div className="flex flex-col h-[calc(100vh-120px)]">
       {/* Header */}
       <div className="mb-3 shrink-0">
-        <CalendarHeaderBar onAdd={openCreate} />
+        <CalendarMenuBar onAdd={openCreate} />
         <div className="mt-3 flex items-center justify-between border-y border-[#E7E8E5] py-2">
           <button
             className="text-[#666666] hover:text-black px-1"

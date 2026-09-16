@@ -5,6 +5,7 @@ export function useLocalStorage<T extends string | number | boolean>(
 	initialValue: T,
 ): [T, (value: T | ((prev: T) => T)) => void] {
 	const [storedValue, setStoredValue] = useState<T>(() => {
+		if (typeof window === 'undefined') return initialValue
 		try {
 			const item = localStorage.getItem(key)
 			return item !== null ? (JSON.parse(item) as T) : initialValue
@@ -15,9 +16,15 @@ export function useLocalStorage<T extends string | number | boolean>(
 
 	const setValue = useCallback(
 		(value: T | ((prev: T) => T)) => {
-			setStoredValue((prev) => {
-				const nextValue = value instanceof Function ? value(prev) : value
-				localStorage.setItem(key, JSON.stringify(nextValue))
+		setStoredValue((prev) => {
+			const nextValue = value instanceof Function ? value(prev) : value
+			try {
+				if (typeof window !== 'undefined') {
+					localStorage.setItem(key, JSON.stringify(nextValue))
+				}
+			} catch {
+					/* storage unavailable */
+				}
 				return nextValue
 			})
 		},

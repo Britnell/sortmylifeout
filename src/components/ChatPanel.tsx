@@ -95,8 +95,6 @@ export function ChatPanel() {
     lastHandledToolCallId.current = null
   }
 
-  console.log(messages)
-
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 px-3 sm:pb-3">
       <div

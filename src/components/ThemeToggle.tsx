@@ -7,9 +7,13 @@ function getInitialMode(): ThemeMode {
     return 'auto'
   }
 
-  const stored = window.localStorage.getItem('theme')
-  if (stored === 'light' || stored === 'dark' || stored === 'auto') {
-    return stored
+  try {
+    const stored = window.localStorage.getItem('theme')
+    if (stored === 'light' || stored === 'dark' || stored === 'auto') {
+      return stored
+    }
+  } catch {
+    /* storage unavailable */
   }
 
   return 'auto'
@@ -59,7 +63,11 @@ export default function ThemeToggle() {
       mode === 'light' ? 'dark' : mode === 'dark' ? 'auto' : 'light'
     setMode(nextMode)
     applyThemeMode(nextMode)
-    window.localStorage.setItem('theme', nextMode)
+    try {
+      window.localStorage.setItem('theme', nextMode)
+    } catch {
+      /* storage unavailable */
+    }
   }
 
   const label =
