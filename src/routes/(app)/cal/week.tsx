@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import CalendarHeaderBar from '@/components/CalendarHeaderBar'
+import Icon from '@/components/Icon'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
   searchEventsFn,
@@ -10,7 +11,6 @@ import {
 } from '@/serverFn/queries.functions'
 import CalendarEventDialog from '@/components/CalendarEventDialog'
 import type { CalendarEvent } from '@/components/CalendarEventDialog'
-import Icon from '@/components/Icon'
 import { fmtDate, getWeekDays, isSameDay, weekdays } from '#/lib/date'
 
 export const Route = createFileRoute('/(app)/cal/week')({
@@ -123,9 +123,12 @@ function RouteComponent() {
   return (
     <div className="flex flex-col gap-3">
       {/* Toolbar */}
-      <CalendarHeaderBar onAdd={() => openCreate(fmtDate(today))}>
+      <CalendarHeaderBar onAdd={() => openCreate(fmtDate(today))} />
+
+      {/* Date stepper row */}
+      <div className="flex items-center justify-between border-y border-[#E7E8E5] py-2">
         <button
-          className="text-[#666666] hover:text-black"
+          className="text-[#666666] hover:text-black px-1"
           onClick={() => setWeekOffset((o) => o - 1)}
           aria-label="Previous week"
         >
@@ -135,13 +138,13 @@ function RouteComponent() {
           {weekLabel}
         </h2>
         <button
-          className="text-[#666666] hover:text-black"
+          className="text-[#666666] hover:text-black px-1"
           onClick={() => setWeekOffset((o) => o + 1)}
           aria-label="Next week"
         >
           <Icon name="chevron" className="-rotate-90 text-lg" />
         </button>
-      </CalendarHeaderBar>
+      </div>
 
       {/* Week grid */}
       <div className="flex flex-col gap-1 flex-1 min-h-[640px]">

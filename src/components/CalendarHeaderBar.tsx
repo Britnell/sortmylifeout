@@ -10,7 +10,7 @@ export default function CalendarHeaderBar({
 	onAdd: () => void
 }) {
 	return (
-		<div className="flex items-center gap-4">
+		<div className="flex items-center gap-4 bg-white px-4 py-2 w-full">
 			<span className="text-[16px] font-semibold text-[#111111]">Calendar</span>
 			<CalViewSwitcher />
 			<div className="flex items-center gap-4 mx-auto">{children}</div>

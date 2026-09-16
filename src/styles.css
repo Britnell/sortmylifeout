@@ -19,6 +19,9 @@
 }
 
 @layer base {
+  body {
+    @apply bg-neutral-200;
+  }
   button {
     @apply cursor-pointer;
   }

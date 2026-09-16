@@ -52,27 +52,27 @@ function RouteComponent() {
           <nav className="flex gap-1">
             <Link
               to={lastCalView}
-              className={`flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-[13px] font-medium ${isCal ? 'text-[#111]' : 'text-[#666]'}`}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium ${isCal ? 'text-[#111]' : 'text-[#666]'}`}
             >
-              <span className="text-base">
+              <span className="grid place-items-center text-[15px]">
                 <Icon name="calendar" />
               </span>
-              Calendar
+              Events
             </Link>
             <Link
               to="/todo"
-              className={`flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-[13px] font-medium ${isTodo ? 'text-[#111]' : 'text-[#666]'}`}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium ${isTodo ? 'text-[#111]' : 'text-[#666]'}`}
             >
-              <span className="text-base">
+              <span className="grid place-items-center text-[15px]">
                 <Icon name="todo" />
               </span>
               Todos
             </Link>
             <Link
               to="/shopping"
-              className={`flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-[13px] font-medium ${isShopping ? 'text-[#111]' : 'text-[#666]'}`}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium ${isShopping ? 'text-[#111]' : 'text-[#666]'}`}
             >
-              <span className="text-base">
+              <span className="grid place-items-center text-[15px]">
                 <Icon name="shopping" />
               </span>
               Shopping
@@ -92,7 +92,7 @@ function RouteComponent() {
 
         <div className="flex flex-1">
           {/* Main content */}
-          <div className="flex-1 min-w-0 px-2 pt-4 sm:px-4">
+          <div className="flex-1 min-w-0">
             {data && <Outlet />}
           </div>
 

@@ -155,20 +155,20 @@ function RouteComponent() {
     <div className="flex flex-col h-[calc(100vh-120px)]">
       {/* Header */}
       <div className="mb-3 shrink-0">
-        <CalendarHeaderBar onAdd={openCreate}>
+        <CalendarHeaderBar onAdd={openCreate} />
+        <div className="mt-3 flex items-center justify-between border-y border-[#E7E8E5] py-2">
           <button
-            className="p-1 rounded hover:bg-gray-100 text-gray-600"
+            className="text-[#666666] hover:text-black px-1"
             onClick={() => goDay(-1)}
+            aria-label="Previous day"
           >
-            ‹
+            <span className="text-lg">‹</span>
           </button>
-          <div className="text-center min-w-32">
-            <div
-              className={`text-sm font-semibold ${isSameDay(currentDate, today) ? 'text-blue-600' : 'text-gray-900'}`}
-            >
+          <div className="text-center">
+            <div className="text-sm font-semibold text-[#111111]">
               {getDayLabel(currentDate, today)}
             </div>
-            <div className="text-xs text-gray-400">
+            <div className="text-xs text-[#666666]">
               {currentDate.toLocaleDateString('default', {
                 weekday: 'short',
                 month: 'short',
@@ -177,12 +177,13 @@ function RouteComponent() {
             </div>
           </div>
           <button
-            className="p-1 rounded hover:bg-gray-100 text-gray-600"
+            className="text-[#666666] hover:text-black px-1"
             onClick={() => goDay(1)}
+            aria-label="Next day"
           >
-            ›
+            <span className="text-lg">›</span>
           </button>
-        </CalendarHeaderBar>
+        </div>
       </div>
 
       {/* All-day events */}
