@@ -226,15 +226,18 @@ export default function CalendarEventDialog({
           </label>
         )}
 
-        <input
-          type="text"
-          name="title"
-          required
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-          placeholder="Title"
-        />
+        <div>
+          <label className="block mb-1.5 text-xs font-medium text-[#666]">Title</label>
+          <input
+            type="text"
+            name="title"
+            required
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+            placeholder="Title"
+          />
+        </div>
 
         <div>
           <label className="block mb-1.5 text-xs font-medium text-[#666]">
@@ -258,7 +261,7 @@ export default function CalendarEventDialog({
                 type="date"
                 value={beginDate}
                 required={itemType === 'event'}
-                className="flex-1 h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                className="h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 onChange={(e) => {
                   setBeginDate(e.target.value)
                   if (duration) {
@@ -277,7 +280,7 @@ export default function CalendarEventDialog({
                 ref={timeRef}
                 type="time"
                 value={beginTime}
-                className="flex-1 h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                className="h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 onChange={(e) => {
                   const t = e.target.value
                   setBeginTime(t)
@@ -345,34 +348,38 @@ export default function CalendarEventDialog({
 
         {itemType !== 'todo' && (
           <div>
-            <label className="block text-xs font-medium text-[#666] mb-1.5">
-              End
-            </label>
-            <div className="flex gap-2 items-center">
-              <input
-                type="date"
-                value={endDate}
-                required={itemType === 'event'}
-                className="flex-1 h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                onChange={(e) => {
-                  setEndDate(e.target.value)
-                  setDuration('')
-                }}
-              />
-              <input
-                type="time"
-                value={endTime}
-                required={itemType === 'event' && !allDay}
-                className="flex-1 h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                onChange={(e) => {
-                  setEndTime(e.target.value)
-                  setDuration('')
-                }}
-              />
-              <select
-                value={duration}
-                className="flex-1 h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] text-[#888] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                onChange={(e) => {
+            <div className="flex gap-2 items-end flex-nowrap">
+              <div>
+                <label className="block mb-1.5 text-xs font-medium text-[#666]">End</label>
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={endDate}
+                    required={itemType === 'event'}
+                    className="h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    onChange={(e) => {
+                      setEndDate(e.target.value)
+                      setDuration('')
+                    }}
+                  />
+                  <input
+                    type="time"
+                    value={endTime}
+                    required={itemType === 'event' && !allDay}
+                    className="h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    onChange={(e) => {
+                      setEndTime(e.target.value)
+                      setDuration('')
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block mb-1.5 text-xs font-medium text-[#666]">Duration</label>
+                <select
+                  value={duration}
+                  className="h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] text-[#888] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  onChange={(e) => {
                   const d = e.target.value
                   setDuration(d)
                   if (d) {
@@ -402,7 +409,8 @@ export default function CalendarEventDialog({
                     <option value="60">1 hour</option>
                   </>
                 )}
-              </select>
+                </select>
+              </div>
             </div>
           </div>
         )}
