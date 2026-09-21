@@ -271,8 +271,25 @@ export default function TodoBoard() {
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-4">
 					<h1 className="text-base font-semibold text-neutral-900">Todos</h1>
-					{/* Column tabs */}
-					<div className="flex items-center overflow-hidden rounded-lg border border-neutral-300 bg-white">
+					{/* Mobile: native select */}
+					<select
+						className="md:hidden px-3 py-2 text-[13px] font-medium border border-neutral-300 rounded-md bg-white text-neutral-700"
+						value={activeCol}
+						onChange={(e) => {
+							setActiveCol(e.target.value as ColumnKey)
+							document
+								.getElementById(`col-${e.target.value}`)
+								?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' })
+						}}
+					>
+						{COLS.map((col) => (
+							<option key={col.key} value={col.key}>
+								{col.title}
+							</option>
+						))}
+					</select>
+					{/* Desktop: tabs */}
+					<div className="hidden md:flex items-center overflow-hidden rounded-lg border border-neutral-300 bg-white">
 						{COLS.map((col) => (
 							<button
 								key={col.key}
@@ -310,7 +327,7 @@ export default function TodoBoard() {
 						<div
 							key={col.key}
 							id={`col-${col.key}`}
-							className={`flex h-fit w-95 shrink-0 flex-col gap-2.5 rounded-lg border border-neutral-300 bg-white scroll-ml-3 ${
+							className={`flex h-fit w-full shrink-0 flex-col gap-2.5 rounded-lg border border-neutral-300 bg-white scroll-ml-3 md:w-95 ${activeCol === col.key ? 'flex' : 'hidden md:flex'} ${
 								items.length ? 'min-h-64' : ''
 							}`}
 						>

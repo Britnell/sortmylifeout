@@ -118,7 +118,6 @@ function RouteComponent() {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
-    year: 'numeric',
   })
 
   return (
@@ -140,8 +139,13 @@ function RouteComponent() {
           >
             <ChevronLeft size={18} />
           </button>
-          <h2 className="min-w-[16ch] text-center text-[15px] font-semibold text-[#111111]">
-            {weekLabel}
+          <h2 className="flex min-w-[10ch] flex-col items-center leading-tight">
+            <span className="text-[15px] font-semibold text-[#111111]">
+              {weekLabel}
+            </span>
+            <span className="text-[11px] text-[#666666]">
+              {firstDay.getFullYear()}
+            </span>
           </h2>
           <button
             className="flex items-center rounded-md p-1 text-[#666666] hover:bg-[#F0F0EE] hover:text-black"

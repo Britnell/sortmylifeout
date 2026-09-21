@@ -261,8 +261,13 @@ function RouteComponent() {
           >
             <ChevronLeft size={18} />
           </button>
-          <span className="min-w-[11ch] text-center text-[15px] font-semibold text-[#111111]">
-            {fmtHeadingDate(selectedDay)}
+          <span className="flex min-w-[8ch] flex-col items-center leading-tight">
+            <span className="text-[15px] font-semibold text-[#111111]">
+              {fmtHeadingDate(selectedDay)}
+            </span>
+            <span className="text-[11px] text-[#666666]">
+              {selectedDay.getFullYear()}
+            </span>
           </span>
           <button
             className="rounded-md p-1 text-[#666666] hover:bg-[#F0F0EE] hover:text-[#111111]"

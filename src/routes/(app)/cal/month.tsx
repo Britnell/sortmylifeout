@@ -112,7 +112,7 @@ function RouteComponent() {
     1,
   )
   const monthLabel = monthDate.toLocaleDateString('default', {
-    month: 'long',
+    month: 'short',
     year: 'numeric',
   })
 
@@ -135,7 +135,7 @@ function RouteComponent() {
           >
             <ChevronLeft size={18} />
           </button>
-          <h2 className="min-w-[17ch] text-center text-[15px] font-semibold text-[#111111]">
+          <h2 className="min-w-[8ch] text-center text-[15px] font-semibold text-[#111111]">
             {monthLabel}
           </h2>
           <button
