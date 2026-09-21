@@ -182,27 +182,30 @@ function RouteComponent() {
       <div className="flex flex-col gap-1 flex-1 min-h-[640px] px-4">
         {allWeekDays.map((weekDays, wi) => {
           const isCurrentWeek = wi === 1
-          return (
+          return isCurrentWeek ? (
+            <CurrentWeekGrid
+              key={wi}
+              weekDays={weekDays}
+              eventsByDate={eventsByDate}
+              onOpen={(dateStr, rect) => {
+                setAnchorRect(rect)
+                setExpandedDay(dateStr)
+              }}
+              onCreate={openCreate}
+              onEdit={openEdit}
+            />
+          ) : (
             <div
               key={wi}
-              className={`flex flex-col gap-1 ${isCurrentWeek ? 'flex-1' : 'opacity-55'}`}
+              className="grid grid-cols-7 gap-1 opacity-55"
             >
-              <div className="grid grid-cols-7 gap-1 flex-1">
-                {weekDays.map((day) => (
-                  <DayCell
-                    key={fmtDate(day)}
-                    day={day}
-                    isCurrentWeek={isCurrentWeek}
-                    dayEvents={eventsByDate.get(fmtDate(day)) || []}
-                    onOpen={(rect) => {
-                      setAnchorRect(rect)
-                      setExpandedDay(fmtDate(day))
-                    }}
-                    onCreate={() => openCreate(fmtDate(day))}
-                    onEdit={openEdit}
-                  />
-                ))}
-              </div>
+              {weekDays.map((day) => (
+                <DayCell
+                  key={fmtDate(day)}
+                  day={day}
+                  onCreate={() => openCreate(fmtDate(day))}
+                />
+              ))}
             </div>
           )
         })}
@@ -233,49 +236,18 @@ function RouteComponent() {
   )
 }
 
-function DayCell({
-  day,
-  isCurrentWeek,
-  dayEvents,
-  onOpen,
-  onCreate,
+const chipBg = 'bg-[#E7E8E5]'
+
+function Chip({
+  ev,
   onEdit,
+  checkbox,
 }: {
-  day: Date
-  isCurrentWeek: boolean
-  dayEvents: CalendarEvent[]
-  onOpen: (rect: DOMRect) => void
-  onCreate: () => void
+  ev: CalendarEvent
   onEdit: (ev: CalendarEvent, e?: React.MouseEvent) => void
+  checkbox?: boolean
 }) {
-  const MAX_PER_SECTION = 3
-  const today = new Date()
-  const isToday = isSameDay(day, today)
-
-  const allDayEvs = dayEvents.filter(
-    (ev) => ev.all_day || !ev.begin?.includes('T'),
-  )
-  const timedEvs = dayEvents
-    .filter((ev) => !ev.all_day && ev.begin?.includes('T'))
-    .sort((a, b) => (a.begin ?? '').localeCompare(b.begin ?? ''))
-
-  const amEvs = timedEvs.filter(
-    (ev) => Number(ev.begin!.split('T')[1].slice(0, 2)) < 12,
-  )
-  const pmEvs = timedEvs.filter(
-    (ev) => Number(ev.begin!.split('T')[1].slice(0, 2)) >= 12,
-  )
-
-  const chipBg = 'bg-[#E7E8E5]'
-  const dividerColor = 'bg-[#CBCCC9]'
-
-  const Chip = ({
-    ev,
-    checkbox,
-  }: {
-    ev: CalendarEvent
-    checkbox?: boolean
-  }) => (
+  return (
     <button
       type="button"
       className={`flex items-center gap-1 w-full text-left px-1.5 py-[3px] rounded-[3px] ${chipBg} hover:bg-[#D8D9D6]`}
@@ -292,97 +264,202 @@ function DayCell({
       <span className="text-[11px] text-[#111111] truncate">{ev.title}</span>
     </button>
   )
+}
 
-  const Section = ({
-    label,
-    evs,
-    className = '',
-  }: {
-    label?: string
-    evs: CalendarEvent[]
-    className?: string
-  }) => {
-    const visible = evs.slice(0, MAX_PER_SECTION)
-    const rest = evs.length - visible.length
-    return (
-      <>
-        {label && (
-          <span className="text-[8px] font-mono text-[#8A8B87] leading-none">
-            {label}
-          </span>
-        )}
-        <div className={`flex flex-col gap-1 pt-0.5 pb-1.5 ${className}`}>
-          {visible.map((ev) =>
-            label ? (
-              <EventItem key={ev.id} ev={ev} />
-            ) : (
-              <Chip key={ev.id} ev={ev} checkbox={ev.type === 'todo'} />
-            ),
-          )}
-          {rest > 0 && (
-            <button
-              type="button"
-              className="text-left text-[11px] text-[#666666] hover:text-black hover:bg-[#E7E8E5] rounded px-1 w-full"
-              onClick={(e) => {
-                e.stopPropagation()
-                onOpen(e.currentTarget.getBoundingClientRect())
-              }}
-            >
-              +{rest} more
-            </button>
-          )}
-        </div>
-      </>
-    )
-  }
-
-  const EventItem = ({ ev }: { ev: CalendarEvent }) => (
+function EventItem({
+  ev,
+  onEdit,
+}: {
+  ev: CalendarEvent
+  onEdit: (ev: CalendarEvent, e?: React.MouseEvent) => void
+}) {
+  return (
     <div className="flex flex-col gap-0.5 w-full">
       <span className="text-[9px] font-mono text-[#666666] leading-none">
         {ev.begin!.split('T')[1].slice(0, 5)}
       </span>
-      <Chip ev={ev} checkbox={ev.type === 'todo'} />
+      <Chip ev={ev} onEdit={onEdit} checkbox={ev.type === 'todo'} />
     </div>
   )
+}
 
+function splitEvents(dayEvents: CalendarEvent[]) {
+  const allDayEvs = dayEvents.filter(
+    (ev) => ev.all_day || !ev.begin?.includes('T'),
+  )
+  const timedEvs = dayEvents
+    .filter((ev) => !ev.all_day && ev.begin?.includes('T'))
+    .sort((a, b) => (a.begin ?? '').localeCompare(b.begin ?? ''))
+  const amEvs = timedEvs.filter(
+    (ev) => Number(ev.begin!.split('T')[1].slice(0, 2)) < 12,
+  )
+  const pmEvs = timedEvs.filter(
+    (ev) => Number(ev.begin!.split('T')[1].slice(0, 2)) >= 12,
+  )
+  return { allDayEvs, amEvs, pmEvs }
+}
+
+function MoreButton({
+  rest,
+  dateStr,
+  onOpen,
+}: {
+  rest: number
+  dateStr: string
+  onOpen: (dateStr: string, rect: DOMRect) => void
+}) {
+  return (
+    <button
+      type="button"
+      className="text-left text-[11px] text-[#666666] hover:text-black hover:bg-[#E7E8E5] rounded px-1 w-full"
+      onClick={(e) => {
+        e.stopPropagation()
+        onOpen(dateStr, e.currentTarget.getBoundingClientRect())
+      }}
+    >
+      +{rest} more
+    </button>
+  )
+}
+
+function CurrentWeekGrid({
+  weekDays,
+  eventsByDate,
+  onOpen,
+  onCreate,
+  onEdit,
+}: {
+  weekDays: Date[]
+  eventsByDate: Map<string, CalendarEvent[]>
+  onOpen: (dateStr: string, rect: DOMRect) => void
+  onCreate: (dateStr: string) => void
+  onEdit: (ev: CalendarEvent, e?: React.MouseEvent) => void
+}) {
+  const today = new Date()
+  const days = weekDays.map((day) => {
+    const dateStr = fmtDate(day)
+    return {
+      day,
+      dateStr,
+      isToday: isSameDay(day, today),
+      ...splitEvents(eventsByDate.get(dateStr) || []),
+    }
+  })
+
+  // all-day rows: max visible count across the week
+  return (
+    <div
+      className="grid grid-cols-7 gap-x-1 gap-y-0 flex-1"
+      style={{
+        gridTemplateRows: `auto repeat(2, 1fr)`,
+      }}
+    >
+      {/* header + all-day row */}
+      {days.map(({ day, dateStr, isToday, allDayEvs }) => {
+        const visible = allDayEvs.slice(0, 3)
+        const rest = allDayEvs.length - visible.length
+        return (
+          <div
+            key={dateStr}
+            className={`flex flex-col gap-1 pt-1.5 pb-1.5 px-2 rounded-t-md border-x border-t border-[#CBCCC9] ${isToday ? 'bg-[var(--primary)]' : 'bg-white'}`}
+            onClick={() => onCreate(dateStr)}
+          >
+            <div className="flex items-center gap-1">
+              <span className="text-[13px] font-semibold text-[#111111]">
+                {day.getDate()}
+              </span>
+              {isToday && (
+                <span className="text-[13px] font-semibold text-[#111111]">
+                  Today
+                </span>
+              )}
+            </div>
+            {visible.map((ev) => (
+              <Chip key={ev.id} ev={ev} onEdit={onEdit} checkbox={ev.type === 'todo'} />
+            ))}
+            {rest > 0 && <MoreButton rest={rest} dateStr={dateStr} onOpen={onOpen} />}
+          </div>
+        )
+      })}
+
+      {/* am row */}
+      {days.map((d) => (
+        <SectionCell
+          key={d.dateStr}
+          label="am"
+          evs={d.amEvs}
+          dateStr={d.dateStr}
+          onOpen={onOpen}
+          onCreate={onCreate}
+          onEdit={onEdit}
+        />
+      ))}
+
+      {/* pm row */}
+      {days.map((d) => (
+        <SectionCell
+          key={d.dateStr}
+          label="pm"
+          evs={d.pmEvs}
+          dateStr={d.dateStr}
+          onOpen={onOpen}
+          onCreate={onCreate}
+          onEdit={onEdit}
+          rounded="bottom"
+        />
+      ))}
+    </div>
+  )
+}
+
+function SectionCell({
+  label,
+  evs,
+  dateStr,
+  onOpen,
+  onCreate,
+  onEdit,
+  rounded,
+}: {
+  label: string
+  evs: CalendarEvent[]
+  dateStr: string
+  onOpen: (dateStr: string, rect: DOMRect) => void
+  onCreate: (dateStr: string) => void
+  onEdit: (ev: CalendarEvent, e?: React.MouseEvent) => void
+  rounded?: 'bottom'
+}) {
+  const visible = evs.slice(0, 3)
+  const rest = evs.length - visible.length
+  return (
+    <div
+      className={`bg-white border-x border-[#CBCCC9] p-1.5 flex flex-col gap-1 flex-1 border-t ${rounded === 'bottom' ? 'border-b rounded-b-md' : ''}`}
+      onClick={() => onCreate(dateStr)}
+    >
+      <span className="text-[8px] font-mono text-[#8A8B87] leading-none">
+        {label}
+      </span>
+      <div className="flex flex-col gap-1 pt-0.5 pb-1.5">
+        {visible.map((ev) => (
+          <EventItem key={ev.id} ev={ev} onEdit={onEdit} />
+        ))}
+        {rest > 0 && <MoreButton rest={rest} dateStr={dateStr} onOpen={onOpen} />}
+      </div>
+    </div>
+  )
+}
+
+function DayCell({ day, onCreate }: { day: Date; onCreate: () => void }) {
   return (
     <div
       role="button"
       tabIndex={0}
-      className={`group flex flex-col text-left w-full cursor-pointer rounded-md border overflow-hidden ${
-        isCurrentWeek
-          ? 'bg-white border-[#CBCCC9]'
-          : 'bg-[#F2F3F0] border-[#CBCCC9] h-40'
-      }`}
+      className="group flex flex-col text-left w-full cursor-pointer rounded-md border overflow-hidden bg-[#F2F3F0] border-[#CBCCC9] h-40"
       onClick={onCreate}
     >
-      {isCurrentWeek ? (
-        <>
-          <div
-            className={`flex items-center gap-1 px-2 pt-1.5 pb-1 ${isToday ? 'bg-[var(--primary)] border-b border-[#CBCCC9]' : ''}`}
-          >
-            <span className="text-[13px] font-semibold text-[#111111]">
-              {day.getDate()}
-            </span>
-            {isToday && (
-              <span className="text-[13px] font-semibold text-[#111111]">
-                Today
-              </span>
-            )}
-          </div>
-          <div className="flex flex-col gap-1 flex-1 p-1.5 pt-1">
-            <Section evs={allDayEvs} className="min-h-6" />
-            <div className={`h-px ${dividerColor}`} />
-            <Section label="am" evs={amEvs} className="flex-1" />
-            <div className={`h-px ${dividerColor}`} />
-            <Section label="pm" evs={pmEvs} className="flex-1 pt-1.5 pb-1.5" />
-          </div>
-        </>
-      ) : (
-        <span className="text-[13px] font-semibold text-[#666666] px-2 pt-1.5">
-          {day.getDate()}
-        </span>
-      )}
+      <span className="text-[13px] font-semibold text-[#666666] px-2 pt-1.5">
+        {day.getDate()}
+      </span>
     </div>
   )
 }
