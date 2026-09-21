@@ -217,7 +217,7 @@ function RouteComponent() {
     (_, i) => i + START_HOUR,
   )
 
-  const renderDay = (d: Date) => {
+  const renderDay = (d: Date, i: number) => {
     const dateKey = fmtDate(d)
     const dayEvents = eventsByDate.get(dateKey) ?? []
     const isToday = isSameDay(d, today)
@@ -232,7 +232,7 @@ function RouteComponent() {
     return (
       <div
         key={dateKey}
-        className="w-[560px] shrink-0 bg-white rounded-lg border border-[#CBCCC9]"
+        className={`w-full bg-white rounded-lg border border-[#CBCCC9] md:w-[560px] md:shrink-0 ${i > 0 ? 'hidden md:block' : ''}`}
       >
         <div
           className={`sticky top-0 z-20 flex items-center justify-between rounded-t-lg px-3 py-2.5 ${isToday ? 'bg-[var(--primary)]' : 'bg-white border-b border-[#CBCCC9]'}`}
@@ -367,7 +367,7 @@ function RouteComponent() {
         <CalendarMenuBar onAdd={openCreate} />
       </div>
 
-      <div className="mb-2 flex items-center gap-4 border-y border-[#E7E8E5] py-2 px-4">
+      <div className="mb-2 flex items-center gap-4 border-y border-[#E7E8E5] py-2 px-2 md:px-4">
         <span className="flex items-center gap-1.5 text-base font-semibold text-[#111111]">
           <AlarmClock size={14} strokeWidth={2} className="shrink-0" />
           Day
@@ -406,8 +406,8 @@ function RouteComponent() {
       </div>
 
       <div className="h-[calc(100vh-180px)] overflow-auto scroll-smooth pb-4">
-        <div className="flex gap-3 pt-1 px-4">
-          {days.map(renderDay)}
+        <div className="flex gap-3 pt-1 px-2 md:px-4">
+          {days.map((d, i) => renderDay(d, i))}
         </div>
       </div>
 

@@ -26,7 +26,9 @@ function RouteComponent() {
   const [sidebarOpen] = useAtom(sidebarOpenAtom)
   const [lastCalView] = useLocalStorage<CalView>('cal-last-view', '/cal/month')
 
-  const hideSidebar = location.pathname.startsWith('/todo')
+  const hideSidebar =
+    location.pathname.startsWith('/todo') ||
+    location.pathname.startsWith('/profile')
 
   const isCal = location.pathname.startsWith('/cal')
   const isTodo = location.pathname === '/todo'

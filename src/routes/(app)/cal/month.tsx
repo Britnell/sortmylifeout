@@ -122,7 +122,7 @@ function RouteComponent() {
       <CalendarMenuBar onAdd={() => openCreate(fmtDate(today))} />
 
       {/* Date stepper row */}
-      <div className="mb-2 flex items-center gap-4 border-y border-[#E7E8E5] py-2 px-4">
+      <div className="mb-2 flex items-center gap-4 border-y border-[#E7E8E5] py-2 px-2 md:px-4">
         <span className="flex items-center gap-1.5 text-base font-semibold text-[#111111]">
           <CalendarDays size={14} strokeWidth={2} className="shrink-0" />
           Month
@@ -157,7 +157,7 @@ function RouteComponent() {
       </div>
 
       {/* Month grid */}
-      <div className="flex flex-col gap-1 flex-1 min-h-[640px] px-4">
+      <div className="flex flex-col gap-1 flex-1 min-h-[640px] px-2 md:px-4">
         <div className="grid grid-cols-7 gap-1">
           {weekdays.map((w) => (
             <span
