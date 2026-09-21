@@ -257,11 +257,12 @@ export default function CalendarEventDialog({
             </button>
           ) : (
             <div className="flex gap-2 items-center">
-              <input
-                type="date"
-                value={beginDate}
-                required={itemType === 'event'}
-                className="h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              <div className="flex flex-1 gap-2">
+                <input
+                  type="date"
+                  value={beginDate}
+                  required={itemType === 'event'}
+                  className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 onChange={(e) => {
                   setBeginDate(e.target.value)
                   if (duration) {
@@ -276,11 +277,11 @@ export default function CalendarEventDialog({
                   }
                 }}
               />
-              <input
-                ref={timeRef}
-                type="time"
-                value={beginTime}
-                className="h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                <input
+                  ref={timeRef}
+                  type="time"
+                  value={beginTime}
+                  className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 onChange={(e) => {
                   const t = e.target.value
                   setBeginTime(t)
@@ -299,10 +300,11 @@ export default function CalendarEventDialog({
                   }
                 }}
               />
+              </div>
               {itemType === 'todo' && (
                 <button
                   type="button"
-                  className="h-9 px-3 rounded-lg border border-[#DDDDD8] hover:bg-[#F2F3F0] text-[13px] font-medium text-[#666]"
+                  className="flex-1 h-9 px-3 rounded-lg border border-[#DDDDD8] hover:bg-[#F2F3F0] text-[13px] font-medium text-[#666]"
                   onClick={() => {
                     setBeginDate('')
                     setBeginTime('')
@@ -315,7 +317,7 @@ export default function CalendarEventDialog({
                 </button>
               )}
               {itemType === 'event' && (
-                <label className="flex items-center gap-1.5 text-[13px] cursor-pointer text-[#666]">
+                <label className="ml-3 flex-1 flex items-center gap-1.5 text-[13px] cursor-pointer text-[#666]">
                   <input
                     type="checkbox"
                     checked={allDay}
@@ -348,37 +350,39 @@ export default function CalendarEventDialog({
 
         {itemType !== 'todo' && (
           <div>
-            <div className="flex gap-2 items-end flex-nowrap">
-              <div>
-                <label className="block mb-1.5 text-xs font-medium text-[#666]">End</label>
-                <div className="flex gap-2">
-                  <input
-                    type="date"
-                    value={endDate}
-                    required={itemType === 'event'}
-                    className="h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                    onChange={(e) => {
-                      setEndDate(e.target.value)
-                      setDuration('')
-                    }}
-                  />
-                  <input
-                    type="time"
-                    value={endTime}
-                    required={itemType === 'event' && !allDay}
-                    className="h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                    onChange={(e) => {
-                      setEndTime(e.target.value)
-                      setDuration('')
-                    }}
-                  />
-                </div>
+            <div className="flex">
+              <div className="flex flex-1 gap-2">
+                <label className="block text-xs font-medium text-[#666] mb-1.5">End</label>
               </div>
-              <div>
-                <label className="block mb-1.5 text-xs font-medium text-[#666]">Duration</label>
+              <label className="ml-3 flex-1 block text-xs font-medium text-[#666] mb-1.5">Duration</label>
+            </div>
+            <div className="flex gap-2 items-end flex-nowrap">
+              <div className="flex flex-1 gap-2">
+                <input
+                  type="date"
+                  value={endDate}
+                  required={itemType === 'event'}
+                  className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  onChange={(e) => {
+                    setEndDate(e.target.value)
+                    setDuration('')
+                  }}
+                />
+                <input
+                  type="time"
+                  value={endTime}
+                  required={itemType === 'event' && !allDay}
+                  className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  onChange={(e) => {
+                    setEndTime(e.target.value)
+                    setDuration('')
+                  }}
+                />
+              </div>
+              <div className="ml-3 flex-1">
                 <select
                   value={duration}
-                  className="h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] text-[#888] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] text-[#888] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                   onChange={(e) => {
                   const d = e.target.value
                   setDuration(d)
