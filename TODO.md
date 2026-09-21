@@ -1,3 +1,0 @@
-- /schedule page makes loads of requests and arent cached
-- calendar view
-- week view ux / difference / taller

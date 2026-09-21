@@ -21,7 +21,6 @@ import { Route as ApiEmilaRouteImport } from './routes/api/emila'
 import { Route as ApiDeletionRouteImport } from './routes/api/deletion'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as appTodoRouteImport } from './routes/(app)/todo'
-import { Route as appShoppingRouteImport } from './routes/(app)/shopping'
 import { Route as appProfileRouteImport } from './routes/(app)/profile'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as appCalWeekRouteImport } from './routes/(app)/cal/week'
@@ -88,11 +87,6 @@ const appTodoRoute = appTodoRouteImport.update({
   path: '/todo',
   getParentRoute: () => appRouteRoute,
 } as any)
-const appShoppingRoute = appShoppingRouteImport.update({
-  id: '/shopping',
-  path: '/shopping',
-  getParentRoute: () => appRouteRoute,
-} as any)
 const appProfileRoute = appProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -131,7 +125,6 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/profile': typeof appProfileRoute
-  '/shopping': typeof appShoppingRoute
   '/todo': typeof appTodoRoute
   '/api/chat': typeof ApiChatRoute
   '/api/deletion': typeof ApiDeletionRoute
@@ -151,7 +144,6 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/profile': typeof appProfileRoute
-  '/shopping': typeof appShoppingRoute
   '/todo': typeof appTodoRoute
   '/api/chat': typeof ApiChatRoute
   '/api/deletion': typeof ApiDeletionRoute
@@ -173,7 +165,6 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/(app)/profile': typeof appProfileRoute
-  '/(app)/shopping': typeof appShoppingRoute
   '/(app)/todo': typeof appTodoRoute
   '/api/chat': typeof ApiChatRoute
   '/api/deletion': typeof ApiDeletionRoute
@@ -195,7 +186,6 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/profile'
-    | '/shopping'
     | '/todo'
     | '/api/chat'
     | '/api/deletion'
@@ -215,7 +205,6 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/profile'
-    | '/shopping'
     | '/todo'
     | '/api/chat'
     | '/api/deletion'
@@ -236,7 +225,6 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/(app)/profile'
-    | '/(app)/shopping'
     | '/(app)/todo'
     | '/api/chat'
     | '/api/deletion'
@@ -351,13 +339,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appTodoRouteImport
       parentRoute: typeof appRouteRoute
     }
-    '/(app)/shopping': {
-      id: '/(app)/shopping'
-      path: '/shopping'
-      fullPath: '/shopping'
-      preLoaderRoute: typeof appShoppingRouteImport
-      parentRoute: typeof appRouteRoute
-    }
     '/(app)/profile': {
       id: '/(app)/profile'
       path: '/profile'
@@ -405,7 +386,6 @@ declare module '@tanstack/react-router' {
 
 interface appRouteRouteChildren {
   appProfileRoute: typeof appProfileRoute
-  appShoppingRoute: typeof appShoppingRoute
   appTodoRoute: typeof appTodoRoute
   appCalDayRoute: typeof appCalDayRoute
   appCalMonthRoute: typeof appCalMonthRoute
@@ -415,7 +395,6 @@ interface appRouteRouteChildren {
 
 const appRouteRouteChildren: appRouteRouteChildren = {
   appProfileRoute: appProfileRoute,
-  appShoppingRoute: appShoppingRoute,
   appTodoRoute: appTodoRoute,
   appCalDayRoute: appCalDayRoute,
   appCalMonthRoute: appCalMonthRoute,

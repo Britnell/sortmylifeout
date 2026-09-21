@@ -26,13 +26,10 @@ function RouteComponent() {
   const [sidebarOpen] = useAtom(sidebarOpenAtom)
   const [lastCalView] = useLocalStorage<CalView>('cal-last-view', '/cal/month')
 
-  const hideSidebar =
-    location.pathname.startsWith('/todo') ||
-    location.pathname.startsWith('/shopping')
+  const hideSidebar = location.pathname.startsWith('/todo')
 
   const isCal = location.pathname.startsWith('/cal')
   const isTodo = location.pathname === '/todo'
-  const isShopping = location.pathname === '/shopping'
 
 
   useEffect(() => {
@@ -67,15 +64,6 @@ function RouteComponent() {
                 <Icon name="todo" />
               </span>
               Todos
-            </Link>
-            <Link
-              to="/shopping"
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium ${isShopping ? 'text-[#111]' : 'text-[#666]'}`}
-            >
-              <span className="grid place-items-center text-[15px]">
-                <Icon name="shopping" />
-              </span>
-              Shopping
             </Link>
           </nav>
 

@@ -121,9 +121,6 @@ function RouteComponent() {
     year: 'numeric',
   })
 
-  const fmtMonth = (d: Date) =>
-    d.toLocaleDateString('default', { month: 'long' })
-
   return (
     <div className="">
       {/* Toolbar */}
@@ -209,13 +206,6 @@ function RouteComponent() {
             </div>
           )
         })}
-
-        <div className="flex items-center gap-2 px-0.5 py-0.5">
-          <span className="text-[11px] font-semibold tracking-wide text-[#666666] shrink-0">
-            {fmtMonth(allWeekDays[2][6])}
-          </span>
-          <div className="h-px bg-[#CBCCC9] flex-1" />
-        </div>
       </div>
 
       <CalendarEventDialog
