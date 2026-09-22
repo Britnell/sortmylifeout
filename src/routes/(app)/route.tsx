@@ -45,7 +45,7 @@ function RouteComponent() {
       <div className="flex min-h-screen flex-col">
         <header className="flex h-11 shrink-0 items-center justify-between bg-[var(--primary)] px-4">
           <span className="text-[15px] font-semibold text-[var(--primary-foreground)]">
-            Callie
+            🤜 Crush
           </span>
 
           <nav className="flex gap-1">
