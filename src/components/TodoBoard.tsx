@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useLocalStorage } from '#/lib/useLocalStorage'
 import {
 	searchEventsFn,
 	createEventFn,
@@ -64,7 +66,8 @@ const COLS: {
 export default function TodoBoard() {
 	const queryClient = useQueryClient()
 	const [editing, setEditing] = useState<EditState | null>(null)
-	const [activeCol, setActiveCol] = useState<ColumnKey>('todo')
+	const [colIdx, setColIdx] = useLocalStorage<number>('todoActiveCol', 0)
+	const activeCol = COLS[colIdx]?.key ?? 'todo'
 
 	const { data: events = [] } = useQuery({
 		queryKey: ['board', 'events'],
@@ -132,6 +135,9 @@ export default function TodoBoard() {
 		shopping: all.filter((e) => e.type === 'shopping' && !e.completed),
 		finished: all.filter((e) => e.completed),
 	}
+
+	const stepCol = (dir: 1 | -1) =>
+		setColIdx((i) => (i + dir + COLS.length) % COLS.length)
 
 	const openNew = (column: ColumnKey) => {
 		setEditing({
@@ -271,34 +277,40 @@ export default function TodoBoard() {
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-4">
 					<h1 className="text-base font-semibold text-neutral-900">Todos</h1>
-					{/* Mobile: native select */}
-					<select
-						className="md:hidden px-3 py-2 text-[13px] font-medium border border-neutral-300 rounded-md bg-white text-neutral-700"
-						value={activeCol}
-						onChange={(e) => {
-							setActiveCol(e.target.value as ColumnKey)
-							document
-								.getElementById(`col-${e.target.value}`)
-								?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' })
-						}}
-					>
-						{COLS.map((col) => (
-							<option key={col.key} value={col.key}>
-								{col.title}
-							</option>
-						))}
-					</select>
+					{/* Mobile: arrows + dropdown */}
+					<div className="flex items-center gap-1 md:hidden">
+						<button
+							className="flex items-center rounded-md p-1 text-[#666666] hover:bg-[#F0F0EE] hover:text-black"
+							aria-label="Previous column"
+							onClick={() => stepCol(-1)}
+						>
+							<ChevronLeft size={18} />
+						</button>
+						<select
+							className="px-3 py-2 text-[13px] font-medium border border-neutral-300 rounded-md bg-white text-neutral-700"
+							value={COLS[colIdx]?.key ?? 'todo'}
+							onChange={(e) => setColIdx(COLS.findIndex((c) => c.key === e.target.value))}
+						>
+							{COLS.map((col, i) => (
+								<option key={col.key} value={col.key}>
+									{col.title}
+								</option>
+							))}
+						</select>
+						<button
+							className="flex items-center rounded-md p-1 text-[#666666] hover:bg-[#F0F0EE] hover:text-black"
+							aria-label="Next column"
+							onClick={() => stepCol(1)}
+						>
+							<ChevronRight size={18} />
+						</button>
+					</div>
 					{/* Desktop: tabs */}
 					<div className="hidden md:flex items-center overflow-hidden rounded-lg border border-neutral-300 bg-white">
-						{COLS.map((col) => (
+						{COLS.map((col, i) => (
 							<button
 								key={col.key}
-								onClick={() => {
-									setActiveCol(col.key)
-									document
-										.getElementById(`col-${col.key}`)
-										?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' })
-								}}
+								onClick={() => setColIdx(i)}
 								className={`flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium hover:text-neutral-900 ${
 									activeCol === col.key
 										? 'bg-[var(--primary)] text-neutral-900'
@@ -324,13 +336,12 @@ export default function TodoBoard() {
 					const isEditingNew = editing?.id === null && editing?.column === col.key
 					const items = cols[col.key]
 					return (
-						<div
-							key={col.key}
-							id={`col-${col.key}`}
-							className={`flex h-fit w-full shrink-0 flex-col gap-2.5 rounded-lg border border-neutral-300 bg-white scroll-ml-3 md:w-95 ${activeCol === col.key ? 'flex' : 'hidden md:flex'} ${
-								items.length ? 'min-h-64' : ''
-							}`}
-						>
+					<div
+						key={col.key}
+						className={`flex h-fit w-full shrink-0 flex-col gap-2.5 rounded-lg border border-neutral-300 bg-white md:w-95 ${
+							activeCol === col.key ? 'flex' : 'hidden md:flex'
+						} ${items.length ? 'min-h-64' : ''}`}
+					>
 							{/* Column header */}
 							<div className="m-0 flex items-center justify-between rounded-sm bg-[var(--primary)] px-3 pt-2.5 pb-4">
 								<span className="flex items-center gap-1.5 text-sm font-semibold text-neutral-900">
