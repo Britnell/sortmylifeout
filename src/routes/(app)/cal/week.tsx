@@ -121,9 +121,11 @@ function RouteComponent() {
   })
 
   return (
-    <div className="">
+    <div className="flex h-[calc(100dvh-2.75rem)] flex-col pb-2">
       {/* Toolbar */}
-      <CalendarMenuBar onAdd={() => openCreate(fmtDate(today))} />
+      <CalendarMenuBar
+				onAdd={() => openCreate(fmtDate(today))}
+			/>
 
       {/* Date stepper row */}
       <div className="mb-2 flex items-center gap-4 border-y border-[#E7E8E5] py-2 px-1 md:px-4">
@@ -183,7 +185,7 @@ function RouteComponent() {
       </div>
 
       {/* Week grid */}
-      <div className="flex flex-col gap-1 flex-1 min-h-[640px] px-1 md:px-4">
+      <div className="flex flex-col gap-1 flex-1 min-h-0 px-1 md:px-4">
         {allWeekDays.map((weekDays, wi) => {
           const isCurrentWeek = wi === 1
           return isCurrentWeek ? (
@@ -265,7 +267,7 @@ function Chip({
           readOnly
         />
       )}
-      <span className="text-[11px] text-[#111111] truncate">{ev.title}</span>
+      <span className="text-[11px] text-[#111111] truncate min-w-0">{ev.title}</span>
     </button>
   )
 }
@@ -353,7 +355,7 @@ function CurrentWeekGrid({
   // all-day rows: max visible count across the week
   return (
     <div
-      className="grid grid-cols-7 gap-x-1 gap-y-0 flex-1"
+      className="grid grid-cols-7 gap-x-1 gap-y-0 flex-1 min-h-0"
       style={{
         gridTemplateRows: `auto repeat(2, 1fr)`,
       }}
@@ -365,7 +367,7 @@ function CurrentWeekGrid({
         return (
           <div
             key={dateStr}
-            className={`flex flex-col gap-1 pt-1.5 pb-1.5 px-2 rounded-t-md border-x border-t border-[#CBCCC9] ${isToday ? 'bg-[var(--primary)]' : 'bg-white'}`}
+            className={`flex flex-col gap-1 pt-1.5 pb-1.5 px-2 rounded-t-md border-x border-t border-[#CBCCC9] min-w-0 overflow-hidden ${isToday ? 'bg-[var(--primary)]' : 'bg-white'}`}
             onClick={() => onCreate(dateStr)}
           >
             <div className="flex items-center gap-1">
@@ -437,7 +439,7 @@ function SectionCell({
   const rest = evs.length - visible.length
   return (
     <div
-      className={`bg-white border-x border-[#CBCCC9] p-1.5 flex flex-col gap-1 flex-1 border-t ${rounded === 'bottom' ? 'border-b rounded-b-md' : ''}`}
+      className={`bg-white border-x border-[#CBCCC9] p-1.5 flex flex-col gap-1 flex-1 border-t min-w-0 overflow-hidden ${rounded === 'bottom' ? 'border-b rounded-b-md' : ''}`}
       onClick={() => onCreate(dateStr)}
     >
       <span className="text-[8px] font-mono text-[#8A8B87] leading-none">

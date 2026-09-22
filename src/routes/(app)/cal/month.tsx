@@ -119,7 +119,9 @@ function RouteComponent() {
   return (
     <div className="">
       {/* Toolbar */}
-      <CalendarMenuBar onAdd={() => openCreate(fmtDate(today))} />
+      <CalendarMenuBar
+				onAdd={() => openCreate(fmtDate(today))}
+			/>
 
       {/* Date stepper row */}
       <div className="mb-2 flex items-center gap-4 border-y border-[#E7E8E5] py-2 px-2 md:px-4">

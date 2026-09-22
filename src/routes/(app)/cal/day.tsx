@@ -364,7 +364,9 @@ function RouteComponent() {
   return (
     <div>
       <div className="">
-        <CalendarMenuBar onAdd={openCreate} />
+        <CalendarMenuBar
+				onAdd={openCreate}
+			/>
       </div>
 
       <div className="mb-2 flex items-center gap-4 border-y border-[#E7E8E5] py-2 px-2 md:px-4">
