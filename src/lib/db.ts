@@ -22,7 +22,7 @@ export interface EventTable {
   end: string | null
   title: string
   detail: string | null
-  completed: 0 | 1
+  completed: string | null // 'YYYY-MM-DD' when done, else null
 }
 
 export interface Database {

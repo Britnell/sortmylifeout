@@ -12,7 +12,7 @@ export const getSessionFn = createServerFn({ method: 'GET' }).handler(
 
 export const createEventFn = createServerFn({ method: 'POST' })
   .inputValidator(
-    (d: { begin?: string; allDay: boolean; end?: string; title: string; detail?: string; type?: string; completed?: boolean }) => d,
+    (d: { begin?: string; allDay: boolean; end?: string; title: string; detail?: string; type?: string; completed?: boolean | string }) => d,
   )
   .handler(async ({ data }) => {
     const user = await getSessionUser()
@@ -22,7 +22,7 @@ export const createEventFn = createServerFn({ method: 'POST' })
 
 export const updateEventFn = createServerFn({ method: 'POST' })
   .inputValidator(
-    (d: { id: number; begin?: string; allDay?: boolean; end?: string | null; title?: string; detail?: string; type?: string; completed?: boolean }) => d,
+    (d: { id: number; begin?: string; allDay?: boolean; end?: string | null; title?: string; detail?: string; type?: string; completed?: boolean | string }) => d,
   )
   .handler(async ({ data }) => {
     const user = await getSessionUser()

@@ -1,3 +1,4 @@
+import { localToday } from '@/lib/date'
 import { useState, useRef } from 'react'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -17,7 +18,7 @@ interface CalendarEvent {
   end: string | null
   title: string
   detail: string | null
-  completed: number
+  completed: string | null
 }
 
 const today = new Date().toISOString().split('T')[0]
@@ -145,7 +146,7 @@ export default function CheckList({
       id: number
       title?: string
       detail?: string
-      completed?: boolean
+      completed?: boolean | string
       begin?: string
     }) => updateEventFn({ data }),
     onSuccess: () => {
@@ -273,7 +274,7 @@ export default function CheckList({
                     e.stopPropagation()
                     updateMutation.mutate({
                       id: ev.id,
-                      completed: e.target.checked,
+                      completed: e.target.checked ? localToday() : false,
                     })
                   }}
                   onClick={(e) => e.stopPropagation()}

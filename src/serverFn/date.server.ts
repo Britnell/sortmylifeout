@@ -1,6 +1,13 @@
 import * as v from 'valibot'
 import { db, type EventTable } from '../lib/db'
 
+// boolean true -> today's date, string -> that date, false -> null
+function toCompletedDate(c: boolean | string): string | null {
+  if (c === false) return null
+  if (c === true) return new Date().toISOString().slice(0, 10)
+  return c
+}
+
 const EVENT_TYPES = ['event', 'todo', 'shopping'] as const
 
 // YYYY-MM-DD or YYYY-MM-DDTHH:MM
@@ -20,6 +27,8 @@ function formatIssues(issues: v.BaseIssue<unknown>[]): string {
     .join('; ')
 }
 
+const CompletedSchema = v.union([v.boolean(), DateString])
+
 const UpdateEventSchema = v.pipe(
   v.object({
     begin: v.optional(DateString),
@@ -32,7 +41,7 @@ const UpdateEventSchema = v.pipe(
       v.picklist(EVENT_TYPES, `type must be one of: ${EVENT_TYPES.join(', ')}`),
     ),
     end: v.optional(v.nullable(DateString)),
-    completed: v.optional(v.boolean()),
+    completed: v.optional(CompletedSchema),
   }),
   v.check(
     (d) =>
@@ -53,7 +62,7 @@ export async function updateEvent(
     detail?: string
     type?: string
     end?: string | null
-    completed?: boolean
+    completed?: boolean | string
   },
 ) {
   const parsed = v.safeParse(UpdateEventSchema, data)
@@ -72,7 +81,7 @@ export async function updateEvent(
       ...(data.type ? { type: data.type as EventTable['type'] } : {}),
       ...(data.end !== undefined ? { end: data.end || null } : {}),
       ...(data.completed !== undefined
-        ? { completed: data.completed ? 1 : 0 }
+        ? { completed: toCompletedDate(data.completed) }
         : {}),
     })
     .where('id', '=', id)
@@ -121,7 +130,11 @@ export async function searchEvents(
   if (filters.type != null)
     query = query.where('type', '=', filters.type as EventTable['type'])
   if (filters.completed != null)
-    query = query.where('completed', '=', filters.completed ? 1 : 0)
+    query = filters.completed
+      ? query.where('completed', 'is not', null).where('completed', '!=', '')
+      : query.where((eb) =>
+          eb.or([eb('completed', 'is', null), eb('completed', '=', '')]),
+        )
 
   if (filters.date_from != null && filters.date_to != null) {
     query = query
@@ -151,7 +164,7 @@ const CreateEventSchema = v.pipe(
     type: v.optional(
       v.picklist(EVENT_TYPES, `type must be one of: ${EVENT_TYPES.join(', ')}`),
     ),
-    completed: v.optional(v.boolean()),
+    completed: v.optional(CompletedSchema),
   }),
   v.check(
     (d) =>
@@ -170,7 +183,7 @@ export async function createEvent(
     title: string
     detail?: string
     type?: string
-    completed?: boolean
+    completed?: boolean | string
   },
 ) {
   const parsed = v.safeParse(CreateEventSchema, data)
@@ -190,7 +203,7 @@ export async function createEvent(
       end: data.end || null,
       title: data.title,
       detail: data.detail || null,
-      completed: data.completed ? 1 : 0,
+      completed: data.completed !== undefined ? toCompletedDate(data.completed) : null,
     })
     .execute()
 

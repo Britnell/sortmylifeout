@@ -1,3 +1,4 @@
+import { localToday } from '@/lib/date'
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -18,7 +19,7 @@ interface CalendarEvent {
 	end: string | null
 	title: string
 	detail: string | null
-	completed: number
+	completed: string | null
 }
 
 interface EditState {
@@ -121,7 +122,7 @@ export default function TodoBoard() {
 	const toggleMutation = useMutation({
 		mutationFn: (ev: CalendarEvent) =>
 			updateEventFn({
-				data: { id: ev.id, completed: !ev.completed },
+				data: { id: ev.id, completed: ev.completed ? false : localToday() },
 			}),
 		onSuccess: invalidate,
 	})

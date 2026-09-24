@@ -1,3 +1,4 @@
+import { localToday } from '@/lib/date'
 import { useState, useRef, useEffect } from 'react'
 import type { UseMutationResult } from '@tanstack/react-query'
 import Dialog from '@/components/Dialog'
@@ -11,7 +12,7 @@ export interface CalendarEvent {
   end: string | null
   title: string
   detail: string | null
-  completed: number
+  completed: string | null
 }
 
 function fmtDate(d: Date): string {
@@ -145,7 +146,7 @@ export default function CalendarEventDialog({
         detail: detailValue,
         type: itemType,
         end,
-        completed: localEditing.completed ? true : undefined,
+        completed: localEditing.completed ? localToday() : undefined,
       })
     } else {
       createMutation.mutate({
@@ -218,7 +219,7 @@ export default function CalendarEventDialog({
               onChange={(e) =>
                 setLocalEditing({
                   ...localEditing,
-                  completed: e.target.checked ? 1 : 0,
+                  completed: e.target.checked ? localToday() : null,
                 })
               }
             />

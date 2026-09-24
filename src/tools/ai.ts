@@ -40,14 +40,14 @@ all items have a 'title' + optional 'detail' col for extra info, address, links 
 - all_day boolean col to indicate if date or datetime
 
 ## type='todo'
-- 'completed' col required, boolean 0/1
+- 'completed' col required, NULL when open, set to today's date 'YYYY-MM-DD' when done
 - 'begin' date optional
   - no begin date: standard todo list of outstanding items
   - 'begin' date/datetime: when the todo is due by / will be worked on / I want to be reminded of it
 
 
 ## type='shopping'
-- same as todo: 'completed' col required & 'begin' date optional
+- same as todo: 'completed' NULL or 'YYYY-MM-DD' - same as todo: 'completed' col required & 'begin' date optional 'begin' date optional
 
 
 ### Example

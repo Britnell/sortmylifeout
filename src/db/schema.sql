@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS event (
   type TEXT NOT NULL, -- 'event' | 'todo' | 'shopping'
   title TEXT NOT NULL,
   detail TEXT,
-  completed INTEGER,
+  completed TEXT, -- 'YYYY-MM-DD' when todo/shopping done, NULL otherwise
   all_day INTEGER,
   begin TEXT, -- date/datetime
   end TEXT,   -- date/datetime
@@ -14,3 +14,7 @@ CREATE TABLE IF NOT EXISTS event (
   -- 'YYYY-MM-DDTHH:MM' (local time, no TZ suffix) : all_day=0
   created_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
+
+-- migration: completed INTEGER 0/1 -> 'YYYY-MM-DD' text
+UPDATE event SET completed = strftime('%Y-%m-%d','now') WHERE completed = 1;
+UPDATE event SET completed = NULL WHERE completed = 0 OR completed = '';

@@ -1,3 +1,4 @@
+import { localToday } from '@/lib/date'
 import { useState } from 'react'
 import { CalendarClock, ChevronLeft, ChevronRight } from 'lucide-react'
 import { createFileRoute } from '@tanstack/react-router'
@@ -118,7 +119,7 @@ function RouteComponent() {
       title: string
       detail?: string
       type?: string
-      completed?: boolean
+      completed?: boolean | string
     }) => updateEventFn({ data }),
     onSuccess: () => {
       invalidate()
@@ -152,7 +153,7 @@ function RouteComponent() {
       allDay: !ev.begin?.includes('T'),
       title: ev.title,
       detail: ev.detail ?? undefined,
-      completed: checked,
+      completed: checked ? localToday() : false,
     })
   }
 

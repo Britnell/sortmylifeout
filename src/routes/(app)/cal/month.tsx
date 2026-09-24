@@ -1,3 +1,4 @@
+import { localToday } from '@/lib/date'
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import { createFileRoute } from '@tanstack/react-router'
@@ -77,7 +78,7 @@ function RouteComponent() {
       title: string
       detail?: string
       type?: string
-      completed?: boolean
+      completed?: boolean | string
     }) => updateEventFn({ data }),
     onSuccess: () => {
       invalidate()
@@ -330,7 +331,7 @@ function DayPopover({
         allDay: boolean
         title: string
         detail?: string
-        completed?: boolean
+        completed?: boolean | string
       }
     >
   >
@@ -391,7 +392,7 @@ function DayPopover({
                     allDay: false,
                     title: ev.title,
                     detail: ev.detail ?? undefined,
-                    completed: e.target.checked,
+                    completed: e.target.checked ? localToday() : false,
                   })
                 }}
                 onClick={(e) => e.stopPropagation()}
@@ -420,7 +421,7 @@ function DayPopover({
                   allDay: !ev.begin?.includes('T'),
                   title: ev.title,
                   detail: ev.detail ?? undefined,
-                  completed: e.target.checked,
+                  completed: e.target.checked ? localToday() : false,
                 })
               }}
               onClick={(e) => e.stopPropagation()}

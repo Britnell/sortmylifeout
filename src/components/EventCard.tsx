@@ -4,7 +4,7 @@ export type EventRow = {
 	title?: string | null
 	begin?: string | null
 	end?: string | null
-	completed?: number | null
+	completed?: string | null
 	[key: string]: unknown
 }
 
