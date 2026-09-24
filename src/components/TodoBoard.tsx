@@ -32,7 +32,7 @@ interface EditState {
 	time: string
 }
 
-type ColumnKey = 'todo' | 'scheduled' | 'shopping' | 'finished'
+type ColumnKey = 'todo' | 'scheduled' | 'overdue' | 'shopping' | 'finished'
 
 function parseBegin(begin: string | null): { date: string; time: string } {
 	if (!begin) return { date: '', time: '' }
@@ -62,6 +62,7 @@ const COLS: {
 }[] = [
 	{ key: 'todo', title: 'To Do' },
 	{ key: 'scheduled', title: 'Scheduled' },
+	{ key: 'overdue', title: 'Overdue' },
 	{ key: 'shopping', title: 'Shopping' },
 	{ key: 'finished', title: 'Finished' },
 ]
@@ -136,13 +137,17 @@ export default function TodoBoard() {
 	})
 
 	const all = events as CalendarEvent[]
+	const today = localToday()
+	const scheduled = all.filter(
+		(e) => e.type === 'todo' && e.begin && /^\d{4}-\d{2}-\d{2}/.test(e.begin),
+	)
 	const cols: Record<ColumnKey, CalendarEvent[]> = {
 		todo: all.filter((e) => e.type === 'todo' && !e.begin),
-		scheduled: all
-			.filter(
-				(e) =>
-					e.type === 'todo' && e.begin && /^\d{4}-\d{2}-\d{2}/.test(e.begin),
-			)
+		scheduled: scheduled
+			.filter((e) => (e.begin ?? '').slice(0, 10) >= today)
+			.sort((a, b) => (a.begin ?? '').localeCompare(b.begin ?? '')),
+		overdue: scheduled
+			.filter((e) => (e.begin ?? '').slice(0, 10) < today)
 			.sort((a, b) => (a.begin ?? '').localeCompare(b.begin ?? '')),
 		shopping: all.filter((e) => e.type === 'shopping'),
 		finished: all.filter((e) => e.completed),
@@ -158,7 +163,7 @@ export default function TodoBoard() {
 			column,
 			title: '',
 			detail: '',
-			date: column === 'scheduled' ? new Date().toISOString().split('T')[0] : '',
+			date: column === 'scheduled' || column === 'overdue' ? new Date().toISOString().split('T')[0] : '',
 			time: '',
 		})
 	}
@@ -270,7 +275,7 @@ export default function TodoBoard() {
 						{ev.type}
 					</span>
 				)}
-				{column === 'scheduled' && time && (
+				{(column === 'scheduled' || column === 'overdue') && time && (
 					<span className="shrink-0 font-mono text-[11px] text-neutral-500">
 						{time}
 					</span>
@@ -279,14 +284,19 @@ export default function TodoBoard() {
 		)
 	}
 
-	// group scheduled by date
-	const scheduledGroups: { date: string; items: CalendarEvent[] }[] = []
-	for (const ev of cols.scheduled) {
-		const { date } = parseBegin(ev.begin)
-		const g = scheduledGroups.find((x) => x.date === date)
-		if (g) g.items.push(ev)
-		else scheduledGroups.push({ date, items: [ev] })
+	// group scheduled/overdue by date
+	const groupByDate = (items: CalendarEvent[]) => {
+		const groups: { date: string; items: CalendarEvent[] }[] = []
+		for (const ev of items) {
+			const { date } = parseBegin(ev.begin)
+			const g = groups.find((x) => x.date === date)
+			if (g) g.items.push(ev)
+			else groups.push({ date, items: [ev] })
+		}
+		return groups
 	}
+	const scheduledGroups = groupByDate(cols.scheduled)
+	const overdueGroups = groupByDate(cols.overdue)
 
 	return (
 		<div className="flex h-[calc(100vh-2.75rem)] flex-col gap-3 px-4 pt-4 pb-0">
@@ -347,7 +357,7 @@ export default function TodoBoard() {
 			</div>
 
 			{/* Board */}
-			<div className="flex min-h-0 flex-1 gap-3 overflow-auto">
+			<div className="flex min-h-0 flex-1 gap-3 pb-4 overflow-x-auto">
 				{COLS.map((col) => {
 					const isEditingNew = editing?.id === null && editing?.column === col.key
 					const items = cols[col.key]
@@ -357,7 +367,7 @@ export default function TodoBoard() {
 						ref={(el) => {
 							colRefs.current[COLS.indexOf(col)] = el
 						}}
-						className={`flex h-fit w-full shrink-0 flex-col overflow-hidden gap-2.5 rounded-lg border border-neutral-300 bg-white md:w-95 ${
+						className={`flex h-fit w-full shrink-0 flex-col  gap-2.5 rounded-lg border border-neutral-300 bg-white md:w-95 ${
 							activeCol === col.key ? 'flex' : 'hidden md:flex'
 						} ${items.length ? 'min-h-64' : ''}`}
 					>
@@ -385,23 +395,32 @@ export default function TodoBoard() {
 							</div>
 							{/* Items */}
 							<div
-								className="flex flex-col gap-2 px-3 pb-3"
+								className="flex flex-col gap-2 px-3 pb-3 overflow-auto max-h-[calc(100vh-14rem)]"
 								onClick={(e) => {
 									if (e.target === e.currentTarget && isEditingNew) setEditing(null)
 								}}
 							>
-								{col.key === 'scheduled'
-									? scheduledGroups.flatMap((g) => [
-											<span
-												key={g.date}
-												className="text-[13px] font-semibold leading-tight text-neutral-900"
-											>
-												{fmtDayLabel(g.date)}
-											</span>,
-											...g.items.map((ev) => renderItem(ev, col.key)),
-										])
-									: items.map((ev) => renderItem(ev, col.key))}
-								{isEditingNew && renderEditor(editing!)}
+							{col.key === 'scheduled'
+								? scheduledGroups.flatMap((g) => [
+										<span
+											key={g.date}
+											className="text-[13px] font-semibold leading-tight text-neutral-900"
+										>
+											{fmtDayLabel(g.date)}
+										</span>,
+										...g.items.map((ev) => renderItem(ev, col.key)),
+									])
+							: col.key === 'overdue'
+								? overdueGroups.flatMap((g) => [
+										<span
+											key={g.date}
+											className="text-[13px] font-semibold leading-tight text-neutral-900"
+										>
+											{fmtDayLabel(g.date)}
+										</span>,
+										...g.items.map((ev) => renderItem(ev, col.key)),
+									])
+							: items.map((ev) => renderItem(ev, col.key))}								{isEditingNew && renderEditor(editing!)}
 							{items.length === 0 && !isEditingNew && (
 								<button
 									onClick={() => openNew(col.key)}
