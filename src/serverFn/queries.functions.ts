@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { getSessionUser } from '../lib/auth'
 import { db } from '../lib/db'
 import { createEvent, deleteEvent, updateEvent, searchEvents } from './date.server'
+import { sendChat } from './chat.server'
 
 export const getSessionFn = createServerFn({ method: 'GET' }).handler(
   async () => {
@@ -59,6 +60,16 @@ export const updateUserFn = createServerFn({ method: 'POST' })
     if (data.phone !== undefined) updates.phone = data.phone
     await db.updateTable('user').set(updates).where('id', '=', user.id).execute()
     return { ok: true }
+  })
+
+export const sendChatFn = createServerFn({ method: 'POST' })
+  .inputValidator(
+    (d: { messages: { role: 'user' | 'assistant'; text: string }[] }) => d,
+  )
+  .handler(async ({ data }) => {
+    const user = await getSessionUser()
+    if (!user) throw new Error('Unauthorized')
+    return sendChat(user.id, data.messages)
   })
 
 export const searchEventsFn = createServerFn({ method: 'GET' })

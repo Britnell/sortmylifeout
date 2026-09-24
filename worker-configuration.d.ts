@@ -5,8 +5,8 @@ declare namespace Cloudflare {
 	interface Env {
 		sortinglifedb: D1Database;
 		ASSETS: Fetcher;
-		MISTRAL_API_key: string;
-		BETTER_AUTH_SECRET: string;
+    MISTRAL_API_key: string;
+    TYPESAFE_API_KEY: string;		BETTER_AUTH_SECRET: string;
 		BETTER_AUTH_URL: string;
 	}
 }
