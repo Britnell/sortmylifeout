@@ -66,7 +66,7 @@ function ProfilePage() {
   }
 
   return (
-    <div className="max-w-md mx-auto py-10 px-4 flex flex-col gap-8">
+    <div className="max-w-md mx-auto mt-3 rounded p-4 flex flex-col gap-8 bg-white">
       <h1 className="text-2xl font-semibold">Profile</h1>
 
       {/* Name */}
