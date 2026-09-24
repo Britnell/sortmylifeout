@@ -32,7 +32,7 @@ interface EditState {
 	time: string
 }
 
-type ColumnKey = 'todo' | 'scheduled' | 'overdue' | 'shopping' | 'finished'
+type ColumnKey = 'todo' | 'scheduled' | 'overdue' | 'finished'
 
 function weekAgo(): string {
 	const d = new Date()
@@ -69,7 +69,6 @@ const COLS: {
 	{ key: 'todo', title: 'To Do' },
 	{ key: 'scheduled', title: 'Scheduled' },
 	{ key: 'overdue', title: 'Overdue' },
-	{ key: 'shopping', title: 'Shopping' },
 	{ key: 'finished', title: 'Finished' },
 ]
 
@@ -99,7 +98,7 @@ export default function TodoBoard() {
 				data: {
 					title: e.title.trim(),
 					detail: e.detail.trim() || undefined,
-					type: e.column === 'shopping' ? 'shopping' : 'todo',
+					type: 'todo',
 					begin: buildBegin(e.date, e.time),
 					allDay: !e.time,
 				},
@@ -161,7 +160,6 @@ export default function TodoBoard() {
 		overdue: scheduled
 			.filter((e) => (e.begin ?? '').slice(0, 10) < today)
 			.sort((a, b) => byDone(a, b) || (a.begin ?? '').localeCompare(b.begin ?? '')),
-		shopping: visible.filter((e) => e.type === 'shopping').sort(byDone),
 		finished: all.filter((e) => e.completed),
 	}
 
@@ -171,7 +169,7 @@ export default function TodoBoard() {
 	const openNew = (column: ColumnKey) => {
 		setEditing({
 			id: null,
-			type: column === 'shopping' ? 'shopping' : 'todo',
+			type: 'todo',
 			column,
 			title: '',
 			detail: '',

@@ -15,7 +15,7 @@ const _THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getIt
 
 export const Route = createRootRoute({
   head: () => ({
-    meta: [{ title: 'Callie' }],
+    meta: [{ title: 'Crush' }],
   }),
   shellComponent: RootDocument,
   notFoundComponent: () => (

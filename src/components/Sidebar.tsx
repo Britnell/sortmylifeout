@@ -6,7 +6,6 @@ const COLS = [
 	{ key: 'todo', title: 'To Do' },
 	{ key: 'scheduled', title: 'Scheduled' },
 	{ key: 'overdue', title: 'Overdue' },
-	{ key: 'shopping', title: 'Shopping' },
 	{ key: 'finished', title: 'Finished' },
 ] as const
 
@@ -48,23 +47,18 @@ export default function Sidebar() {
 					<ChevronRight size={18} />
 				</button>
 			</div>
-			{col === 'shopping' ? (
-				<CheckList type="shopping" sidebar />
-			) : (
-				<CheckList
-					type="todo"
-					sidebar
-					tab={
-						col === 'scheduled'
-							? 'upcoming'
-							: col === 'overdue'
-								? 'overdue'
-								: col === 'finished'
-									? 'done'
-									: 'unscheduled'
-					}
-				/>
-			)}
-		</div>
-	)
+			<CheckList
+				type="todo"
+				sidebar
+				tab={
+					col === 'scheduled'
+						? 'upcoming'
+						: col === 'overdue'
+							? 'overdue'
+							: col === 'finished'
+								? 'done'
+								: 'unscheduled'
+				}
+			/>
+		</div>	)
 }
