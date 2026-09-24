@@ -1,5 +1,5 @@
 import { localToday } from '@/lib/date'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useLocalStorage } from '#/lib/useLocalStorage'
@@ -46,6 +46,8 @@ function buildBegin(date: string, time: string): string | undefined {
 }
 
 function fmtDayLabel(dateStr: string): string {
+	if (!dateStr || !/^\d{4}-\d{2}-\d{2}/.test(dateStr))
+		console.warn('[TodoBoard] invalid begin date:', JSON.stringify(dateStr))
 	const d = new Date(`${dateStr}T00:00:00`)
 	return d.toLocaleDateString('en-US', {
 		weekday: 'short',
@@ -68,12 +70,18 @@ export default function TodoBoard() {
 	const queryClient = useQueryClient()
 	const [editing, setEditing] = useState<EditState | null>(null)
 	const [colIdx, setColIdx] = useLocalStorage<number>('todoActiveCol', 0)
+	const colRefs = useRef<(HTMLDivElement | null)[]>([])
+	useEffect(() => {
+		colRefs.current[colIdx]?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' })
+	}, [colIdx])
 	const activeCol = COLS[colIdx]?.key ?? 'todo'
 
 	const { data: events = [] } = useQuery({
 		queryKey: ['board', 'events'],
-		queryFn: () => searchEventsFn({ data: {} }),
-	})
+    queryFn: () =>
+			searchEventsFn({
+				data: { completed_date: new Date().toISOString().slice(0, 10) },
+			}),	})
 
 	const invalidate = () =>
 		queryClient.invalidateQueries({ queryKey: ['board'] })
@@ -129,11 +137,14 @@ export default function TodoBoard() {
 
 	const all = events as CalendarEvent[]
 	const cols: Record<ColumnKey, CalendarEvent[]> = {
-		todo: all.filter((e) => e.type === 'todo' && !e.completed && !e.begin),
+		todo: all.filter((e) => e.type === 'todo' && !e.begin),
 		scheduled: all
-			.filter((e) => e.type === 'todo' && !e.completed && e.begin)
+			.filter(
+				(e) =>
+					e.type === 'todo' && e.begin && /^\d{4}-\d{2}-\d{2}/.test(e.begin),
+			)
 			.sort((a, b) => (a.begin ?? '').localeCompare(b.begin ?? '')),
-		shopping: all.filter((e) => e.type === 'shopping' && !e.completed),
+		shopping: all.filter((e) => e.type === 'shopping'),
 		finished: all.filter((e) => e.completed),
 	}
 
@@ -254,6 +265,11 @@ export default function TodoBoard() {
 				>
 					{ev.title}
 				</span>
+				{column === 'finished' && (
+					<span className="shrink-0 rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-neutral-500">
+						{ev.type}
+					</span>
+				)}
 				{column === 'scheduled' && time && (
 					<span className="shrink-0 font-mono text-[11px] text-neutral-500">
 						{time}
@@ -317,8 +333,7 @@ export default function TodoBoard() {
 										? 'bg-[var(--primary)] text-neutral-900'
 										: 'text-neutral-500'
 								}`}
-							>
-								{col.title}
+							>								{col.title}
 							</button>
 						))}
 					</div>
@@ -339,32 +354,34 @@ export default function TodoBoard() {
 					return (
 					<div
 						key={col.key}
-						className={`flex h-fit w-full shrink-0 flex-col gap-2.5 rounded-lg border border-neutral-300 bg-white md:w-95 ${
+						ref={(el) => {
+							colRefs.current[COLS.indexOf(col)] = el
+						}}
+						className={`flex h-fit w-full shrink-0 flex-col overflow-hidden gap-2.5 rounded-lg border border-neutral-300 bg-white md:w-95 ${
 							activeCol === col.key ? 'flex' : 'hidden md:flex'
 						} ${items.length ? 'min-h-64' : ''}`}
 					>
 							{/* Column header */}
-							<div className="m-0 flex items-center justify-between rounded-sm bg-[var(--primary)] px-3 pt-2.5 pb-4">
+							<div
+								className={`m-0 flex items-center rounded-t-lg border-b px-3 py-3 ${
+									activeCol === col.key
+										? 'bg-[var(--primary)] border-b-[var(--primary)]'
+										: 'bg-white border-b-neutral-300'
+									}`}
+							>
 								<span className="flex items-center gap-1.5 text-sm font-semibold text-neutral-900">
 										{col.title}
 								</span>
-								<div className="flex items-center gap-2">
-									<span className="flex items-baseline gap-1.25">
-										<span className="text-base font-bold text-neutral-900">
-											{items.length}
-										</span>
-										<span className="text-[11px] font-medium text-[#7A6A00]">
-											items
-										</span>
+									<span className="ml-auto text-sm opacity-60">
+											{items.length} items
 									</span>
 									<button
 										onClick={() => openNew(col.key)}
-										className="flex h-5 w-5 items-center justify-center rounded bg-transparent text-sm font-bold leading-none text-neutral-900 hover:text-neutral-600"
+										className="ml-auto py-2 px-3  hover:bg-amber-300 flex h-5 w-5 items-center justify-center rounded bg-transparent text-sm font-bold leading-none text-neutral-900 hover:text-neutral-600"
 										aria-label={`Add to ${col.title}`}
 									>
 										+
 									</button>
-								</div>
 							</div>
 							{/* Items */}
 							<div

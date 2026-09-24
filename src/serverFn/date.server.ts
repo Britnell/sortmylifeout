@@ -106,6 +106,7 @@ const SearchFiltersSchema = v.object({
     v.picklist(EVENT_TYPES, `type must be one of: ${EVENT_TYPES.join(', ')}`),
   ),
   completed: v.optional(v.boolean()),
+  completed_date: v.optional(DateString),
   date_from: v.optional(DateString),
   date_to: v.optional(DateString),
 })
@@ -115,6 +116,7 @@ export async function searchEvents(
   filters: {
     type?: string
     completed?: boolean
+    completed_date?: string
     date_from?: string
     date_to?: string
   },
@@ -135,6 +137,18 @@ export async function searchEvents(
       : query.where((eb) =>
           eb.or([eb('completed', 'is', null), eb('completed', '=', '')]),
         )
+
+  // open items OR items completed on the given date (e.g. today)
+  if (filters.completed_date != null) {
+    const d = filters.completed_date
+    query = query.where((eb) =>
+      eb.or([
+        eb('completed', 'is', null),
+        eb('completed', '=', ''),
+        eb.and([eb('completed', '>=', d), eb('completed', '<', d + 'T99:99')]),
+      ]),
+    )
+  }
 
   if (filters.date_from != null && filters.date_to != null) {
     query = query
