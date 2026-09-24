@@ -344,6 +344,7 @@ When you receive a `429 Too Many Requests` or `529 Overloaded` response, retry t
 # Jev demo with tool usage
 
 https://github.com/w3cj/jev-chat/blob/main/apps/server/src/tools/weather/weather.ts
+already cloned into /tmp/jev-chat
 
  JEV-chat: how a chat turn picks a tool and fills its args                                                            
                                                                                                                       

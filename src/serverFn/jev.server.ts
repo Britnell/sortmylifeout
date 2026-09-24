@@ -1,34 +1,34 @@
 import { env } from 'cloudflare:workers'
 import * as chrono from 'chrono-node'
 import { searchEvents } from '@/serverFn/date.server'
+import type { Messages, ToolMessage } from './types'
 
 // chrono (en.GB) handles words + slashes but not "2.8." / "5-11" - catch
 // those with a regex (day.month / day-month, EU order) and build candidates directly
 const weekday = (d: Date) =>
 	['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d.getUTCDay()]
 
-const candidate = (text: string, d: Date) => {
+const candidate = (d: Date) => {
 	const date = d.toISOString().slice(0, 10)
 	return { key: date, value: `${weekday(d)} ${date}` }
 }
 
 const euDateCandidates = (message: string) =>
 	[...message.matchAll(/\b(\d{1,2})[.-](\d{1,2})(?:[.-](\d{2,4}))?\b/g)]
-		.map((m) => {
+		.flatMap((m): { key: string; value: string }[] => {
 			const day = +m[1]
 			const month = +m[2]
-			if (day < 1 || day > 31 || month < 1 || month > 12) return null
+			if (day < 1 || day > 31 || month < 1 || month > 12) return []
 			const year = m[3] ? +(m[3].length === 2 ? 2000 + +m[3] : m[3]) : new Date().getUTCFullYear()
-			const d = new Date(Date.UTC(year ?? new Date().getUTCFullYear(), month - 1, day))
-			if (d.getUTCDate() !== day || d.getUTCMonth() !== month - 1) return null
-			return candidate(m[0], d)
+			const d = new Date(Date.UTC(year, month - 1, day))
+			if (d.getUTCDate() !== day || d.getUTCMonth() !== month - 1) return []
+			return [candidate(d)]
 		})
-		.filter(Boolean)
 
 export const dateCandidates = (message: string) =>
 	Object.fromEntries(
 		[
-			...chrono.en.GB.parse(message).map((r) => candidate(r.text, r.start.date())),
+			...chrono.en.GB.parse(message).map((r) => candidate(r.start.date())),
 			...euDateCandidates(message),
 		].map((d) => [d.key, d.value]),
 	)
@@ -53,16 +53,7 @@ export const jev = ({
     }),
   }).then((res) => (res.ok ? res.json() : res.text()))
 
-export type Message = {
-  id: string
-  role: 'user' | 'assistant'
-  text: string
-}
-export type Messages = Message[]
-
-
-
-const searchTool = (prompt: string) => ({
+const searchChoices = (prompt: string) => ({
 	'search_events_type': {
 		type: 'choice',
 		instructions:
@@ -103,7 +94,7 @@ const searchTool = (prompt: string) => ({
 	},
 })
 
-const j = (s) => s
+const makeToolId = () => `tool-${crypto.randomUUID()}`
 
 export type Answer<K extends string = string> = {
   type: 'choice'
@@ -130,8 +121,9 @@ export type JevResult = { answers: Answers }
 export const decisionModel = async (
   messages: Messages,
   userId: string,
-): Promise<JevResult | { answers: Answers; rows: Awaited<ReturnType<typeof searchEvents>> }> => {
-	const prompt = [...messages].reverse().find((m) => m.role === 'user')?.text ?? ''
+): Promise<Messages> => {
+  const prompt =
+    [...messages].reverse().find((m): m is Extract<Messages[number], { text: string }> => m.role === 'user')?.text ?? ''
   const d = new Date()
 
   console.log('\nx\nx')
@@ -180,27 +172,34 @@ export const decisionModel = async (
             'search tool - search the calendar database for events / todos / shopping items',
           update:
             'update tool - update one or many calendar items to update their fields',
-          none: 'the query can not be answered by tool use alone - the user is making conversation, expects a crafted response not the result of a tool call',
+          none: 'there is no tool to help answer the query appropriately',
         },
       },
-      ...searchTool(prompt),
+      ...searchChoices(prompt),
     },
   })) as JevResult
 
-  const result: { answers: Answers; tool?: unknown } = { answers: q.answers }
+  const answers = q.answers
+  console.log('tool choice : ',answers.tool_choice.choice)
 
-  if (q.answers.tool_choice.choice === 'search') {
-    const rows = await searchFromAnswers(userId, q.answers)
-    result.tool = { rows, rowCount: rows.length }
+  if (answers.tool_choice.choice === 'search') {
+    const rows = await searchTool(userId, answers)
+    const tool: ToolMessage = {
+      id: makeToolId(),
+      role: 'tool',
+      tool: 'search_events',
+      result: rows,
+    }
+    console.log(tool)
+    return [tool]
   }
 
   // TODO: create / update / none branches
-
-  return result
+  return []
 }
 
 
-const searchFromAnswers = (userId: string, answers: Answers) => {
+const searchTool = (userId: string, answers: Answers) => {
   const completed =
     answers.search_events_completed.choice === 'none'
       ? undefined

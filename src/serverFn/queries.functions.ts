@@ -3,6 +3,7 @@ import { getSessionUser } from '../lib/auth'
 import { db } from '../lib/db'
 import { createEvent, deleteEvent, updateEvent, searchEvents } from './date.server'
 import { sendChat } from './chat.server'
+import type { Messages } from './types'
 
 export const getSessionFn = createServerFn({ method: 'GET' }).handler(
   async () => {
@@ -64,7 +65,7 @@ export const updateUserFn = createServerFn({ method: 'POST' })
 
 export const sendChatFn = createServerFn({ method: 'POST' })
   .inputValidator(
-    (d: { messages: { role: 'user' | 'assistant'; text: string }[] }) => d,
+    (d: { messages: unknown[] }) => d as { messages: Messages },
   )
   .handler(async ({ data }) => {
     const user = await getSessionUser()

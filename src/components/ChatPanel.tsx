@@ -94,7 +94,7 @@ export function ChatPanel() {
     setIsLoading(true)
     try {
       const { messages: newMessages } = await sendChatFn({
-        data: { messages: history.map(({ role, text }) => ({ role, text })) },
+        data: { messages: history },
       })
       setMessages(newMessages)
     } catch (err) {
@@ -257,12 +257,22 @@ function MessageList({
           <div key={message.id} className="flex flex-col gap-1">
             {messages[idx - 1]?.role !== message.role && (
               <div className="text-[10px] font-semibold uppercase tracking-[1px] text-[#666]">
-                {message.role === 'assistant' ? 'Assistant' : 'You'}
+                {message.role === 'assistant'
+                  ? 'Assistant'
+                  : message.role === 'tool'
+                    ? 'Tool'
+                    : 'You'}
               </div>
             )}
-            <div className="text-[13px] text-[#111] whitespace-pre-wrap">
-              {message.text}
-            </div>
+            {message.role === 'tool' ? (
+              <pre className="text-[11px] text-[#666] bg-[#F5F5F3] rounded p-2 overflow-x-auto">
+                {JSON.stringify(message.result, null, 2)}
+              </pre>
+            ) : (
+              <div className="text-[13px] text-[#111] whitespace-pre-wrap">
+                {message.text}
+              </div>
+            )}
           </div>
         ))}
         {isLoading && (
