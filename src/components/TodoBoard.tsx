@@ -85,7 +85,7 @@ export default function TodoBoard() {
 					detail: e.detail.trim() || undefined,
 					type: e.column === 'shopping' ? 'shopping' : 'todo',
 					begin: buildBegin(e.date, e.time),
-					allDay: e.time ? 0 : 1,
+					allDay: !e.time,
 				},
 			}),
 		onSuccess: () => {
