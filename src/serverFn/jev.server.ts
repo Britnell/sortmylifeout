@@ -6,32 +6,43 @@ import type { Messages, ToolMessage } from './types'
 // chrono (en.GB) handles words + slashes but not "2.8." / "5-11" - catch
 // those with a regex (day.month / day-month, EU order) and build candidates directly
 const weekday = (d: Date) =>
-	['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d.getUTCDay()]
+  [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ][d.getUTCDay()]
 
 const candidate = (d: Date) => {
-	const date = d.toISOString().slice(0, 10)
-	return { key: date, value: `${weekday(d)} ${date}` }
+  const date = d.toISOString().slice(0, 10)
+  return { key: date, value: `${weekday(d)} ${date}` }
 }
 
 const euDateCandidates = (message: string) =>
-	[...message.matchAll(/\b(\d{1,2})[.-](\d{1,2})(?:[.-](\d{2,4}))?\b/g)]
-		.flatMap((m): { key: string; value: string }[] => {
-			const day = +m[1]
-			const month = +m[2]
-			if (day < 1 || day > 31 || month < 1 || month > 12) return []
-			const year = m[3] ? +(m[3].length === 2 ? 2000 + +m[3] : m[3]) : new Date().getUTCFullYear()
-			const d = new Date(Date.UTC(year, month - 1, day))
-			if (d.getUTCDate() !== day || d.getUTCMonth() !== month - 1) return []
-			return [candidate(d)]
-		})
+  [
+    ...message.matchAll(/\b(\d{1,2})[.-](\d{1,2})(?:[.-](\d{2,4}))?\b/g),
+  ].flatMap((m): { key: string; value: string }[] => {
+    const day = +m[1]
+    const month = +m[2]
+    if (day < 1 || day > 31 || month < 1 || month > 12) return []
+    const year = m[3]
+      ? +(m[3].length === 2 ? 2000 + +m[3] : m[3])
+      : new Date().getUTCFullYear()
+    const d = new Date(Date.UTC(year, month - 1, day))
+    if (d.getUTCDate() !== day || d.getUTCMonth() !== month - 1) return []
+    return [candidate(d)]
+  })
 
 export const dateCandidates = (message: string) =>
-	Object.fromEntries(
-		[
-			...chrono.en.GB.parse(message).map((r) => candidate(r.start.date())),
-			...euDateCandidates(message),
-		].map((d) => [d.key, d.value]),
-	)
+  Object.fromEntries(
+    [
+      ...chrono.en.GB.parse(message).map((r) => candidate(r.start.date())),
+      ...euDateCandidates(message),
+    ].map((d) => [d.key, d.value]),
+  )
 
 export const jev = ({
   state,
@@ -54,44 +65,45 @@ export const jev = ({
   }).then((res) => (res.ok ? res.json() : res.text()))
 
 const searchChoices = (prompt: string) => ({
-	'search_events_type': {
-		type: 'choice',
-		instructions:
-			'If the search tool is used: which item type does the user want to find?',
-		criteria: {
-			event: 'a classic appointment / calendar entry with a start and end',
-			todo: 'a task or reminder, open or completed',
-			shopping: 'a shopping list item to buy',
-			none: 'no specific type mentioned - search all types',
-		},
-	},
-	'search_events_completed': {
-		type: 'choice',
-		instructions:
-			'If the search tool is used: does the user want completed or open items?',
-		criteria: {
-			open: 'outstanding / not yet done items',
-			done: 'items already completed / ticked off',
-			none: 'completed status not mentioned - do not filter',
-		},
-	},
-	'search_events_date_from': {
-		type: 'choice',
-		instructions:
-			'If the search tool is used: where does the search window start? Pick the option whose date matches the user\'s words. Today is in `context`.',
-		criteria: {
-			...dateCandidates(prompt),
-			none: 'no date provided in prompt',
-		},
-	},	'search_events_date_to': {
-		type: 'choice',
-		instructions:
-			'If the search tool is used: where does the search window end? Pick the option whose date matches the user\'s words. Today is in `context`. For a single day mentioned, pick the same option for both start and end.',
-		criteria: {
-			...dateCandidates(prompt),
-			none: 'no date provided in prompt',
-		},
-	},
+  search_events_type: {
+    type: 'choice',
+    instructions:
+      'search tool param: which item type does the user want to find?',
+    criteria: {
+      event: 'a classic appointment / calendar entry with a start and end',
+      todo: 'a task or reminder, open or completed',
+      shopping: 'a shopping list item to buy',
+      none: 'no specific type mentioned - search all types',
+    },
+  },
+  search_events_completed: {
+    type: 'choice',
+    instructions:
+      'search tool param: does the user want completed or open items?',
+    criteria: {
+      true: 'items already completed / ticked off',
+      false: 'outstanding / not yet done items',
+      none: 'completed status not mentioned - do not filter',
+    },
+  },
+  search_events_date_from: {
+    type: 'choice',
+    instructions:
+      "search tool param: where does the search window start? Pick the option whose date matches the user's words. Today is in `context`.",
+    criteria: {
+      ...dateCandidates(prompt),
+      none: 'no date provided in prompt',
+    },
+  },
+  search_events_date_to: {
+    type: 'choice',
+    instructions:
+      "search tool param: where does the search window end? Pick the option whose date matches the user's words. Today is in `context`. For a single day mentioned, pick the same option for both start and end.",
+    criteria: {
+      ...dateCandidates(prompt),
+      none: 'no date provided in prompt',
+    },
+  },
 })
 
 const makeToolId = () => `tool-${crypto.randomUUID()}`
@@ -105,7 +117,7 @@ export type Answer<K extends string = string> = {
 
 export type ToolChoice = Answer<'create' | 'search' | 'update'>
 export type SearchEventsType = Answer<'event' | 'todo' | 'shopping'>
-export type SearchEventsCompleted = Answer<'open' | 'done'>
+export type SearchEventsCompleted = Answer<'true' | 'false'>
 export type SearchEventsDate = Answer<string> // 'YYYY-MM-DD'
 
 export type Answers = {
@@ -123,16 +135,22 @@ export const decisionModel = async (
   userId: string,
 ): Promise<Messages> => {
   const prompt =
-    [...messages].reverse().find((m): m is Extract<Messages[number], { text: string }> => m.role === 'user')?.text ?? ''
+    [...messages]
+      .reverse()
+      .find(
+        (m): m is Extract<Messages[number], { text: string }> =>
+          m.role === 'user',
+      )?.text ?? ''
   const d = new Date()
 
-  console.log('\nx\nx')
-  console.log(messages)
+  console.log('\n\n===')
+  console.log({ prompt })
 
   const x = dateCandidates(prompt)
-  console.log('chrono',x)
+  console.log('chrono', x)
 
-	const q = (await jev({    state: {
+  const q = (await jev({
+    state: {
       messages,
       context: `A calendar + todo app in sqlite
       we track all items in one events table: events, todos, shopping
@@ -155,11 +173,12 @@ export const decisionModel = async (
       ## type='shopping'
       - same as todo: 'completed' NULL or 'YYYY-MM-DD' - same as todo: 'completed' col required & 'begin' date optional 'begin' date optional
 
+      For shopping & todo lists, assume the user means uncompleted items.
+
       ## Information
       Today's date: ${d.toDateString()} ${d.toTimeString()} (UTC)
       'week' refers to a calendar week from Mo - Su
-  `
-
+  `,
     },
     questions: {
       tool_choice: {
@@ -180,7 +199,7 @@ export const decisionModel = async (
   })) as JevResult
 
   const answers = q.answers
-  console.log('tool choice : ',answers.tool_choice.choice)
+  console.log('tool choice : ', answers.tool_choice.choice)
 
   if (answers.tool_choice.choice === 'search') {
     const rows = await searchTool(userId, answers)
@@ -198,12 +217,11 @@ export const decisionModel = async (
   return []
 }
 
-
 const searchTool = (userId: string, answers: Answers) => {
   const completed =
     answers.search_events_completed.choice === 'none'
       ? undefined
-      : answers.search_events_completed.choice === 'done'
+      : answers.search_events_completed.choice === 'true'
 
   const choices = {
     type: answers.search_events_type.choice,
@@ -212,6 +230,7 @@ const searchTool = (userId: string, answers: Answers) => {
     date_to: answers.search_events_date_to.choice,
   }
 
+  console.log(choices)
   const filters = Object.fromEntries(
     Object.entries(choices).filter(([, v]) => v !== undefined && v !== 'none'),
   )
