@@ -34,6 +34,12 @@ interface EditState {
 
 type ColumnKey = 'todo' | 'scheduled' | 'overdue' | 'shopping' | 'finished'
 
+function weekAgo(): string {
+	const d = new Date()
+	d.setDate(d.getDate() - 6)
+	return d.toISOString().slice(0, 10)
+}
+
 function parseBegin(begin: string | null): { date: string; time: string } {
 	if (!begin) return { date: '', time: '' }
 	const [datePart, timePart = ''] = begin.split('T')
@@ -81,7 +87,7 @@ export default function TodoBoard() {
 		queryKey: ['board', 'events'],
     queryFn: () =>
 			searchEventsFn({
-				data: { completed_date: new Date().toISOString().slice(0, 10) },
+				data: { completed_date: weekAgo() },
 			}),	})
 
 	const invalidate = () =>
@@ -138,18 +144,24 @@ export default function TodoBoard() {
 
 	const all = events as CalendarEvent[]
 	const today = localToday()
-	const scheduled = all.filter(
+	// only today's completions appear in non-finished columns
+	const visible = all.filter((e) => !e.completed || e.completed.slice(0, 10) === today)
+	const scheduled = visible.filter(
 		(e) => e.type === 'todo' && e.begin && /^\d{4}-\d{2}-\d{2}/.test(e.begin),
 	)
+	const byDone = (a: CalendarEvent, b: CalendarEvent) =>
+		Number(!!a.completed) - Number(!!b.completed)
 	const cols: Record<ColumnKey, CalendarEvent[]> = {
-		todo: all.filter((e) => e.type === 'todo' && !e.begin),
+		todo: visible
+			.filter((e) => e.type === 'todo' && !e.begin)
+			.sort(byDone),
 		scheduled: scheduled
 			.filter((e) => (e.begin ?? '').slice(0, 10) >= today)
-			.sort((a, b) => (a.begin ?? '').localeCompare(b.begin ?? '')),
+			.sort((a, b) => byDone(a, b) || (a.begin ?? '').localeCompare(b.begin ?? '')),
 		overdue: scheduled
 			.filter((e) => (e.begin ?? '').slice(0, 10) < today)
-			.sort((a, b) => (a.begin ?? '').localeCompare(b.begin ?? '')),
-		shopping: all.filter((e) => e.type === 'shopping'),
+			.sort((a, b) => byDone(a, b) || (a.begin ?? '').localeCompare(b.begin ?? '')),
+		shopping: visible.filter((e) => e.type === 'shopping').sort(byDone),
 		finished: all.filter((e) => e.completed),
 	}
 

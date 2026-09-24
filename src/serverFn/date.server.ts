@@ -138,14 +138,14 @@ export async function searchEvents(
           eb.or([eb('completed', 'is', null), eb('completed', '=', '')]),
         )
 
-  // open items OR items completed on the given date (e.g. today)
+  // open items OR items completed on/after the given date
   if (filters.completed_date != null) {
     const d = filters.completed_date
     query = query.where((eb) =>
       eb.or([
         eb('completed', 'is', null),
         eb('completed', '=', ''),
-        eb.and([eb('completed', '>=', d), eb('completed', '<', d + 'T99:99')]),
+        eb('completed', '>=', d),
       ]),
     )
   }

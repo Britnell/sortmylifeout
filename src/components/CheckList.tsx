@@ -46,6 +46,7 @@ interface EditState {
   time: string
 }
 
+type Tab = 'unscheduled' | 'upcoming' | 'overdue' | 'done'
 type EventType = 'todo' | 'shopping'
 
 const LABELS: Record<
@@ -77,16 +78,22 @@ const LABELS: Record<
 export default function CheckList({
   type,
   sidebar = false,
+  tab: tabProp,
+  onTabChange,
 }: {
   type: EventType
   sidebar?: boolean
+  tab?: Tab
+  onTabChange?: (tab: Tab) => void
 }) {
   const queryClient = useQueryClient()
   const labels = LABELS[type]
-  const [tab, setTab] = useLocalStorage<'unscheduled' | 'upcoming' | 'done'>(
+  const [storedTab, setStoredTab] = useLocalStorage<Tab>(
     `checklist-tab-${type}`,
     'unscheduled',
   )
+  const tab = tabProp ?? storedTab
+  const setTab = onTabChange ?? setStoredTab
   const [editing, setEditing] = useState<EditState | null>(null)
   const [creatingDraft, setCreatingDraft] = useState<{
     title: string
@@ -122,7 +129,11 @@ export default function CheckList({
         ? [...(upcoming as CalendarEvent[])].sort((a, b) =>
             (a.begin ?? '').localeCompare(b.begin ?? ''),
           )
-        : (done as CalendarEvent[])
+        : tab === 'overdue'
+          ? (unscheduled as CalendarEvent[])
+              .filter((ev) => ev.begin && ev.begin.slice(0, 10) < today)
+              .sort((a, b) => (a.begin ?? '').localeCompare(b.begin ?? ''))
+          : (done as CalendarEvent[])
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: [type, 'unscheduled'] })
@@ -193,25 +204,16 @@ export default function CheckList({
 
   return (
     <>
-      {sidebar ? (
-        <select
-          value={tab}
-          onChange={(e) => setTab(e.target.value as typeof tab)}
-          className="w-full mb-4 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="unscheduled">Items</option>
-          <option value="upcoming">Scheduled</option>
-          <option value="done">Finished</option>
-        </select>
-      ) : (
+      {sidebar ? null : (
         <div className="flex justify-between items-center mb-4">
           <select
             value={tab}
-            onChange={(e) => setTab(e.target.value as typeof tab)}
+            onChange={(e) => setTab(e.target.value as Tab)}
             className="sm:hidden px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="unscheduled">Items</option>
             <option value="upcoming">Scheduled</option>
+            <option value="overdue">Overdue</option>
             <option value="done">Finished</option>
           </select>
           <div className="hidden sm:flex border border-gray-300 rounded-md overflow-hidden bg-white">
