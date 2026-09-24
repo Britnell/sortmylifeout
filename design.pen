@@ -11563,6 +11563,302 @@
                       "descendants": {
                         "H6nNct": {
                           "content": "Events"
+                        },
+                        "JkhX9": {
+                          "type": "frame",
+                          "id": "H5Xbk",
+                          "layoutPosition": "absolute",
+                          "x": 88,
+                          "y": 8,
+                          "name": "View Switcher",
+                          "gap": 6,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "tG4iZ",
+                              "name": "Prev Btn",
+                              "fill": "#FFFFFF",
+                              "cornerRadius": 6,
+                              "stroke": "#CBCCC9",
+                              "strokeWidth": 1,
+                              "padding": 6,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "LmhVH",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "chevron-left",
+                                  "library": "lucide",
+                                  "fill": "#111111"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "s4FqJ",
+                              "name": "Dropdown",
+                              "width": 132,
+                              "height": 176,
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "esTuK",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Current",
+                                  "width": 132,
+                                  "fill": "$--primary",
+                                  "cornerRadius": 8,
+                                  "gap": 6,
+                                  "padding": [
+                                    8,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "icon",
+                                      "id": "RooL2",
+                                      "name": "Icon",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "columns-3",
+                                      "library": "lucide",
+                                      "fill": "#111111"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "id": "Kldmj",
+                                      "name": "Label",
+                                      "fill": "#111111",
+                                      "textGrowth": "fixed-width",
+                                      "width": "fill_container",
+                                      "content": "Week",
+                                      "fontFamily": "Geist",
+                                      "fontSize": 13,
+                                      "fontWeight": "500"
+                                    },
+                                    {
+                                      "type": "icon",
+                                      "id": "EAaTi",
+                                      "name": "Icon",
+                                      "width": 14,
+                                      "height": 14,
+                                      "icon": "chevron-down",
+                                      "library": "lucide",
+                                      "fill": "#111111"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "eUW3g",
+                                  "x": 0,
+                                  "y": 38,
+                                  "name": "Menu",
+                                  "width": 132,
+                                  "fill": "#FFFFFF",
+                                  "cornerRadius": 8,
+                                  "stroke": "#CBCCC9",
+                                  "strokeWidth": 1,
+                                  "effect": {
+                                    "type": "shadow",
+                                    "shadowType": "outer",
+                                    "color": "#0000001A",
+                                    "offset": {
+                                      "x": 0,
+                                      "y": 4
+                                    },
+                                    "blur": 12
+                                  },
+                                  "layout": "vertical",
+                                  "padding": 4,
+                                  "children": [
+                                    {
+                                      "type": "frame",
+                                      "id": "xpQdy",
+                                      "name": "Item Month",
+                                      "fill": "#FFFFFF00",
+                                      "cornerRadius": 5,
+                                      "gap": 6,
+                                      "padding": [
+                                        7,
+                                        10
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "EHfex",
+                                          "name": "Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "calendar-days",
+                                          "library": "lucide",
+                                          "fill": "#666666"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "HXDDo",
+                                          "name": "Month",
+                                          "fill": "#666666",
+                                          "content": "Month",
+                                          "fontFamily": "Geist",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "YhWc3",
+                                      "name": "Item Week",
+                                      "fill": "#F0F0EE",
+                                      "cornerRadius": 5,
+                                      "gap": 6,
+                                      "padding": [
+                                        7,
+                                        10
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "EuePc",
+                                          "name": "Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "columns-3",
+                                          "library": "lucide",
+                                          "fill": "$--primary"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "CsEPU",
+                                          "name": "Week",
+                                          "fill": "#111111",
+                                          "content": "Week",
+                                          "fontFamily": "Geist",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        },
+                                        {
+                                          "type": "icon",
+                                          "id": "j1gJ1e",
+                                          "name": "Check",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "check",
+                                          "library": "lucide",
+                                          "fill": "$--primary"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "lGMB6",
+                                      "name": "Item Day",
+                                      "fill": "#FFFFFF00",
+                                      "cornerRadius": 5,
+                                      "gap": 6,
+                                      "padding": [
+                                        7,
+                                        10
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "EFm2B",
+                                          "name": "Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "alarm-clock",
+                                          "library": "lucide",
+                                          "fill": "#666666"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "dwZey",
+                                          "name": "Day",
+                                          "fill": "#666666",
+                                          "content": "Day",
+                                          "fontFamily": "Geist",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "type": "frame",
+                                      "id": "I2ALO",
+                                      "name": "Item Schedule",
+                                      "fill": "#FFFFFF00",
+                                      "cornerRadius": 5,
+                                      "gap": 6,
+                                      "padding": [
+                                        7,
+                                        10
+                                      ],
+                                      "alignItems": "center",
+                                      "children": [
+                                        {
+                                          "type": "icon",
+                                          "id": "r6EGl",
+                                          "name": "Icon",
+                                          "width": 14,
+                                          "height": 14,
+                                          "icon": "list",
+                                          "library": "lucide",
+                                          "fill": "#666666"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "id": "q32yh",
+                                          "name": "Schedule",
+                                          "fill": "#666666",
+                                          "content": "Schedule",
+                                          "fontFamily": "Geist",
+                                          "fontSize": 13,
+                                          "fontWeight": "500"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "t9ZLN",
+                              "name": "Next Btn",
+                              "fill": "#FFFFFF",
+                              "cornerRadius": 6,
+                              "stroke": "#CBCCC9",
+                              "strokeWidth": 1,
+                              "padding": 6,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "TCoTn",
+                                  "name": "Icon",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "chevron-right",
+                                  "library": "lucide",
+                                  "fill": "#111111"
+                                }
+                              ]
+                            }
+                          ]
                         }
                       }
                     },
