@@ -368,23 +368,27 @@ function CurrentWeekGrid({
         return (
           <div
             key={dateStr}
-            className={`flex flex-col gap-1 pt-1.5 pb-1.5 px-2 rounded-t-md border-x border-t border-[#CBCCC9] min-w-0 overflow-hidden ${isToday ? 'bg-[var(--primary)]' : 'bg-white'}`}
+            className="flex flex-col min-w-0"
             onClick={() => onCreate(dateStr)}
           >
-            <div className="flex items-center gap-1">
+            <div
+              className={`flex items-center gap-1 pt-1.5 px-2 rounded-t-md border-x border-t border-[#CBCCC9] ${isToday ? 'bg-[var(--primary)]' : 'bg-white'}`}
+            >
               <span className="text-[13px] font-semibold text-[#111111]">
                 {day.getDate()}
               </span>
               {isToday && (
-                <span className="text-[13px] font-semibold text-[#111111] hidden md:inline">
+                <span className="text-[13px] text-[#111111] hidden md:inline">
                   Today
                 </span>
               )}
             </div>
-            {visible.map((ev) => (
-              <Chip key={ev.id} ev={ev} onEdit={onEdit} checkbox={ev.type === 'todo'} />
-            ))}
-            {rest > 0 && <MoreButton rest={rest} dateStr={dateStr} onOpen={onOpen} />}
+            <div className="flex flex-col gap-1 pt-1.5 pb-1.5 px-2 bg-white border-x border-[#CBCCC9] flex-1 min-h-0 overflow-hidden">
+              {visible.map((ev) => (
+                <Chip key={ev.id} ev={ev} onEdit={onEdit} checkbox={ev.type === 'todo'} />
+              ))}
+              {rest > 0 && <MoreButton rest={rest} dateStr={dateStr} onOpen={onOpen} />}
+            </div>
           </div>
         )
       })}
