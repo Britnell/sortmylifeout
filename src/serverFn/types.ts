@@ -9,12 +9,22 @@ export type ChatMessage = {
   text: string
 }
 
-export type ToolMessage = {
+export type Args = Record<string, string | number | boolean | undefined>
+
+export type ToolCallMessage = {
   id: string
-  role: 'tool'
+  role: 'tool_call'
   tool: 'search_events' | 'create_event' | 'update_event'
+  args: Args
+}
+
+export type ToolResultMessage = {
+  id: string
+  role: 'tool_result'
+  toolCallId: string
   result: EventRow[]
 }
 
-export type Message = ChatMessage | ToolMessage
+export type Message = ChatMessage | ToolCallMessage | ToolResultMessage
+
 export type Messages = Message[]

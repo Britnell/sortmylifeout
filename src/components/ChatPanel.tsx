@@ -259,12 +259,18 @@ function MessageList({
               <div className="text-[10px] font-semibold uppercase tracking-[1px] text-[#666]">
                 {message.role === 'assistant'
                   ? 'Assistant'
-                  : message.role === 'tool'
-                    ? 'Tool'
-                    : 'You'}
+                  : message.role === 'user'
+                    ? 'You'
+                    : message.role === 'tool_call'
+                      ? 'Tool call'
+                      : 'Tool result'}
               </div>
             )}
-            {message.role === 'tool' ? (
+            {message.role === 'tool_call' ? (
+              <pre className="text-[11px] text-[#666] bg-[#F5F5F3] rounded p-2 overflow-x-auto">
+                {`${message.tool}(${JSON.stringify(message.args)})`}
+              </pre>
+            ) : message.role === 'tool_result' ? (
               <pre className="text-[11px] text-[#666] bg-[#F5F5F3] rounded p-2 overflow-x-auto">
                 {JSON.stringify(message.result, null, 2)}
               </pre>

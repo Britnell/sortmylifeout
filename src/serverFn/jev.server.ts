@@ -1,9 +1,10 @@
 import { env } from 'cloudflare:workers'
 import { searchEvents } from '@/serverFn/date.server'
-import { dateCandidates, jevPayload } from './prompt'
+import { jevPayload } from './prompt'
+import { dateCandidates } from './dates'
 
 export { dateCandidates }
-import type { Messages, ToolMessage } from './types'
+import type { Args, EventRow, Messages, ToolCallMessage, ToolResultMessage } from './types'
 
 export const jev = ({
   state,
@@ -78,83 +79,65 @@ export const decisionModel = async (
   console.log('tool choice : ', answers.tool_choice.choice)
 
   if (answers.tool_choice.choice === 'search') {
-    const rows = await searchTool(userId, answers)
-    const tool: ToolMessage = {
-      id: makeToolId(),
-      role: 'tool',
-      tool: 'search_events',
-      result: rows,
-    }
-    console.log(tool)
-    return [tool]
+    const filters = searchFilters(answers)
+    console.log('search_events', filters)
+    const rows = await searchEvents(userId, filters)
+    return toolPair('search_events', filters, rows)
   }
 
   if (answers.tool_choice.choice === 'create') {
-    const rows = await createTool(userId, answers)
-    const tool: ToolMessage = {
-      id: makeToolId(),
-      role: 'tool',
-      tool: 'create_event',
-      result: rows as unknown as ToolMessage['result'],
-    }
-    return [tool]
+    const args = createArgs(answers)
+    console.log('create_event', args)
+    // const rows = await createEvent(userId, { ...args, allDay: !args.begin || !String(args.begin).includes('T') })
+    return toolPair('create_event', args, [args] as unknown as EventRow[])
   }
 
   if (answers.tool_choice.choice === 'update') {
-    const rows = await updateTool(userId, answers)
-    const tool: ToolMessage = {
-      id: makeToolId(),
-      role: 'tool',
-      tool: 'update_event',
-      result: rows as unknown as ToolMessage['result'],
-    }
-    return [tool]
+    const args = updateArgs(answers)
+    console.log('update_event', args)
+    // const rows = await updateEvent(userId, args)
+    return toolPair('update_event', args, [args] as unknown as EventRow[])
   }
 
   // TODO: none branch
   return []
 }
 
-const createTool = (
-  userId: string,
-  answers: Answers,
-) => {
-  const item = {
-    type: answers.create_events_type.choice,
-    title:
-      answers.create_events_title.choice === 'none'
-        ? undefined
-        : answers.create_events_title.choice,
-    detail:
-      answers.create_events_detail.choice === 'none'
-        ? undefined
-        : answers.create_events_detail.choice,
-    begin:
-      answers.create_events_begin.choice === 'none'
-        ? undefined
-        : answers.create_events_begin.choice,
-    end:
-      answers.create_events_end.choice === 'none'
-        ? undefined
-        : answers.create_events_end.choice,
-    completed: answers.create_events_completed.choice === 'true',
+const toolPair = (
+  tool: ToolCallMessage['tool'],
+  args: Args,
+  result: EventRow[],
+): Messages => {
+  const call: ToolCallMessage = {
+    id: makeToolId(),
+    role: 'tool_call',
+    tool,
+    args,
   }
-
-  console.log('create_event', item)
-
-  // return createEvent(userId, {
-  //   ...item,
-  //   allDay: !item.begin || !item.begin.includes('T'),
-  // })
-  return [item]
+  const toolResult: ToolResultMessage = {
+    id: makeToolId(),
+    role: 'tool_result',
+    toolCallId: call.id,
+    result,
+  }
+  return [call, toolResult]
 }
 
-const updateTool = (
-  userId: string,
-  answers: Answers,
-) => {
+const createArgs = (answers: Answers): Args =>
+  Object.fromEntries(
+    Object.entries({
+      type: answers.create_events_type.choice,
+      title: answers.create_events_title.choice,
+      detail: answers.create_events_detail.choice,
+      begin: answers.create_events_begin.choice,
+      end: answers.create_events_end.choice,
+      completed: answers.create_events_completed.choice,
+    }).filter(([, v]) => v !== 'none'),
+  )
+
+const updateArgs = (answers: Answers): Args =>
   // all fields optional: 'none' means keep the existing value - only include changed fields
-  const changes = Object.fromEntries(
+  Object.fromEntries(
     Object.entries({
       type: answers.update_events_type.choice,
       title: answers.update_events_title.choice,
@@ -168,29 +151,15 @@ const updateTool = (
     }).filter(([, v]) => v !== undefined && v !== 'none'),
   )
 
-  console.log('update_event', changes)
-
-  // return updateEvent(userId, changes)
-  return [changes]
-}
-
-const searchTool = (userId: string, answers: Answers) => {
-  const completed =
-    answers.search_events_completed.choice === 'none'
-      ? undefined
-      : answers.search_events_completed.choice === 'true'
-
-  const choices = {
-    type: answers.search_events_type.choice,
-    completed,
-    date_from: answers.search_events_date_from.choice,
-    date_to: answers.search_events_date_to.choice,
-  }
-
-  console.log(choices)
-  const filters = Object.fromEntries(
-    Object.entries(choices).filter(([, v]) => v !== undefined && v !== 'none'),
+const searchFilters = (answers: Answers): Args =>
+  Object.fromEntries(
+    Object.entries({
+      type: answers.search_events_type.choice,
+      completed:
+        answers.search_events_completed.choice === 'none'
+          ? undefined
+          : answers.search_events_completed.choice === 'true',
+      date_from: answers.search_events_date_from.choice,
+      date_to: answers.search_events_date_to.choice,
+    }).filter(([, v]) => v !== undefined && v !== 'none'),
   )
-
-  return searchEvents(userId, filters)
-}
