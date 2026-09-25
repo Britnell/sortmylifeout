@@ -42,6 +42,9 @@ export type SearchEventsDate = Answer<string> // 'YYYY-MM-DD'
 export type CreateEventsType = Answer<'event' | 'todo' | 'shopping'>
 export type CreateEventsCompleted = Answer<'true' | 'false'>
 
+export type UpdateEventsType = Answer<'event' | 'todo' | 'shopping'>
+export type UpdateEventsCompleted = Answer<'true' | 'false'>
+
 export type Answers = {
   create_events_type: CreateEventsType
   create_events_title: Answer<string>
@@ -49,6 +52,12 @@ export type Answers = {
   create_events_begin: SearchEventsDate
   create_events_end: SearchEventsDate
   create_events_completed: CreateEventsCompleted
+  update_events_type: UpdateEventsType
+  update_events_title: Answer<string>
+  update_events_detail: Answer<string>
+  update_events_begin: SearchEventsDate
+  update_events_end: SearchEventsDate
+  update_events_completed: UpdateEventsCompleted
   tool_choice: ToolChoice
   search_events_type: SearchEventsType
   search_events_completed: SearchEventsCompleted
@@ -91,7 +100,18 @@ export const decisionModel = async (
     return [tool]
   }
 
-  // TODO: update / none branches
+  if (answers.tool_choice.choice === 'update') {
+    const rows = await updateTool(userId, answers)
+    const tool: ToolMessage = {
+      id: makeToolId(),
+      role: 'tool',
+      tool: 'update_event',
+      result: rows as unknown as ToolMessage['result'],
+    }
+    return [tool]
+  }
+
+  // TODO: none branch
   return []
 }
 
@@ -127,6 +147,31 @@ const createTool = (
   //   allDay: !item.begin || !item.begin.includes('T'),
   // })
   return [item]
+}
+
+const updateTool = (
+  userId: string,
+  answers: Answers,
+) => {
+  // all fields optional: 'none' means keep the existing value - only include changed fields
+  const changes = Object.fromEntries(
+    Object.entries({
+      type: answers.update_events_type.choice,
+      title: answers.update_events_title.choice,
+      detail: answers.update_events_detail.choice,
+      begin: answers.update_events_begin.choice,
+      end: answers.update_events_end.choice,
+      completed:
+        answers.update_events_completed.choice === 'none'
+          ? undefined
+          : answers.update_events_completed.choice === 'true',
+    }).filter(([, v]) => v !== undefined && v !== 'none'),
+  )
+
+  console.log('update_event', changes)
+
+  // return updateEvent(userId, changes)
+  return [changes]
 }
 
 const searchTool = (userId: string, answers: Answers) => {

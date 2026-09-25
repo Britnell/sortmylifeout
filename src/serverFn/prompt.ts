@@ -56,6 +56,7 @@ export const jevPayload = (messages: unknown) => {
         },
         ...searchChoices(prompt),
         ...createChoices(prompt),
+        ...updateChoices(prompt),
       },
     }
 }
@@ -108,6 +109,70 @@ const titleCandidates = (prompt: string) =>
     promptSpans(prompt).map((s) => [s, s]),
   )
 
+// update tool params: ALL optional - 'none' means keep the existing value.
+// Only pick a value when the user explicitly wants to change/update that field.
+export const updateChoices = (prompt: string) => ({
+  update_events_type: {
+    type: 'choice',
+    instructions:
+      "update tool param, OPTIONAL: only if the user explicitly wants to change the item's type, otherwise 'none' to keep the existing type.",
+    criteria: {
+      event: 'change it to a classic appointment / calendar entry',
+      todo: 'change it to a task or reminder',
+      shopping: 'change it to a shopping list item',
+      none: "type change not asked for - keep the previous value",
+    },
+  },
+  update_events_title: {
+    type: 'choice',
+    instructions:
+      "update tool param, OPTIONAL: only if the user explicitly wants a new title/renames it, otherwise 'none' to keep the existing title. Pick the option that best matches what the user calls the thing - short, no dates/times, no filler words.",
+    criteria: {
+      ...titleCandidates(prompt),
+      none: "no title change asked for - keep the previous value",
+    },
+  },
+  update_events_detail: {
+    type: 'choice',
+    instructions:
+      "update tool param, OPTIONAL: only if the user explicitly gives new extra info / address / links, otherwise 'none' to keep the existing detail. Echo it exactly as the option value.",
+    criteria: {
+      ...titleCandidates(prompt),
+      none: "no detail change asked for - keep the previous value",
+    },
+  },
+  update_events_begin: {
+    type: 'choice',
+    instructions:
+      "update tool param, OPTIONAL: only if the user explicitly wants to move/reschedule the start, otherwise 'none' to keep the existing start. Pick the option whose date/time matches the user's words. Today is in `context`.",
+    criteria: {
+      ...datetimeCandidates(prompt),
+      ...dateCandidates(prompt),
+      none: "no new start given - keep the previous value",
+    },
+  },
+  update_events_end: {
+    type: 'choice',
+    instructions:
+      "update tool param, OPTIONAL: only if the user explicitly wants to change the end, otherwise 'none' to keep the existing end. For a single-day item pick the same date. Timed events need a time here too.",
+    criteria: {
+      ...datetimeCandidates(prompt),
+      ...dateCandidates(prompt),
+      none: "no new end given - keep the previous value",
+    },
+  },
+  update_events_completed: {
+    type: 'choice',
+    instructions:
+      'update tool param, OPTIONAL: only if the user explicitly says to mark it done or to reopen it, otherwise \'none\' to keep the current status.',
+    criteria: {
+      true: 'user says mark it as done / completed',
+      false: 'user says reopen it / mark as not done',
+      none: "completed status not mentioned - keep the previous value",
+    },
+  },
+})
+
 export const createChoices = (prompt: string) => ({
   create_events_type: {
     type: 'choice',
@@ -135,6 +200,7 @@ export const createChoices = (prompt: string) => ({
     instructions:
       'create tool param: any extra info / address / links the user gave? Echo it exactly as the option value.',
     criteria: {
+      ...titleCandidates(prompt),
       none: 'no extra info provided',
     },
   },
