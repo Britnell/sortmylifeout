@@ -106,6 +106,77 @@ const searchChoices = (prompt: string) => ({
   },
 })
 
+const datetimeCandidates = (message: string) =>
+  Object.fromEntries(
+    chrono.en.GB.parse(message)
+      .filter((r) => r.start.isCertain('hour'))
+      .map((r) => {
+        const d = r.start.date()
+        const iso = d.toISOString()
+        const key = `${iso.slice(0, 10)}T${iso.slice(11, 16)}`
+        return [key, `${weekday(d)} ${key}`]
+      }),
+  )
+
+const createChoices = (prompt: string) => ({
+  create_events_type: {
+    type: 'choice',
+    instructions:
+      'create tool param: which item type does the user want to create?',
+    criteria: {
+      event: 'a classic appointment / calendar entry with a start and end',
+      todo: 'a task or reminder',
+      shopping: 'a shopping list item to buy',
+      none: 'type not mentioned',
+    },
+  },
+  // TODO: title - free text, figure out best handling
+  create_events_title: {
+    type: 'choice',
+    instructions: 'create tool param: title - not handled yet',
+    criteria: {
+      none: 'not handled yet',
+    },
+  },
+  create_events_detail: {
+    type: 'choice',
+    instructions:
+      'create tool param: any extra info / address / links the user gave? Echo it exactly as the option value.',
+    criteria: {
+      none: 'no extra info provided',
+    },
+  },
+  create_events_begin: {
+    type: 'choice',
+    instructions:
+      "create tool param: when does the item start? Pick the option whose date/time matches the user's words. Today is in `context`. All-day options have no time, timed options include HH:mm.",
+    criteria: {
+      ...datetimeCandidates(prompt),
+      ...dateCandidates(prompt),
+      none: 'no date provided in prompt',
+    },
+  },
+  create_events_end: {
+    type: 'choice',
+    instructions:
+      "create tool param: when does the item end? For a single-day item pick the same date. Timed events need a time here too.",
+    criteria: {
+      ...datetimeCandidates(prompt),
+      ...dateCandidates(prompt),
+      none: 'no date provided in prompt',
+    },
+  },
+  create_events_completed: {
+    type: 'choice',
+    instructions:
+      'create tool param: is the item already completed/done?',
+    criteria: {
+      true: 'user says it is already done / completed',
+      false: 'item is open / not yet done (the default)',
+    },
+  },
+})
+
 const makeToolId = () => `tool-${crypto.randomUUID()}`
 
 export type Answer<K extends string = string> = {
@@ -120,7 +191,16 @@ export type SearchEventsType = Answer<'event' | 'todo' | 'shopping'>
 export type SearchEventsCompleted = Answer<'true' | 'false'>
 export type SearchEventsDate = Answer<string> // 'YYYY-MM-DD'
 
+export type CreateEventsType = Answer<'event' | 'todo' | 'shopping'>
+export type CreateEventsCompleted = Answer<'true' | 'false'>
+
 export type Answers = {
+  create_events_type: CreateEventsType
+  create_events_title: Answer<string>
+  create_events_detail: Answer<string>
+  create_events_begin: SearchEventsDate
+  create_events_end: SearchEventsDate
+  create_events_completed: CreateEventsCompleted
   tool_choice: ToolChoice
   search_events_type: SearchEventsType
   search_events_completed: SearchEventsCompleted
@@ -195,6 +275,7 @@ export const decisionModel = async (
         },
       },
       ...searchChoices(prompt),
+      ...createChoices(prompt),
     },
   })) as JevResult
 
@@ -213,7 +294,41 @@ export const decisionModel = async (
     return [tool]
   }
 
-  // TODO: create / update / none branches
+  if (answers.tool_choice.choice === 'create') {
+    // TODO: title - create_events_title is blank for now, insert blocked until solved
+    const item = {
+      type: answers.create_events_type.choice,
+      title: '', // TODO: figure out best way to handle title
+      detail:
+        answers.create_events_detail.choice === 'none'
+          ? undefined
+          : answers.create_events_detail.choice,
+      begin:
+        answers.create_events_begin.choice === 'none'
+          ? undefined
+          : answers.create_events_begin.choice,
+      end:
+        answers.create_events_end.choice === 'none'
+          ? undefined
+          : answers.create_events_end.choice,
+      completed: answers.create_events_completed.choice === 'true',
+    }
+    console.log('create_event', item)
+
+    // const rows = await createEvent(userId, {
+    //   ...item,
+    //   allDay: !item.begin || !item.begin.includes('T'),
+    // })
+    const tool: ToolMessage = {
+      id: makeToolId(),
+      role: 'tool',
+      tool: 'create_event',
+      result: [item] as unknown as ToolMessage['result'],
+    }
+    return [tool]
+  }
+
+  // TODO: update / none branches
   return []
 }
 
