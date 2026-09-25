@@ -20,7 +20,7 @@ const models = {
 
 export function getAdapter() {
   return createOpenRouterText(
-    models.openrouter.deepseek,
+    models.openrouter.deepseek as any,
     process.env.OPENROUTER_API_KEY!,
   )
   // return createWorkersAiChat(models.cloudflare.gemma, { binding: env.AI })
@@ -133,7 +133,7 @@ export async function agentMessage(messages: string[], userId: string): Promise<
 
   let text = ''
   for await (const chunk of stream) {
-    if (chunk.type === 'content') {
+    if (chunk.type === 'TEXT_MESSAGE_CONTENT') {
       text += chunk.delta
     }
   }

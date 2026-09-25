@@ -11,7 +11,7 @@ export const jev = ({
 }: {
   state: object
   questions: object
-}): Promise<JevResult> =>
+}): Promise<JevResult|string> =>
   fetch('https://api.typesafe.ai/v1/systemone', {
     method: 'POST',
     headers: {
@@ -23,7 +23,7 @@ export const jev = ({
       state,
       questions,
     }),
-  }).then((res): Promise<JevResult> => (res.ok ? res.json() : res.text()))
+  }).then((res) => (res.ok ? res.json() : res.text()))
 
 const makeToolId = () => `tool-${crypto.randomUUID()}`
 
@@ -62,7 +62,9 @@ export const decisionModel = async (
   messages: Messages,
   userId: string,
 ): Promise<Messages> => {
-  const { answers } = await jev(jevPayload(messages))
+  const res = await jev(jevPayload(messages))
+  if (typeof res === 'string') throw new Error(`jev failed: ${res}`)
+  const { answers } = res
 
   console.log('tool choice : ', answers.tool_choice.choice)
 
