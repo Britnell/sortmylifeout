@@ -85,7 +85,7 @@ export const searchChoices = (prompt: string) => ({
   search_events_date_from: {
     type: 'choice',
     instructions:
-      "search tool param: where does the search window start? Pick the option whose date matches the user's words. Today is in `context`. If the user asks about "this week" implying the future, pick 'today'. Only pick Monday if the user explicitly means the whole calendar week (including past days).",
+      "search tool param: where does the search window start? Pick the option whose date matches the user's words. Today is in `context`. If the user asks about 'this week' implying the future, pick 'today'. Only pick Monday if the user explicitly means the whole calendar week (including past days).",
     criteria: {
       ...dateCandidates(prompt),
       none: 'no date provided in prompt',
@@ -94,7 +94,7 @@ export const searchChoices = (prompt: string) => ({
   search_events_date_to: {
     type: 'choice',
     instructions:
-      "search tool param: where does the search window end? Pick the option whose date matches the user's words. Today is in `context`. For a single day mentioned, pick the same option for both start and end. For "this week" implying the future, pick 'today + 7 days'.",
+      "search tool param: where does the search window end? Pick the option whose date matches the user's words. Today is in `context`. For a single day mentioned, pick the same option for both start and end. For 'this week' implying the future, pick 'today + 7 days'.",
     criteria: {
       ...dateCandidates(prompt),
       none: 'no date provided in prompt',

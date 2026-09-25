@@ -81,41 +81,52 @@ export const decisionModel = async (
   }
 
   if (answers.tool_choice.choice === 'create') {
-    // TODO: title - create_events_title is blank for now, insert blocked until solved
-    const item = {
-      type: answers.create_events_type.choice,
-      title: '', // TODO: figure out best way to handle title
-      detail:
-        answers.create_events_detail.choice === 'none'
-          ? undefined
-          : answers.create_events_detail.choice,
-      begin:
-        answers.create_events_begin.choice === 'none'
-          ? undefined
-          : answers.create_events_begin.choice,
-      end:
-        answers.create_events_end.choice === 'none'
-          ? undefined
-          : answers.create_events_end.choice,
-      completed: answers.create_events_completed.choice === 'true',
-    }
-    console.log('create_event', item)
-
-    // const rows = await createEvent(userId, {
-    //   ...item,
-    //   allDay: !item.begin || !item.begin.includes('T'),
-    // })
+    const rows = await createTool(userId, answers)
     const tool: ToolMessage = {
       id: makeToolId(),
       role: 'tool',
       tool: 'create_event',
-      result: [item] as unknown as ToolMessage['result'],
+      result: rows as unknown as ToolMessage['result'],
     }
     return [tool]
   }
 
   // TODO: update / none branches
   return []
+}
+
+const createTool = (
+  userId: string,
+  answers: Answers,
+) => {
+  const item = {
+    type: answers.create_events_type.choice,
+    title:
+      answers.create_events_title.choice === 'none'
+        ? undefined
+        : answers.create_events_title.choice,
+    detail:
+      answers.create_events_detail.choice === 'none'
+        ? undefined
+        : answers.create_events_detail.choice,
+    begin:
+      answers.create_events_begin.choice === 'none'
+        ? undefined
+        : answers.create_events_begin.choice,
+    end:
+      answers.create_events_end.choice === 'none'
+        ? undefined
+        : answers.create_events_end.choice,
+    completed: answers.create_events_completed.choice === 'true',
+  }
+
+  console.log('create_event', item)
+
+  // return createEvent(userId, {
+  //   ...item,
+  //   allDay: !item.begin || !item.begin.includes('T'),
+  // })
+  return [item]
 }
 
 const searchTool = (userId: string, answers: Answers) => {
