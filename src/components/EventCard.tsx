@@ -8,10 +8,19 @@ export type EventRow = {
 	[key: string]: unknown
 }
 
-const TYPE_ICON: Record<string, string> = {
-	event: '📅',
-	todo: '☑',
-	shopping: '🛒',
+const formatDateTime = (value: string) => {
+	const d = new Date(value)
+	if (Number.isNaN(d.getTime())) return value
+	const date = d.toLocaleDateString(undefined, {
+		weekday: 'short',
+		day: 'numeric',
+		month: 'short',
+	})
+	const time = d.toLocaleTimeString(undefined, {
+		hour: '2-digit',
+		minute: '2-digit',
+	})
+	return value.includes('T') ? `${date} · ${time}` : date
 }
 
 export function EventCard({
@@ -21,23 +30,35 @@ export function EventCard({
 	item: EventRow
 	action: 'created' | 'updated' | null
 }) {
-	const icon = TYPE_ICON[item.type] ?? '•'
-	const dateStr =
-		item.end && item.end !== item.begin
-			? `${item.begin} → ${item.end}`
-			: (item.begin ?? null)
+	const range =
+		item.begin && item.end && item.begin !== item.end
+			? `${formatDateTime(item.begin)} → ${formatDateTime(item.end)}`
+			: item.begin
+				? formatDateTime(item.begin)
+				: null
 
 	return (
-		<div className="mt-1.5 px-2.5 py-2 bg-blue-50 border border-blue-100 rounded-lg text-xs flex items-start gap-2">
-			<span className="text-sm leading-none mt-0.5">{icon}</span>
-			<div className="min-w-0 flex-1">
-				<div className="font-medium text-gray-800 truncate">
+		<div className='px-2.5 py-2 bg-yellow-200 border border-yellow-400 rounded-lg text-xs flex items-start gap-2'>
+			{item.type === 'todo' && (
+				<input
+					type='checkbox'
+					checked={!!item.completed}
+					readOnly
+					className='mt-0.5 accent-yellow-600'
+				/>
+			)}
+			<div className='min-w-0 flex-1'>
+				{range && (
+					<div className='text-[10px] uppercase tracking-wide text-gray-400'>
+						{range}
+					</div>
+				)}
+				<div className='font-medium text-gray-800 truncate'>
 					{item.title ?? '(untitled)'}
 				</div>
-				{dateStr && <div className="text-gray-500 mt-0.5">{dateStr}</div>}
 			</div>
 			{action && (
-				<span className="text-gray-400 shrink-0 capitalize">{action}</span>
+				<span className='text-gray-400 shrink-0 capitalize'>{action}</span>
 			)}
 		</div>
 	)

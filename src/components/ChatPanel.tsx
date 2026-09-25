@@ -9,6 +9,7 @@ import { useSpeechRecognition } from '../lib/useSpeechRecognition'
 //   EVENT_MUTATING_TOOLS,
 // } from '../lib/queryCache'
 // import { EventCard, type EventRow } from './EventCard'
+import { EventCard, type EventRow as CardEventRow } from './EventCard'
 import { Mic, X } from 'lucide-react'
 import type { Message } from '../serverFn/types'
 import { sendChatFn } from '../serverFn/queries.functions'
@@ -267,13 +268,15 @@ function MessageList({
               </div>
             )}
             {message.role === 'tool_call' ? (
-              <pre className="text-[11px] text-[#666] bg-[#F5F5F3] rounded p-2 overflow-x-auto">
-                {`${message.tool}(${JSON.stringify(message.args)})`}
-              </pre>
+              <span className="inline-flex self-start items-center text-[9px] font-semibold uppercase tracking-[1px] text-[#666] border border-[#CBCCC9] rounded px-1.5 py-0.5">
+                {message.tool.replaceAll('_', ' ')}
+              </span>
             ) : message.role === 'tool_result' ? (
-              <pre className="text-[11px] text-[#666] bg-[#F5F5F3] rounded p-2 overflow-x-auto">
-                {JSON.stringify(message.result, null, 2)}
-              </pre>
+              <div className='flex flex-col gap-1'>
+                {(message.result as unknown as CardEventRow[]).map((row, i) => (
+                  <EventCard key={i} item={row} action={null} />
+                ))}
+              </div>
             ) : (
               <div className="text-[13px] text-[#111] whitespace-pre-wrap">
                 {message.text}

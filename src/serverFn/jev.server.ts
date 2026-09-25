@@ -1,5 +1,5 @@
 import { env } from 'cloudflare:workers'
-import { searchEvents } from '@/serverFn/date.server'
+import { createEvent, searchEvents, updateEvent } from '@/serverFn/date.server'
 import { jevPayload } from './prompt'
 import { dateCandidates } from './dates'
 
@@ -53,6 +53,7 @@ export type Answers = {
   create_events_begin: SearchEventsDate
   create_events_end: SearchEventsDate
   create_events_completed: CreateEventsCompleted
+  update_events_id: Answer<string>
   update_events_type: UpdateEventsType
   update_events_title: Answer<string>
   update_events_detail: Answer<string>
@@ -82,28 +83,29 @@ export const decisionModel = async (
     const filters = searchFilters(answers)
     console.log('search_events', filters)
     const rows = await searchEvents(userId, filters)
-    return toolPair('search_events', filters, rows)
+    return toolMessages('search_events', filters, rows)
   }
 
   if (answers.tool_choice.choice === 'create') {
     const args = createArgs(answers)
-    console.log('create_event', args)
-    // const rows = await createEvent(userId, { ...args, allDay: !args.begin || !String(args.begin).includes('T') })
-    return toolPair('create_event', args, [args] as unknown as EventRow[])
+    const { id } = await createEvent(userId, {
+      ...args,
+      allDay: !args.begin || !String(args.begin).includes('T'),
+    } as Parameters<typeof createEvent>[1])
+    return toolMessages('create_event', args, [{ id, ...args }] as unknown as EventRow[])
   }
 
   if (answers.tool_choice.choice === 'update') {
-    const args = updateArgs(answers)
-    console.log('update_event', args)
-    // const rows = await updateEvent(userId, args)
-    return toolPair('update_event', args, [args] as unknown as EventRow[])
+    const { id, ...args } = updateArgs(answers)
+    await updateEvent(userId, id, args as Parameters<typeof updateEvent>[2])
+    return toolMessages('update_event', args, [{ id, ...args }] as unknown as EventRow[])
   }
 
   // TODO: none branch
   return []
 }
 
-const toolPair = (
+const toolMessages = (
   tool: ToolCallMessage['tool'],
   args: Args,
   result: EventRow[],
@@ -131,14 +133,18 @@ const createArgs = (answers: Answers): Args =>
       detail: answers.create_events_detail.choice,
       begin: answers.create_events_begin.choice,
       end: answers.create_events_end.choice,
-      completed: answers.create_events_completed.choice,
-    }).filter(([, v]) => v !== 'none'),
+      completed:
+        answers.create_events_completed.choice === 'none'
+          ? undefined
+          : answers.create_events_completed.choice === 'true',
+    }).filter(([, v]) => v !== undefined && v !== 'none'),
   )
 
-const updateArgs = (answers: Answers): Args =>
+const updateArgs = (answers: Answers) => {
   // all fields optional: 'none' means keep the existing value - only include changed fields
-  Object.fromEntries(
+  const { id, ...rest } = Object.fromEntries(
     Object.entries({
+      id: answers.update_events_id.choice,
       type: answers.update_events_type.choice,
       title: answers.update_events_title.choice,
       detail: answers.update_events_detail.choice,
@@ -149,7 +155,9 @@ const updateArgs = (answers: Answers): Args =>
           ? undefined
           : answers.update_events_completed.choice === 'true',
     }).filter(([, v]) => v !== undefined && v !== 'none'),
-  )
+  ) as { id: number } & Args
+  return { id: id as number, ...rest }
+}
 
 const searchFilters = (answers: Answers): Args =>
   Object.fromEntries(
