@@ -1,56 +1,5 @@
-import * as chrono from 'chrono-node'
+import { dateCandidates, datetimeCandidates } from './dates'
 import { promptSpans } from './textSpans'
-
-const weekday = (d: Date) =>
-  [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-  ][d.getUTCDay()]
-
-const candidate = (d: Date) => {
-  const date = d.toISOString().slice(0, 10)
-  return { key: date, value: `${weekday(d)} ${date}` }
-}
-
-const euDateCandidates = (message: string) =>
-  [
-    ...message.matchAll(/\b(\d{1,2})[.-](\d{1,2})(?:[.-](\d{2,4}))?\b/g),
-  ].flatMap((m): { key: string; value: string }[] => {
-    const day = +m[1]
-    const month = +m[2]
-    if (day < 1 || day > 31 || month < 1 || month > 12) return []
-    const year = m[3]
-      ? +(m[3].length === 2 ? 2000 + +m[3] : m[3])
-      : new Date().getUTCFullYear()
-    const d = new Date(Date.UTC(year, month - 1, day))
-    if (d.getUTCDate() !== day || d.getUTCMonth() !== month - 1) return []
-    return [candidate(d)]
-  })
-
-export const dateCandidates = (message: string) =>
-  Object.fromEntries(
-    [
-      ...chrono.en.GB.parse(message).map((r) => candidate(r.start.date())),
-      ...euDateCandidates(message),
-    ].map((d) => [d.key, d.value]),
-  )
-
-const datetimeCandidates = (message: string) =>
-  Object.fromEntries(
-    chrono.en.GB.parse(message)
-      .filter((r) => r.start.isCertain('hour'))
-      .map((r) => {
-        const d = r.start.date()
-        const iso = d.toISOString()
-        const key = `${iso.slice(0, 10)}T${iso.slice(11, 16)}`
-        return [key, `${weekday(d)} ${key}`]
-      }),
-  )
 
 export const jevPayload = (messages: unknown) => {
   const prompt =
@@ -88,6 +37,7 @@ export const jevPayload = (messages: unknown) => {
       ## Information
       Today's date: ${d.toDateString()} ${d.toTimeString()} (UTC)
       'week' refers to a calendar week from Mo - Su
+      if the user asks about "this week" implying the future (upcoming, what's on), interpret it as the next 7 days from today - not the calendar week. Only use calendar week Mo - Su when the user refers to the past too (e.g. "what happened this week")
   `,
       },
       questions: {
@@ -114,12 +64,12 @@ export const searchChoices = (prompt: string) => ({
   search_events_type: {
     type: 'choice',
     instructions:
-      'search tool param: which item type does the user want to find?',
+      'search tool param: item type filter - this is optional, only pick a type if the user explicitly asks for that kind of item',
     criteria: {
-      event: 'a classic appointment / calendar entry with a start and end',
-      todo: 'a task or reminder, open or completed',
-      shopping: 'a shopping list item to buy',
-      none: 'no specific type mentioned - search all types',
+      event: 'user explicitly wants only appointments / calendar entries with a start and end',
+      todo: 'user explicitly wants only tasks or reminders',
+      shopping: 'user explicitly wants only shopping list items to buy',
+      none: 'no specific type asked for - return ALL types (events, todos and shopping), e.g. schedule questions like "what\'s happening this weekend" or "what\'s on today"',
     },
   },
   search_events_completed: {
@@ -135,7 +85,7 @@ export const searchChoices = (prompt: string) => ({
   search_events_date_from: {
     type: 'choice',
     instructions:
-      "search tool param: where does the search window start? Pick the option whose date matches the user's words. Today is in `context`.",
+      "search tool param: where does the search window start? Pick the option whose date matches the user's words. Today is in `context`. If the user asks about "this week" implying the future, pick 'today'. Only pick Monday if the user explicitly means the whole calendar week (including past days).",
     criteria: {
       ...dateCandidates(prompt),
       none: 'no date provided in prompt',
@@ -144,7 +94,7 @@ export const searchChoices = (prompt: string) => ({
   search_events_date_to: {
     type: 'choice',
     instructions:
-      "search tool param: where does the search window end? Pick the option whose date matches the user's words. Today is in `context`. For a single day mentioned, pick the same option for both start and end.",
+      "search tool param: where does the search window end? Pick the option whose date matches the user's words. Today is in `context`. For a single day mentioned, pick the same option for both start and end. For "this week" implying the future, pick 'today + 7 days'.",
     criteria: {
       ...dateCandidates(prompt),
       none: 'no date provided in prompt',
