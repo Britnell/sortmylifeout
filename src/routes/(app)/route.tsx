@@ -50,7 +50,7 @@ function RouteComponent() {
             🤜 Crush
           </span>
 
-          <nav className="flex gap-1">
+          <nav className="hidden sm:flex gap-1">
             <Link
               to={lastCalView}
               className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium ${isCal ? 'text-[#111]' : 'text-[#666]'}`}

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { Link, useRouterState } from '@tanstack/react-router'
 // OLD: TanStack AI chat — kept for reference
 // import { useChat, fetchServerSentEvents } from '@tanstack/ai-react'
 // import type { UIMessage } from '@tanstack/ai-react'
@@ -13,6 +14,9 @@ import { EventCard, type EventRow as CardEventRow } from './EventCard'
 import { Mic, X } from 'lucide-react'
 import type { Message } from '../serverFn/types'
 import { sendChatFn } from '../serverFn/queries.functions'
+import Icon from './Icon'
+import type { CalView } from './CalViewSwitcher'
+import { useLocalStorage } from '../lib/useLocalStorage'
 
 let nextId = 0
 const makeId = () => `msg-${Date.now()}-${nextId++}`
@@ -126,10 +130,19 @@ export function ChatPanel() {
     setExpanded(false)
   }
 
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const [lastCalView] = useLocalStorage<CalView>('cal-last-view', '/cal/month')
+  const isCal = pathname.startsWith('/cal')
+  const isTodo = pathname === '/todo'
+  const isShopping = pathname === '/shopping'
+
+  const navLinkClass = (active: boolean) =>
+    `grid place-items-center h-9 w-9 rounded-md transition-colors ${active ? 'bg-white text-[#111]' : 'text-[#666] hover:bg-white/50'}`
+
   return (
-    <div className="fixed bottom-3 right-3 z-50 pr-2 sm:bottom-4 sm:right-4">
+    <div className="fixed bottom-0 left-0 right-0 z-50 sm:bottom-4 sm:left-auto sm:right-4">
       <div
-        className={`rounded-xl overflow-hidden border border-[#CBCCC9] bg-[var(--primary)] shadow-2xl transition-[width] duration-200 max-w-[calc(100vw-1.5rem)] ${isActive ? 'w-[546px]' : 'w-[320px]'}`}
+        className={`rounded-t-xl overflow-hidden border border-[#CBCCC9] bg-[var(--primary)] shadow-2xl transition-[width] duration-200 sm:rounded-xl ${isActive ? 'sm:w-[546px]' : 'sm:w-[320px]'}`}
       >
         {expanded && hasMessages && (
           <MessageList
@@ -141,12 +154,21 @@ export function ChatPanel() {
           />
         )}
 
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col bg-[var(--primary)]"
-        >
-          {/* Mobile only: input gets its own top row */}
-          <div className="flex min-[500px]:hidden items-center px-2 pt-2 pb-0">
+        <form onSubmit={handleSubmit} className="flex items-center gap-1.5 p-2">
+          {/* Mobile only: nav links inline in the bar */}
+          <div className="flex items-center gap-0.5 sm:hidden">
+            <Link to={lastCalView} aria-label="Events" title="Events" className={navLinkClass(isCal)}>
+              <Icon name="calendar" className="text-[18px]" />
+            </Link>
+            <Link to="/todo" aria-label="Todos" title="Todos" className={navLinkClass(isTodo)}>
+              <Icon name="todo" className="text-[18px]" />
+            </Link>
+            <Link to="/shopping" aria-label="Shopping" title="Shopping" className={navLinkClass(isShopping)}>
+              <Icon name="shopping" className="text-[18px]" />
+            </Link>
+          </div>
+
+		    {/* Input fills remaining space */}
             <input
               type="search"
               value={input}
@@ -154,35 +176,20 @@ export function ChatPanel() {
               onFocus={handleFocus}
               onBlur={handleBlur}
               placeholder="Ask anything…"
-              className="flex-1 min-w-0 py-1.5 px-2.5 text-[13px] bg-white rounded-md focus:outline-none placeholder:text-[#111]/60 text-[#111]"
+              className={`flex-1 min-w-0 h-9 px-2.5 text-[13px] rounded-md focus:outline-none placeholder:text-[#111]/60 text-[#111] ${isActive ? 'bg-white' : 'bg-transparent'}`}
             />
-          </div>
 
-          {/* Bar: mic + (desktop: input) + send */}
-          <div className="flex items-center gap-1.5 p-2">
-            {/* Mic */}
+		    {/* Mic */}
             <button
               type="button"
               onClick={toggleListening}
-              className={`shrink-0 flex items-center justify-center w-9 h-9 rounded-md transition-colors order-2 min-[500px]:order-1 ${isListening ? 'bg-[#111] text-white' : 'text-[#111] hover:bg-white/50'}`}
+              className={`shrink-0 flex items-center justify-center w-9 h-9 rounded-md transition-colors ${isListening ? 'bg-[#111] text-white' : 'text-[#111] hover:bg-white/50'}`}
               aria-label={isListening ? 'Stop listening' : 'Voice input'}
             >
               <Mic size={18} strokeWidth={1.5} />
             </button>
 
-            {/* Desktop only: input fills remaining space */}
-            <input
-              type="search"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-              placeholder="Ask anything…"
-              className={`hidden min-[500px]:block flex-1 min-w-0 h-9 px-2.5 text-[13px] rounded-md focus:outline-none placeholder:text-[#111]/60 text-[#111] min-[500px]:order-2 ${isActive ? 'bg-white' : 'bg-transparent'}`}
-            />
-
-            {/* Send/Stop: last in bar */}
-            {isActive &&
+            {/* Send/Stop: last in bar */}            {isActive &&
               (isLoading ? (
                 <span className="shrink-0 px-3.5 py-1.5 text-xs bg-[#111] text-white rounded-full font-medium order-3 opacity-60">
                   …
@@ -196,8 +203,7 @@ export function ChatPanel() {
                   Send
                 </button>
               ))}
-          </div>
-        </form>
+		  </form>
       </div>
     </div>
   )
