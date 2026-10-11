@@ -27,6 +27,8 @@ export function ChatPanel() {
   const [input, setInput] = useState('')
   const [expanded, setExpanded] = useState(false)
   const [isInputFocused, setIsInputFocused] = useState(false)
+  const [mobileChatOpen, setMobileChatOpen] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
   // JEV agent (inactive):
   // const [messages, setMessages] = useState<Message[]>([])
   // const [isLoading, setIsLoading] = useState(false)
@@ -49,7 +51,11 @@ export function ChatPanel() {
     [],
   )
 
-  const { isListening, toggleListening } = useSpeechRecognition(
+  useEffect(() => {
+    if (mobileChatOpen) inputRef.current?.focus()
+  }, [mobileChatOpen])
+
+  const { isListening, toggleListening, stopListening } = useSpeechRecognition(
     () => input,
     setInput,
   )
@@ -139,6 +145,8 @@ export function ChatPanel() {
 
   const hasMessages = messages.length > 0
   const isActive = isInputFocused || input.trim().length > 0 || hasMessages
+  // Mobile: chat row stays hidden until opened by the user, or when a chat is live
+  const showChatRow = mobileChatOpen || isListening || (expanded && hasMessages)
 
   const handleNewChat = () => {
     setMessages([])
@@ -169,36 +177,29 @@ export function ChatPanel() {
           />
         )}
 
-        <form onSubmit={handleSubmit} className="flex items-center gap-1.5 p-2">
-          {/* Mobile only: nav links inline in the bar */}
-          <div className="flex items-center gap-0.5 sm:hidden">
-            <Link
-              to={lastCalView}
-              aria-label="Events"
-              title="Events"
-              className={navLinkClass(isCal)}
-            >
-              <Icon name="calendar" className="text-[18px]" />
-            </Link>
-            <Link
-              to="/todo"
-              aria-label="Todos"
-              title="Todos"
-              className={navLinkClass(isTodo)}
-            >
-              <Icon name="todo" className="text-[18px]" />
-            </Link>
-            <Link
-              to="/shopping"
-              aria-label="Shopping"
-              title="Shopping"
-              className={navLinkClass(isShopping)}
-            >
-              <Icon name="shopping" className="text-[18px]" />
-            </Link>
-          </div>
+        {/* Chat input row: above the nav bar on mobile, only row on desktop.
+            Hidden on mobile until the user taps "Ask anything…" or the mic,
+            or there is an active chat. */}
+        <form
+          onSubmit={handleSubmit}
+          className={`${showChatRow ? 'flex' : 'hidden'} sm:flex items-center gap-1.5 p-2`}
+        >
+          {/* Close: mobile only */}
+          <button
+            type="button"
+            onClick={() => {
+              stopListening()
+              setMobileChatOpen(false)
+              setExpanded(false)
+            }}
+            className="sm:hidden shrink-0 flex items-center justify-center w-9 h-9 rounded-md text-[#666] hover:bg-white/50 hover:text-[#111]"
+            aria-label="Close chat"
+          >
+            <X size={16} />
+          </button>
           {/* Input fills remaining space */}
           <input
+            ref={inputRef}
             type="search"
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -232,6 +233,57 @@ export function ChatPanel() {
               </button>
             ))}
         </form>
+
+        {/* Mobile bottom bar: nav links always; "Ask anything" fake input + mic
+            hidden once the chat row is open */}
+        <div className="flex items-center gap-0.5 p-2 sm:hidden">
+          <Link
+            to={lastCalView}
+            aria-label="Events"
+            title="Events"
+            className={navLinkClass(isCal)}
+          >
+            <Icon name="calendar" className="text-[18px]" />
+          </Link>
+          <Link
+            to="/todo"
+            aria-label="Todos"
+            title="Todos"
+            className={navLinkClass(isTodo)}
+          >
+            <Icon name="todo" className="text-[18px]" />
+          </Link>
+          <Link
+            to="/shopping"
+            aria-label="Shopping"
+            title="Shopping"
+            className={navLinkClass(isShopping)}
+          >
+            <Icon name="shopping" className="text-[18px]" />
+          </Link>
+          {!showChatRow && (
+            <>
+              <button
+                type="button"
+                onClick={() => setMobileChatOpen(true)}
+                className="flex-1 ml-6 min-w-0 h-9 px-2.5 text-left text-[13px] rounded-md placeholder:text-[#111]/60 text-[#111]/60"
+              >
+                Ask anything…
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileChatOpen(true)
+                  toggleListening()
+                }}
+                className={`shrink-0 flex items-center justify-center w-9 h-9 rounded-md transition-colors ${isListening ? 'bg-[#111] text-white' : 'text-[#111] hover:bg-white/50'}`}
+                aria-label={isListening ? 'Stop listening' : 'Voice input'}
+              >
+                <Mic size={18} strokeWidth={1.5} />
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )
