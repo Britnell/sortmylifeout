@@ -3,7 +3,13 @@ import { useState, useMemo, useRef, useEffect } from 'react'
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import CalendarMenuBar from '#/components/CalendarMenuBar'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  updateQueryCachesWithEvents,
+  removeEventsFromQueryCaches,
+  createdEventRow,
+  updatedEventRow,
+} from '#/lib/queryCache'
 import {
   searchEventsFn,
   createEventFn,
@@ -33,7 +39,7 @@ function RouteComponent() {
   const date_from = fmtDate(weeks[0][0])
   const date_to = fmtDate(weeks[weeks.length - 1][6])
 
-  const { data: events = [], refetch: invalidate } = useQuery({
+  const { data: events = [] } = useQuery({
     queryKey: ['searchEventsFn', date_from, date_to],
     queryFn: () => searchEventsFn({ data: { date_from, date_to } }),
   })
@@ -54,6 +60,8 @@ function RouteComponent() {
     setEditingEvent(null)
   }
 
+  const queryClient = useQueryClient()
+
   const createMutation = useMutation({
     mutationFn: (data: {
       begin?: string
@@ -63,8 +71,10 @@ function RouteComponent() {
       detail?: string
       type?: string
     }) => createEventFn({ data }),
-    onSuccess: () => {
-      invalidate()
+    onSuccess: (res, vars) => {
+      updateQueryCachesWithEvents(queryClient, [
+        createdEventRow((res as { id: number }).id, vars),
+      ])
       closeDialog()
     },
   })
@@ -80,16 +90,20 @@ function RouteComponent() {
       type?: string
       completed?: boolean | string
     }) => updateEventFn({ data }),
-    onSuccess: () => {
-      invalidate()
+    onSuccess: (_res, vars) => {
+      if (editingEvent) {
+        updateQueryCachesWithEvents(queryClient, [
+          updatedEventRow(editingEvent, vars),
+        ])
+      }
       closeDialog()
     },
   })
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteEventFn({ data: { id } }),
-    onSuccess: () => {
-      invalidate()
+    onSuccess: (_res, id) => {
+      removeEventsFromQueryCaches(queryClient, [id])
       closeDialog()
     },
   })

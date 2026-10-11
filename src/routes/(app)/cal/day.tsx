@@ -3,7 +3,13 @@ import { useState, useMemo } from 'react'
 import { AlarmClock, ChevronLeft, ChevronRight } from 'lucide-react'
 import { createFileRoute } from '@tanstack/react-router'
 import CalendarMenuBar from '#/components/CalendarMenuBar'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  updateQueryCachesWithEvents,
+  removeEventsFromQueryCaches,
+  createdEventRow,
+  updatedEventRow,
+} from '#/lib/queryCache'
 import {
   searchEventsFn,
   createEventFn,
@@ -86,7 +92,7 @@ function RouteComponent() {
     [selectedDate],
   )
 
-  const { data: events = [], refetch: invalidate } = useQuery({
+  const { data: events = [] } = useQuery({
     queryKey: ['searchEventsFn', queryRange.from, queryRange.to],
     queryFn: () =>
       searchEventsFn({
@@ -112,6 +118,8 @@ function RouteComponent() {
     setEditingEvent(null)
   }
 
+  const queryClient = useQueryClient()
+
   const createMutation = useMutation({
     mutationFn: (data: {
       begin?: string
@@ -121,8 +129,10 @@ function RouteComponent() {
       detail?: string
       type?: string
     }) => createEventFn({ data }),
-    onSuccess: () => {
-      invalidate()
+    onSuccess: (res, vars) => {
+      updateQueryCachesWithEvents(queryClient, [
+        createdEventRow((res as { id: number }).id, vars),
+      ])
       closeDialog()
     },
   })
@@ -138,16 +148,20 @@ function RouteComponent() {
       type?: string
       completed?: boolean | string
     }) => updateEventFn({ data }),
-    onSuccess: () => {
-      invalidate()
+    onSuccess: (_res, vars) => {
+      if (editingEvent) {
+        updateQueryCachesWithEvents(queryClient, [
+          updatedEventRow(editingEvent, vars),
+        ])
+      }
       closeDialog()
     },
   })
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteEventFn({ data: { id } }),
-    onSuccess: () => {
-      invalidate()
+    onSuccess: (_res, id) => {
+      removeEventsFromQueryCaches(queryClient, [id])
       closeDialog()
     },
   })
