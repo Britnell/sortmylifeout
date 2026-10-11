@@ -325,10 +325,15 @@ export default function CalendarEventDialog({
                     onChange={(e) => {
                       const next = e.target.checked
                       setAllDay(next)
-                      const bt = next ? '' : beginTime
+                      const bt = next
+                        ? ''
+                        : (beginTime ||
+                          `${String(new Date().getHours()).padStart(2, '0')}:00`)
                       if (next) {
                         setBeginTime('')
                         setEndTime('')
+                      } else {
+                        setBeginTime(bt)
                       }
                       const defaultDuration = next ? '0' : '30'
                       setDuration(defaultDuration)
@@ -435,18 +440,25 @@ export default function CalendarEventDialog({
             className="self-start h-7 px-3 rounded-md border border-[#DDDDD8] text-xs text-[#888] hover:bg-[#F2F3F0] hover:text-red-600"
             onClick={() => setShowDeleteConfirm(true)}
           >
-            Delete
+            Delete event
           </button>
         )}
 
-        <div className="flex gap-2">
-          <button
-            type="button"
-            className="flex-1 h-[38px] rounded-lg border border-[#DDDDD8] text-sm font-semibold text-[#666] hover:bg-[#F2F3F0]"
-            onClick={handleClose}
-          >
-            Cancel
-          </button>
+        {localEditing && showDeleteConfirm && (
+          <div className="self-start h-7 px-3 flex items-center text-xs text-[#888]">
+            Delete event:
+          </div>
+        )}
+
+        {!showDeleteConfirm && (
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="flex-1 h-[38px] rounded-lg border border-[#DDDDD8] text-sm font-semibold text-[#666] hover:bg-[#F2F3F0]"
+              onClick={handleClose}
+            >
+              Cancel
+            </button>
           <button
             type="submit"
             disabled={isPending}
@@ -458,10 +470,10 @@ export default function CalendarEventDialog({
                 : 'Creating...'
               : localEditing
                 ? 'Save'
-                : `Create ${itemType === 'todo' ? 'Todo' : 'Event'}`}
-          </button>
-        </div>
-
+              : `Create ${itemType === 'todo' ? 'Todo' : 'Event'}`}
+            </button>
+          </div>
+        )}
         {localEditing && showDeleteConfirm && (
           <div className="flex gap-2">
             <button

@@ -29,8 +29,7 @@ export default function Dialog({ children, isOpen, onClose, closeOnOutsideClick 
 	return (
 		<dialog
 			ref={dialogRef}
-			className={`backdrop:bg-black/15 p-0 rounded-xl shadow-[0_8px_24px_#11111126] border border-black/10 w-[448px] max-w-[calc(100vw-2rem)] text-[13px] duration-200 ease-out transition ${shown ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
-			style={{ marginLeft: '1.5rem', marginBottom: '1.5rem', marginTop: 'auto', marginRight: 'auto' }}
+			className={`backdrop:bg-black/15 p-0 rounded-xl shadow-[0_8px_24px_#11111126] border border-black/10 w-[448px] max-w-[calc(100vw-2rem)] text-[13px] duration-200 ease-out transition ${shown ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'} mt-auto mb-6 ml-6 mr-auto max-md:m-0 max-md:mt-auto max-md:w-full max-md:max-w-full max-md:rounded-none max-md:border-x-0 max-md:border-b-0`}
 			onClick={(e) => {
 				if (closeOnOutsideClick && e.target === dialogRef.current) onClose()
 			}}
