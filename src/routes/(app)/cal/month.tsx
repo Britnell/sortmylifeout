@@ -1,7 +1,7 @@
 import { localToday } from '@/lib/date'
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import CalendarMenuBar from '#/components/CalendarMenuBar'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
@@ -107,6 +107,16 @@ function RouteComponent() {
     setDialogOpen(true)
   }
 
+  const navigate = useNavigate()
+
+  const handleDayClick = (day: Date) => {
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      navigate({ to: '/cal/schedule', search: { date: fmtDate(day) } })
+    } else {
+      openCreate(fmtDate(day))
+    }
+  }
+
   const monthDate = new Date(
     today.getFullYear(),
     today.getMonth() + monthOffset,
@@ -184,7 +194,7 @@ function RouteComponent() {
                     setAnchorRect(rect)
                     setExpandedDay(fmtDate(day))
                   }}
-                  onCreate={() => openCreate(fmtDate(day))}
+                  onCreate={() => handleDayClick(day)}
                   onEdit={openEdit}
                 />
               ))}
