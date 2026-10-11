@@ -259,7 +259,7 @@ function RouteComponent() {
     <div>
       <CalendarMenuBar onAdd={openCreate} />
 
-      <div className="mb-2 flex items-center gap-4 border-y border-[#E7E8E5] py-2 px-2 md:px-4">
+      <div className="mb- flex items-center gap-4 border-y border-[#E7E8E5] py-2 px-2 md:px-4">
         <span className="flex items-center gap-1.5 text-base font-semibold text-[#111111]">
           <CalendarClock size={14} strokeWidth={2} className="shrink-0" />
           Schedule
@@ -298,6 +298,13 @@ function RouteComponent() {
 
       <div className="h-[calc(100vh-180px)] overflow-y-auto scroll-smooth pb-4">
         <div className="flex flex-col items-center gap-2 pt-1 px-2 md:px-4">
+          <button
+            className="md:hidden flex items-center gap-1.5 self-center px-3 py-1.5 text-[12px] font-medium bg-[var(--primary)] text-[var(--primary-foreground)] rounded-md"
+            onClick={() => openCreate(selectedDate)}
+          >
+            <Plus size={14} strokeWidth={2} />
+            Add event
+          </button>
           {days.map((d) => {
             const dateKey = fmtDate(d)
             const dayEvents = eventsByDate.get(dateKey) ?? []
