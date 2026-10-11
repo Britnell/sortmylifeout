@@ -1,5 +1,6 @@
 import { localToday } from '@/lib/date'
 import { useState } from 'react'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import { CalendarClock, ChevronLeft, ChevronRight } from 'lucide-react'
 import { createFileRoute } from '@tanstack/react-router'
 import CalendarMenuBar from '#/components/CalendarMenuBar'
@@ -15,6 +16,9 @@ import type { CalendarEvent } from '@/components/CalendarEventDialog'
 import { fmtDate, isSameDay } from '#/lib/date'
 
 export const Route = createFileRoute('/(app)/cal/schedule')({
+  validateSearch: (search: Record<string, unknown>) => ({
+    date: typeof search.date === 'string' ? search.date : undefined,
+  }),
   component: RouteComponent,
 })
 
@@ -58,7 +62,10 @@ function fmtHeadingDate(d: Date): string {
 }
 
 function RouteComponent() {
-  const [selectedDate, setSelectedDate] = useState(() => fmtDate(new Date()))
+  const { date: dateParam } = useSearch({ from: '/(app)/cal/schedule' })
+  const navigate = useNavigate()
+  const selectedDate = dateParam ?? fmtDate(new Date())
+  const setSelectedDate = (d: string) => navigate({ to: '/cal/schedule', search: { date: d } })
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
 
