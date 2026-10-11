@@ -160,8 +160,8 @@ function RouteComponent() {
       </div>
 
       {/* Month grid */}
-      <div className="flex flex-col gap-1 flex-1 min-h-[640px] px-2 md:px-4">
-        <div className="grid grid-cols-7 gap-1">
+      <div className="flex flex-col gap-0 md:gap-1 flex-1 min-h-[640px] px-px md:px-4">
+        <div className="grid grid-cols-7 gap-0 md:gap-1">
           {weekdays.map((w) => (
             <span
               key={w}
@@ -171,9 +171,9 @@ function RouteComponent() {
             </span>
           ))}
         </div>
-        <div className="flex flex-col gap-1 flex-1">
+        <div className="flex flex-col gap-0 md:gap-1 flex-1">
           {weeks.map((weekDays) => (
-            <div key={fmtDate(weekDays[0])} className="grid grid-cols-7 gap-1 flex-1">
+            <div key={fmtDate(weekDays[0])} className="grid grid-cols-7 gap-0 md:gap-1 flex-1">
               {weekDays.map((day) => (
                 <DayCell
                   key={fmtDate(day)}
@@ -248,7 +248,7 @@ function DayCell({
   const Chip = ({ ev }: { ev: CalendarEvent }) => (
     <button
       type="button"
-      className="flex items-center gap-1 w-full text-left px-1.5 py-[3px] rounded-[3px] bg-[#E7E8E5] hover:bg-[#D8D9D6]"
+      className="flex items-center gap-1 w-full text-left px-[2px] py-[2px] rounded-[3px] bg-[#E7E8E5] hover:bg-[#D8D9D6]"
       onClick={(e) => onEdit(ev, e)}
     >
       {ev.type === 'todo' && (
@@ -277,7 +277,7 @@ function DayCell({
 
   return (
     <div
-      className={`flex flex-col text-left w-full cursor-pointer rounded-md border ${inMonth ? 'bg-white' : 'bg-[#F2F3F0]'} border-[#CBCCC9]`}
+      className={`flex flex-col text-left w-full cursor-pointer border border-[#CBCCC9] rounded-none md:rounded-md ${inMonth ? 'bg-white' : 'bg-[#F2F3F0]'} border-[#CBCCC9]`}
       onClick={() => onCreate()}
     >
       <span
@@ -287,7 +287,7 @@ function DayCell({
       >
         {day.getDate()}
       </span>
-      <div className="flex flex-col gap-1 overflow-hidden flex-1 p-1.5">
+      <div className="flex flex-col gap-1 overflow-hidden flex-1 p-[2px]">
         {visible.map((ev) => (
           <EventItem key={ev.id} ev={ev} />
         ))}
