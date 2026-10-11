@@ -130,9 +130,7 @@ function RouteComponent() {
   return (
     <div className="">
       {/* Toolbar */}
-      <CalendarMenuBar
-				onAdd={() => openCreate(fmtDate(today))}
-			/>
+      <CalendarMenuBar onAdd={() => openCreate(fmtDate(today))} />
 
       {/* Date stepper row */}
       <div className="mb-2 flex items-center gap-4 border-y border-[#E7E8E5] py-2 px-2 md:px-4">
@@ -183,7 +181,10 @@ function RouteComponent() {
         </div>
         <div className="flex flex-col gap-0 md:gap-1 flex-1">
           {weeks.map((weekDays) => (
-            <div key={fmtDate(weekDays[0])} className="grid grid-cols-7 gap-0 md:gap-1 flex-1">
+            <div
+              key={fmtDate(weekDays[0])}
+              className="grid grid-cols-7 gap-0 md:gap-1 flex-1"
+            >
               {weekDays.map((day) => (
                 <DayCell
                   key={fmtDate(day)}
@@ -297,7 +298,7 @@ function DayCell({
       >
         {day.getDate()}
       </span>
-      <div className="flex flex-col gap-1 overflow-hidden flex-1 p-[2px]">
+      <div className="flex flex-col gap-1 overflow-hidden flex-1 p-[2px] md:p-1">
         {visible.map((ev) => (
           <EventItem key={ev.id} ev={ev} />
         ))}
