@@ -14,7 +14,7 @@ export default function CalendarMenuBar({
     <div className="flex flex-row items-center gap-2 md:gap-4 bg-white pl-2 md:pl-4 pr-2 py-2 w-full">
       <span className=" text-[16px] font-semibold text-[#111111]">Events</span>
       <CalViewSwitcher />
-      <div className="ml-auto flex items-center gap-2 md:gap-3.5">
+      <div className="ml-auto hidden sm:flex items-center gap-2 md:gap-3.5">
         <button
           className="hidden sm:inline-flex px-3 md:px-4 py-2 text-[13px] font-medium bg-[var(--primary)] text-[var(--primary-foreground)] rounded-md shrink-0"
           onClick={onAdd}

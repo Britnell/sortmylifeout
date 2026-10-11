@@ -25,7 +25,7 @@ export default function CalViewSwitcher() {
   }, [active.to])
 
   return (
-    <div className="ml-auto  sm:ml-0 flex bg-white border border-[#CBCCC9] rounded-lg overflow-hidden">
+    <div className="ml-auto flex bg-white border border-[#CBCCC9] rounded-lg overflow-hidden">
       {views.map((view) => {
         const isActive = view.to === active.to
         return (
