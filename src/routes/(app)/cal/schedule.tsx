@@ -1,7 +1,7 @@
 import { localToday } from '@/lib/date'
 import { useState } from 'react'
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { CalendarClock, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarClock, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { createFileRoute } from '@tanstack/react-router'
 import CalendarMenuBar from '#/components/CalendarMenuBar'
 import { useQuery, useMutation } from '@tanstack/react-query'
@@ -21,7 +21,6 @@ export const Route = createFileRoute('/(app)/cal/schedule')({
   }),
   component: RouteComponent,
 })
-
 
 function getRelativeLabel(d: Date, today: Date): string | null {
   if (isSameDay(d, today)) return 'Today'
@@ -65,8 +64,10 @@ function RouteComponent() {
   const { date: dateParam } = useSearch({ from: '/(app)/cal/schedule' })
   const navigate = useNavigate()
   const selectedDate = dateParam ?? fmtDate(new Date())
-  const setSelectedDate = (d: string) => navigate({ to: '/cal/schedule', search: { date: d } })
+  const setSelectedDate = (d: string) =>
+    navigate({ to: '/cal/schedule', search: { date: d } })
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [dialogDate, setDialogDate] = useState<string | null>(null)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
 
   const today = new Date()
@@ -142,8 +143,9 @@ function RouteComponent() {
     },
   })
 
-  const openCreate = () => {
+  const openCreate = (date?: string) => {
     setEditingEvent(null)
+    setDialogDate(date ?? null)
     setDialogOpen(true)
   }
 
@@ -188,12 +190,12 @@ function RouteComponent() {
             {done && (
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
                 <path
-					d="M20 6 9 17l-5-5"
-					stroke="#FFFFFF"
-					strokeWidth="3"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-				/>
+                  d="M20 6 9 17l-5-5"
+                  stroke="#FFFFFF"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             )}
           </button>
@@ -255,9 +257,7 @@ function RouteComponent() {
 
   return (
     <div>
-      <CalendarMenuBar
-				onAdd={openCreate}
-			/>
+      <CalendarMenuBar onAdd={openCreate} />
 
       <div className="mb-2 flex items-center gap-4 border-y border-[#E7E8E5] py-2 px-2 md:px-4">
         <span className="flex items-center gap-1.5 text-base font-semibold text-[#111111]">
@@ -287,9 +287,7 @@ function RouteComponent() {
           </button>
           <button
             className={`text-[12px] font-medium text-[#111111] ${
-              isSameDay(selectedDay, today)
-                ? 'bg-[var(--primary)]'
-                : 'bg-white'
+              isSameDay(selectedDay, today) ? 'bg-[var(--primary)]' : 'bg-white'
             } rounded-md px-3 py-1.5`}
             onClick={() => setSelectedDate(fmtDate(today))}
           >
@@ -327,9 +325,9 @@ function RouteComponent() {
                     </span>
                   </div>
                 )}
-                <div className="mt-2 bg-white rounded-lg border border-[#CBCCC9]">
+                <div className="bg-white rounded-lg border border-[#CBCCC9]">
                   <div
-                    className={`flex items-center justify-between rounded-t-lg px-3 py-2.5 ${isToday ? 'bg-[var(--primary)]' : 'bg-white border-b border-[#CBCCC9]'}`}
+                    className={`relative flex items-center rounded-t-lg px-3 py-2.5 ${isToday ? 'bg-[var(--primary)]' : 'bg-white border-b border-[#CBCCC9]'}`}
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold text-[#111111]">
@@ -342,9 +340,16 @@ function RouteComponent() {
                     {(() => {
                       const rel = getRelativeLabel(d, today)
                       return rel ? (
-                        <span className="text-xs text-[#666666]">{rel}</span>
+                        <span className="absolute inset-0 flex items-center justify-center pointer-events-none text-xs text-[#666666]">
+                          {rel}
+                        </span>
                       ) : null
                     })()}
+                    <Plus
+                      size={14}
+                      className="ml-auto cursor-pointer text-[#666666] hover:text-[#111111]"
+                      onClick={() => openCreate(dateKey)}
+                    />
                   </div>
                   <div className="flex flex-col gap-2 p-3">
                     {dayEvents.length === 0 ? (
@@ -369,7 +374,7 @@ function RouteComponent() {
         isOpen={dialogOpen}
         onClose={closeDialog}
         editingEvent={editingEvent}
-        selectedDate={selectedDate}
+        selectedDate={dialogDate ?? selectedDate}
         createMutation={createMutation}
         updateMutation={updateMutation}
         deleteMutation={deleteMutation}
