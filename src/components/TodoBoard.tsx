@@ -1,6 +1,6 @@
 import { localToday } from '@/lib/date'
 import { useEffect, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Square, CalendarClock, TriangleAlert, SquareCheck } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useLocalStorage } from '#/lib/useLocalStorage'
 import {
@@ -65,11 +65,12 @@ function fmtDayLabel(dateStr: string): string {
 const COLS: {
 	key: ColumnKey
 	title: string
+	Icon: typeof Square
 }[] = [
-	{ key: 'todo', title: 'To Do' },
-	{ key: 'scheduled', title: 'Scheduled' },
-	{ key: 'overdue', title: 'Overdue' },
-	{ key: 'finished', title: 'Finished' },
+	{ key: 'todo', title: 'To Do', Icon: Square },
+	{ key: 'scheduled', title: 'Scheduled', Icon: CalendarClock },
+	{ key: 'overdue', title: 'Overdue', Icon: TriangleAlert },
+	{ key: 'finished', title: 'Finished', Icon: SquareCheck },
 ]
 
 export default function TodoBoard() {
@@ -162,9 +163,6 @@ export default function TodoBoard() {
 			.sort((a, b) => byDone(a, b) || (a.begin ?? '').localeCompare(b.begin ?? '')),
 		finished: all.filter((e) => e.completed),
 	}
-
-	const stepCol = (dir: 1 | -1) =>
-		setColIdx((i) => (i + dir + COLS.length) % COLS.length)
 
 	const openNew = (column: ColumnKey) => {
 		setEditing({
@@ -314,50 +312,28 @@ export default function TodoBoard() {
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-4">
 					<h1 className="text-base font-semibold text-neutral-900">Todos</h1>
-					{/* Mobile: arrows + dropdown */}
-					<div className="flex items-center gap-1 md:hidden">
-						<button
-							className="flex items-center rounded-md p-1 text-[#666666] hover:bg-[#F0F0EE] hover:text-black"
-							aria-label="Previous column"
-							onClick={() => stepCol(-1)}
-						>
-							<ChevronLeft size={18} />
-						</button>
-						<select
-							className="px-3 py-2 text-[13px] font-medium border border-neutral-300 rounded-md bg-white text-neutral-700"
-							value={COLS[colIdx]?.key ?? 'todo'}
-							onChange={(e) => setColIdx(COLS.findIndex((c) => c.key === e.target.value))}
-						>
-							{COLS.map((col, i) => (
-								<option key={col.key} value={col.key}>
-									{col.title}
-								</option>
-							))}
-						</select>
-						<button
-							className="flex items-center rounded-md p-1 text-[#666666] hover:bg-[#F0F0EE] hover:text-black"
-							aria-label="Next column"
-							onClick={() => stepCol(1)}
-						>
-							<ChevronRight size={18} />
-						</button>
-					</div>
-					{/* Desktop: tabs */}
-					<div className="hidden md:flex items-center overflow-hidden rounded-lg border border-neutral-300 bg-white">
-						{COLS.map((col, i) => (
-							<button
-								key={col.key}
-								onClick={() => setColIdx(i)}
-								className={`flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium hover:text-neutral-900 ${
-									activeCol === col.key
-										? 'bg-[var(--primary)] text-neutral-900'
-										: 'text-neutral-500'
-								}`}
-							>								{col.title}
-							</button>
-						))}
-					</div>
-				</div>
+					{/* Tabs */}
+					<div className="flex items-center overflow-hidden rounded-lg border border-[#CBCCC9] bg-white">
+						{COLS.map((col, i) => {
+							const isActive = activeCol === col.key
+							return (
+								<button
+									key={col.key}
+									aria-label={col.title}
+									onClick={() => setColIdx(i)}
+									className={`flex items-center gap-1.5 px-3.5 md:px-4 py-2 text-[13px] font-medium transition-colors ${
+										isActive
+											? 'bg-[var(--primary)] text-[#111111]'
+											: 'text-[#666666] hover:bg-[#F2F3F0]'
+									}`}
+								>
+									<col.Icon size={14} strokeWidth={2} className="shrink-0" />
+									{/* Mobile: only the active tab shows its label */}
+									<span className={isActive ? '' : 'hidden md:inline'}>{col.title}</span>
+								</button>
+							)
+						})}
+					</div>				</div>
 				<button
 					onClick={() => openNew('todo')}
 					className="rounded-md bg-[var(--primary)] px-4 py-2 text-[13px] font-medium text-neutral-900"
