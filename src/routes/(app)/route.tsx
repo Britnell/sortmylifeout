@@ -23,7 +23,7 @@ function RouteComponent() {
   const { data, isPending } = authClient.useSession()
   const navigate = useNavigate()
   const location = useRouterState({ select: (s) => s.location })
-  const [sidebarOpen] = useAtom(sidebarOpenAtom)
+  const [sidebarOpen, setSidebarOpen] = useAtom(sidebarOpenAtom)
   const [lastCalView] = useLocalStorage<CalView>('cal-last-view', '/cal/month')
 
   const hideSidebar =
@@ -38,6 +38,17 @@ function RouteComponent() {
   useEffect(() => {
     if (!isPending && !data) navigate({ to: '/login' })
   }, [isPending, data])
+
+  // auto-close sidebar below md (768px)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)')
+    if (mq.matches) setSidebarOpen(false)
+    const onChange = (e: MediaQueryListEvent) => {
+      if (e.matches) setSidebarOpen(false)
+    }
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [setSidebarOpen])
 
   if (isPending || !data) return null
 
