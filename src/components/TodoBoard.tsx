@@ -4,422 +4,442 @@ import { Square, CalendarClock, TriangleAlert, SquareCheck } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useLocalStorage } from '#/lib/useLocalStorage'
 import {
-	searchEventsFn,
-	createEventFn,
-	updateEventFn,
-	deleteEventFn,
+  searchEventsFn,
+  createEventFn,
+  updateEventFn,
+  deleteEventFn,
 } from '@/serverFn/queries.functions'
 
 interface CalendarEvent {
-	id: number
-	user_id: string
-	type: string
-	all_day: number
-	begin: string | null
-	end: string | null
-	title: string
-	detail: string | null
-	completed: string | null
+  id: number
+  user_id: string
+  type: string
+  all_day: number
+  begin: string | null
+  end: string | null
+  title: string
+  detail: string | null
+  completed: string | null
 }
 
 interface EditState {
-	id: number | null // null = creating
-	type: string
-	column: ColumnKey
-	title: string
-	detail: string
-	date: string
-	time: string
+  id: number | null // null = creating
+  type: string
+  column: ColumnKey
+  title: string
+  detail: string
+  date: string
+  time: string
 }
 
 type ColumnKey = 'todo' | 'scheduled' | 'overdue' | 'finished'
 
 function weekAgo(): string {
-	const d = new Date()
-	d.setDate(d.getDate() - 6)
-	return d.toISOString().slice(0, 10)
+  const d = new Date()
+  d.setDate(d.getDate() - 6)
+  return d.toISOString().slice(0, 10)
 }
 
 function parseBegin(begin: string | null): { date: string; time: string } {
-	if (!begin) return { date: '', time: '' }
-	const [datePart, timePart = ''] = begin.split('T')
-	return { date: datePart, time: timePart.slice(0, 5) }
+  if (!begin) return { date: '', time: '' }
+  const [datePart, timePart = ''] = begin.split('T')
+  return { date: datePart, time: timePart.slice(0, 5) }
 }
 
 function buildBegin(date: string, time: string): string | undefined {
-	if (!date) return undefined
-	return time ? `${date}T${time}` : date
+  if (!date) return undefined
+  return time ? `${date}T${time}` : date
 }
 
 function fmtDayLabel(dateStr: string): string {
-	if (!dateStr || !/^\d{4}-\d{2}-\d{2}/.test(dateStr))
-		console.warn('[TodoBoard] invalid begin date:', JSON.stringify(dateStr))
-	const d = new Date(`${dateStr}T00:00:00`)
-	return d.toLocaleDateString('en-US', {
-		weekday: 'short',
-		month: 'short',
-		day: 'numeric',
-	})
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}/.test(dateStr))
+    console.warn('[TodoBoard] invalid begin date:', JSON.stringify(dateStr))
+  const d = new Date(`${dateStr}T00:00:00`)
+  return d.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  })
 }
 
 const COLS: {
-	key: ColumnKey
-	title: string
-	Icon: typeof Square
+  key: ColumnKey
+  title: string
+  Icon: typeof Square
 }[] = [
-	{ key: 'todo', title: 'To Do', Icon: Square },
-	{ key: 'scheduled', title: 'Scheduled', Icon: CalendarClock },
-	{ key: 'overdue', title: 'Overdue', Icon: TriangleAlert },
-	{ key: 'finished', title: 'Finished', Icon: SquareCheck },
+  { key: 'todo', title: 'To Do', Icon: Square },
+  { key: 'scheduled', title: 'Scheduled', Icon: CalendarClock },
+  { key: 'overdue', title: 'Overdue', Icon: TriangleAlert },
+  { key: 'finished', title: 'Finished', Icon: SquareCheck },
 ]
 
 export default function TodoBoard() {
-	const queryClient = useQueryClient()
-	const [editing, setEditing] = useState<EditState | null>(null)
-	const [colIdx, setColIdx] = useLocalStorage<number>('todoActiveCol', 0)
-	const colRefs = useRef<(HTMLDivElement | null)[]>([])
-	useEffect(() => {
-		colRefs.current[colIdx]?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' })
-	}, [colIdx])
-	const activeCol = COLS[colIdx]?.key ?? 'todo'
+  const queryClient = useQueryClient()
+  const [editing, setEditing] = useState<EditState | null>(null)
+  const [colIdx, setColIdx] = useLocalStorage<number>('todoActiveCol', 0)
+  const colRefs = useRef<(HTMLDivElement | null)[]>([])
+  useEffect(() => {
+    colRefs.current[colIdx]?.scrollIntoView({
+      behavior: 'smooth',
+      inline: 'start',
+      block: 'nearest',
+    })
+  }, [colIdx])
+  const activeCol = COLS[colIdx]?.key ?? 'todo'
 
-	const { data: events = [] } = useQuery({
-		queryKey: ['board', 'events'],
+  const { data: events = [] } = useQuery({
+    queryKey: ['board', 'events'],
     queryFn: () =>
-			searchEventsFn({
-				data: { completed_date: weekAgo() },
-			}),	})
+      searchEventsFn({
+        data: { completed_date: weekAgo() },
+      }),
+  })
 
-	const invalidate = () =>
-		queryClient.invalidateQueries({ queryKey: ['board'] })
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: ['board'] })
 
-	const createMutation = useMutation({
-		mutationFn: (e: EditState) =>
-			createEventFn({
-				data: {
-					title: e.title.trim(),
-					detail: e.detail.trim() || undefined,
-					type: 'todo',
-					begin: buildBegin(e.date, e.time),
-					allDay: !e.time,
-				},
-			}),
-		onSuccess: () => {
-			invalidate()
-			setEditing(null)
-		},
-	})
+  const createMutation = useMutation({
+    mutationFn: (e: EditState) =>
+      createEventFn({
+        data: {
+          title: e.title.trim(),
+          detail: e.detail.trim() || undefined,
+          type: 'todo',
+          begin: buildBegin(e.date, e.time),
+          allDay: !e.time,
+        },
+      }),
+    onSuccess: () => {
+      invalidate()
+      setEditing(null)
+    },
+  })
 
-	const updateMutation = useMutation({
-		mutationFn: (e: EditState) =>
-			updateEventFn({
-				data: {
-					id: e.id!,
-					title: e.title.trim(),
-					detail: e.detail.trim() || undefined,
-					begin: buildBegin(e.date, e.time),
-				},
-			}),
-		onSuccess: () => {
-			invalidate()
-			setEditing(null)
-		},
-	})
+  const updateMutation = useMutation({
+    mutationFn: (e: EditState) =>
+      updateEventFn({
+        data: {
+          id: e.id!,
+          title: e.title.trim(),
+          detail: e.detail.trim() || undefined,
+          begin: buildBegin(e.date, e.time),
+        },
+      }),
+    onSuccess: () => {
+      invalidate()
+      setEditing(null)
+    },
+  })
 
-	const deleteMutation = useMutation({
-		mutationFn: (id: number) => deleteEventFn({ data: { id } }),
-		onSuccess: () => {
-			invalidate()
-			setEditing(null)
-		},
-	})
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => deleteEventFn({ data: { id } }),
+    onSuccess: () => {
+      invalidate()
+      setEditing(null)
+    },
+  })
 
-	const toggleMutation = useMutation({
-		mutationFn: (ev: CalendarEvent) =>
-			updateEventFn({
-				data: { id: ev.id, completed: ev.completed ? false : localToday() },
-			}),
-		onSuccess: invalidate,
-	})
+  const toggleMutation = useMutation({
+    mutationFn: (ev: CalendarEvent) =>
+      updateEventFn({
+        data: { id: ev.id, completed: ev.completed ? false : localToday() },
+      }),
+    onSuccess: invalidate,
+  })
 
-	const all = events as CalendarEvent[]
-	const today = localToday()
-	// only today's completions appear in non-finished columns
-	const visible = all.filter((e) => !e.completed || e.completed.slice(0, 10) === today)
-	const scheduled = visible.filter(
-		(e) => e.type === 'todo' && e.begin && /^\d{4}-\d{2}-\d{2}/.test(e.begin),
-	)
-	const byDone = (a: CalendarEvent, b: CalendarEvent) =>
-		Number(!!a.completed) - Number(!!b.completed)
-	const cols: Record<ColumnKey, CalendarEvent[]> = {
-		todo: visible
-			.filter((e) => e.type === 'todo' && !e.begin)
-			.sort(byDone),
-		scheduled: scheduled
-			.filter((e) => (e.begin ?? '').slice(0, 10) >= today)
-			.sort((a, b) => byDone(a, b) || (a.begin ?? '').localeCompare(b.begin ?? '')),
-		overdue: scheduled
-			.filter((e) => (e.begin ?? '').slice(0, 10) < today)
-			.sort((a, b) => byDone(a, b) || (a.begin ?? '').localeCompare(b.begin ?? '')),
-		finished: all.filter((e) => e.completed),
-	}
+  const all = events as CalendarEvent[]
+  const today = localToday()
+  // only today's completions appear in non-finished columns
+  const visible = all.filter(
+    (e) => !e.completed || e.completed.slice(0, 10) === today,
+  )
+  const scheduled = visible.filter(
+    (e) => e.type === 'todo' && e.begin && /^\d{4}-\d{2}-\d{2}/.test(e.begin),
+  )
+  const byDone = (a: CalendarEvent, b: CalendarEvent) =>
+    Number(!!a.completed) - Number(!!b.completed)
+  const cols: Record<ColumnKey, CalendarEvent[]> = {
+    todo: visible.filter((e) => e.type === 'todo' && !e.begin).sort(byDone),
+    scheduled: scheduled
+      .filter((e) => (e.begin ?? '').slice(0, 10) >= today)
+      .sort(
+        (a, b) => byDone(a, b) || (a.begin ?? '').localeCompare(b.begin ?? ''),
+      ),
+    overdue: scheduled
+      .filter((e) => (e.begin ?? '').slice(0, 10) < today)
+      .sort(
+        (a, b) => byDone(a, b) || (a.begin ?? '').localeCompare(b.begin ?? ''),
+      ),
+    finished: all.filter((e) => e.completed),
+  }
 
-	const openNew = (column: ColumnKey) => {
-		setEditing({
-			id: null,
-			type: 'todo',
-			column,
-			title: '',
-			detail: '',
-			date: column === 'scheduled' || column === 'overdue' ? new Date().toISOString().split('T')[0] : '',
-			time: '',
-		})
-	}
+  const openNew = (column: ColumnKey) => {
+    setEditing({
+      id: null,
+      type: 'todo',
+      column,
+      title: '',
+      detail: '',
+      date:
+        column === 'scheduled' || column === 'overdue'
+          ? new Date().toISOString().split('T')[0]
+          : '',
+      time: '',
+    })
+  }
 
-	const save = (e: EditState) => {
-		if (!e.title.trim()) return
-		if (e.id === null) createMutation.mutate(e)
-		else updateMutation.mutate(e)
-	}
+  const save = (e: EditState) => {
+    if (!e.title.trim()) return
+    if (e.id === null) createMutation.mutate(e)
+    else updateMutation.mutate(e)
+  }
 
-	const renderEditor = (e: EditState) => (
-		<div className="rounded-md border border-neutral-800 bg-[#E7E8E5] p-3 space-y-2.5">
-			<input
-				autoFocus
-				type="text"
-				value={e.title}
-				onChange={(ev) => setEditing({ ...e, title: ev.target.value })}
-				onKeyDown={(ev) => ev.key === 'Enter' && save(e)}
-				placeholder="Title"
-				className="w-full bg-transparent border-b border-neutral-400 focus:border-neutral-800 outline-none py-0.5 text-sm font-medium"
-			/>
-			<input
-				type="text"
-				value={e.detail}
-				onChange={(ev) => setEditing({ ...e, detail: ev.target.value })}
-				placeholder="Description"
-				className="w-full bg-transparent border-b border-neutral-300 focus:border-neutral-800 outline-none py-0.5 text-sm text-neutral-600"
-			/>
-			<div className="flex gap-2">
-				<input
-					type="date"
-					value={e.date}
-					onChange={(ev) => setEditing({ ...e, date: ev.target.value })}
-					className="flex-1 min-w-0 rounded-md border border-neutral-300 px-2.5 py-1.5 font-mono text-xs"
-				/>
-				<input
-					type="time"
-					value={e.time}
-					onChange={(ev) => setEditing({ ...e, time: ev.target.value })}
-					className="w-18 rounded-md border border-neutral-300 px-2.5 py-1.5 font-mono text-xs"
-				/>
-				<button
-					onClick={() => setEditing({ ...e, date: '', time: '' })}
-					className="w-9 rounded-md border border-neutral-300 font-mono text-xs hover:bg-neutral-100"
-				>
-					✕
-				</button>
-			</div>
-			<div className="flex items-center justify-between">
-				<button
-					onClick={() => (e.id === null ? setEditing(null) : deleteMutation.mutate(e.id))}
-					className="text-xs font-medium text-[#D93C15]"
-				>
-					{e.id === null ? 'Cancel' : 'Delete'}
-				</button>
-				<div className="flex gap-2">
-					<button
-						onClick={() => setEditing(null)}
-						className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium hover:bg-neutral-100"
-					>
-						Cancel
-					</button>
-					<button
-						onClick={() => save(e)}
-						disabled={!e.title.trim()}
-						className="rounded-md bg-[var(--primary)] px-3 py-1.5 text-xs font-medium disabled:opacity-40"
-					>
-						Save
-					</button>
-				</div>
-			</div>
-		</div>
-	)
+  const renderEditor = (e: EditState) => (
+    <div className="rounded-md border border-neutral-800 bg-[#E7E8E5] p-3 space-y-2.5">
+      <input
+        autoFocus
+        type="text"
+        value={e.title}
+        onChange={(ev) => setEditing({ ...e, title: ev.target.value })}
+        onKeyDown={(ev) => ev.key === 'Enter' && save(e)}
+        placeholder="Title"
+        className="w-full bg-transparent border-b border-neutral-400 focus:border-neutral-800 outline-none py-0.5 text-sm font-medium"
+      />
+      <input
+        type="text"
+        value={e.detail}
+        onChange={(ev) => setEditing({ ...e, detail: ev.target.value })}
+        placeholder="Description"
+        className="w-full bg-transparent border-b border-neutral-300 focus:border-neutral-800 outline-none py-0.5 text-sm text-neutral-600"
+      />
+      <div className="flex gap-2">
+        <input
+          type="date"
+          value={e.date}
+          onChange={(ev) => setEditing({ ...e, date: ev.target.value })}
+          className="flex-1 min-w-0 rounded-md border border-neutral-300 px-2.5 py-1.5 font-mono text-xs"
+        />
+        <input
+          type="time"
+          value={e.time}
+          onChange={(ev) => setEditing({ ...e, time: ev.target.value })}
+          className="w-18 rounded-md border border-neutral-300 px-2.5 py-1.5 font-mono text-xs"
+        />
+        <button
+          onClick={() => setEditing({ ...e, date: '', time: '' })}
+          className="w-9 rounded-md border border-neutral-300 font-mono text-xs hover:bg-neutral-100"
+        >
+          ✕
+        </button>
+      </div>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() =>
+            e.id === null ? setEditing(null) : deleteMutation.mutate(e.id)
+          }
+          className="text-xs font-medium text-[#D93C15]"
+        >
+          {e.id === null ? 'Cancel' : 'Delete'}
+        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setEditing(null)}
+            className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium hover:bg-neutral-100"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => save(e)}
+            disabled={!e.title.trim()}
+            className="rounded-md bg-[var(--primary)] px-3 py-1.5 text-xs font-medium disabled:opacity-40"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 
-	const renderItem = (ev: CalendarEvent, column: ColumnKey) => {
-		if (editing?.id === ev.id) return renderEditor(editing)
-		const { time } = parseBegin(ev.begin)
-		return (
-			<div
-				key={ev.id}
-				onClick={() =>
-					setEditing({
-						id: ev.id,
-						type: ev.type,
-						column,
-						title: ev.title,
-						detail: ev.detail ?? '',
-						...parseBegin(ev.begin),
-					})
-				}
-				className="flex cursor-pointer items-center gap-3 rounded-md border border-neutral-300 px-3 py-2.5 hover:border-neutral-400"
-			>
-			<input
-				type="checkbox"
-				checked={!!ev.completed}
-				onClick={(e) => e.stopPropagation()}
-				onChange={() => toggleMutation.mutate(ev)}
-				className="h-3.5 w-3.5 shrink-0 accent-neutral-900"
-			/>
-				<span
-					className={`flex-1 min-w-0 truncate text-sm font-medium ${
-						ev.completed ? 'text-neutral-400 line-through' : 'text-neutral-900'
-					}`}
-				>
-					{ev.title}
-				</span>
-				{column === 'finished' && (
-					<span className="shrink-0 rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-neutral-500">
-						{ev.type}
-					</span>
-				)}
-				{(column === 'scheduled' || column === 'overdue') && time && (
-					<span className="shrink-0 font-mono text-[11px] text-neutral-500">
-						{time}
-					</span>
-				)}
-			</div>
-		)
-	}
+  const renderItem = (ev: CalendarEvent, column: ColumnKey) => {
+    if (editing?.id === ev.id) return renderEditor(editing)
+    const { time } = parseBegin(ev.begin)
+    return (
+      <div
+        key={ev.id}
+        onClick={() =>
+          setEditing({
+            id: ev.id,
+            type: ev.type,
+            column,
+            title: ev.title,
+            detail: ev.detail ?? '',
+            ...parseBegin(ev.begin),
+          })
+        }
+        className="flex cursor-pointer items-center gap-3 rounded-md border border-neutral-300 px-3 py-2.5 hover:border-neutral-400"
+      >
+        <input
+          type="checkbox"
+          checked={!!ev.completed}
+          onClick={(e) => e.stopPropagation()}
+          onChange={() => toggleMutation.mutate(ev)}
+          className="h-3.5 w-3.5 shrink-0 accent-neutral-900"
+        />
+        <span
+          className={`flex-1 min-w-0 truncate text-sm font-medium ${
+            ev.completed ? 'text-neutral-400 line-through' : 'text-neutral-900'
+          }`}
+        >
+          {ev.title}
+        </span>
+        {column === 'finished' && (
+          <span className="shrink-0 rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-neutral-500">
+            {ev.type}
+          </span>
+        )}
+        {(column === 'scheduled' || column === 'overdue') && time && (
+          <span className="shrink-0 font-mono text-[11px] text-neutral-500">
+            {time}
+          </span>
+        )}
+      </div>
+    )
+  }
 
-	// group scheduled/overdue by date
-	const groupByDate = (items: CalendarEvent[]) => {
-		const groups: { date: string; items: CalendarEvent[] }[] = []
-		for (const ev of items) {
-			const { date } = parseBegin(ev.begin)
-			const g = groups.find((x) => x.date === date)
-			if (g) g.items.push(ev)
-			else groups.push({ date, items: [ev] })
-		}
-		return groups
-	}
-	const scheduledGroups = groupByDate(cols.scheduled)
-	const overdueGroups = groupByDate(cols.overdue)
+  // group scheduled/overdue by date
+  const groupByDate = (items: CalendarEvent[]) => {
+    const groups: { date: string; items: CalendarEvent[] }[] = []
+    for (const ev of items) {
+      const { date } = parseBegin(ev.begin)
+      const g = groups.find((x) => x.date === date)
+      if (g) g.items.push(ev)
+      else groups.push({ date, items: [ev] })
+    }
+    return groups
+  }
+  const scheduledGroups = groupByDate(cols.scheduled)
+  const overdueGroups = groupByDate(cols.overdue)
 
-	return (
-		<div className="flex h-[calc(100vh-2.75rem)] flex-col gap-3 px-4 pt-4 pb-0">
-			{/* Toolbar */}
-			<div className="flex items-center justify-between">
-				<div className="flex items-center gap-4">
-					<h1 className="text-base font-semibold text-neutral-900">Todos</h1>
-					{/* Tabs */}
-					<div className="flex items-center overflow-hidden rounded-lg border border-[#CBCCC9] bg-white">
-						{COLS.map((col, i) => {
-							const isActive = activeCol === col.key
-							return (
-								<button
-									key={col.key}
-									aria-label={col.title}
-									onClick={() => setColIdx(i)}
-									className={`flex items-center gap-1.5 px-3.5 md:px-4 py-2 text-[13px] font-medium transition-colors ${
-										isActive
-											? 'bg-[var(--primary)] text-[#111111]'
-											: 'text-[#666666] hover:bg-[#F2F3F0]'
-									}`}
-								>
-									<col.Icon size={14} strokeWidth={2} className="shrink-0" />
-									{/* Mobile: only the active tab shows its label */}
-									<span className={isActive ? '' : 'hidden md:inline'}>{col.title}</span>
-								</button>
-							)
-						})}
-					</div>				</div>
-				<button
-					onClick={() => openNew('todo')}
-					className="rounded-md bg-[var(--primary)] px-4 py-2 text-[13px] font-medium text-neutral-900"
-				>
-					+ New
-				</button>
-			</div>
+  return (
+    <div className="flex h-[calc(100vh-2.75rem)] flex-col gap-3 px-4 pt-4 pb-0">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h1 className="text-base font-semibold text-neutral-900">Todos</h1>
+          {/* Tabs */}
+          <div className="flex items-center overflow-hidden rounded-lg border border-[#CBCCC9] bg-white">
+            {COLS.map((col, i) => {
+              const isActive = activeCol === col.key
+              return (
+                <button
+                  key={col.key}
+                  aria-label={col.title}
+                  onClick={() => setColIdx(i)}
+                  className={`flex items-center gap-1.5 px-3.5 md:px-4 py-2 text-[13px] font-medium transition-colors ${
+                    isActive
+                      ? 'bg-[var(--primary)] text-[#111111]'
+                      : 'text-[#666666] hover:bg-[#F2F3F0]'
+                  }`}
+                >
+                  <col.Icon size={14} strokeWidth={2} className="shrink-0" />
+                  {/* Mobile: only the active tab shows its label */}
+                  <span className={isActive ? '' : 'hidden md:inline'}>
+                    {col.title}
+                  </span>
+                </button>
+              )
+            })}
+          </div>{' '}
+        </div>
+        <button
+          onClick={() => openNew('todo')}
+          className="rounded-md bg-[var(--primary)] px-4 py-2 text-[13px] font-medium text-neutral-900"
+        >
+          + New
+        </button>
+      </div>
 
-			{/* Board */}
-			<div className="flex min-h-0 flex-1 gap-3 pb-4 overflow-x-auto">
-				{COLS.map((col) => {
-					const isEditingNew = editing?.id === null && editing?.column === col.key
-					const items = cols[col.key]
-					return (
-					<div
-						key={col.key}
-						ref={(el) => {
-							colRefs.current[COLS.indexOf(col)] = el
-						}}
-						className={`flex h-fit w-full shrink-0 flex-col  gap-2.5 rounded-lg border border-neutral-300 bg-white md:w-95 ${
-							activeCol === col.key ? 'flex' : 'hidden md:flex'
-						} ${items.length ? 'min-h-64' : ''}`}
-					>
-							{/* Column header */}
-							<div
-								className={`m-0 flex items-center rounded-t-lg border-b px-3 py-3 ${
-									activeCol === col.key
-										? 'bg-[var(--primary)] border-b-[var(--primary)]'
-										: 'bg-white border-b-neutral-300'
-									}`}
-							>
-								<span className="flex items-center gap-1.5 text-sm font-semibold text-neutral-900">
-										{col.title}
-								</span>
-									<span className="ml-auto text-sm opacity-60">
-											{items.length} items
-									</span>
-									<button
-										onClick={() => openNew(col.key)}
-										className="ml-auto py-2 px-3  hover:bg-amber-300 flex h-5 w-5 items-center justify-center rounded bg-transparent text-sm font-bold leading-none text-neutral-900 hover:text-neutral-600"
-										aria-label={`Add to ${col.title}`}
-									>
-										+
-									</button>
-							</div>
-							{/* Items */}
-							<div
-								className="flex flex-col gap-2 px-3 pb-3 overflow-auto max-h-[calc(100vh-14rem)]"
-								onClick={(e) => {
-									if (e.target === e.currentTarget && isEditingNew) setEditing(null)
-								}}
-							>
-							{col.key === 'scheduled'
-								? scheduledGroups.flatMap((g) => [
-										<span
-											key={g.date}
-											className="text-[13px] font-semibold leading-tight text-neutral-900"
-										>
-											{fmtDayLabel(g.date)}
-										</span>,
-										...g.items.map((ev) => renderItem(ev, col.key)),
-									])
-							: col.key === 'overdue'
-								? overdueGroups.flatMap((g) => [
-										<span
-											key={g.date}
-											className="text-[13px] font-semibold leading-tight text-neutral-900"
-										>
-											{fmtDayLabel(g.date)}
-										</span>,
-										...g.items.map((ev) => renderItem(ev, col.key)),
-									])
-							: items.map((ev) => renderItem(ev, col.key))}								{isEditingNew && renderEditor(editing!)}
-							{items.length === 0 && !isEditingNew && (
-								<button
-									onClick={() => openNew(col.key)}
-									className="rounded-md border border-dashed border-neutral-300 py-2.5 text-xs text-neutral-400 hover:border-neutral-400 hover:text-neutral-600"
-								>
-									+ Add item
-								</button>
-							)}
-															</div>
-						</div>
-					)
-				})}
-			</div>
-		</div>
-	)
+      {/* Board */}
+      <div className="flex min-h-0 flex-1 gap-3 pb-4 overflow-x-auto">
+        {COLS.map((col) => {
+          const isEditingNew =
+            editing?.id === null && editing?.column === col.key
+          const items = cols[col.key]
+          return (
+            <div
+              key={col.key}
+              ref={(el) => {
+                colRefs.current[COLS.indexOf(col)] = el
+              }}
+              className={`flex h-fit w-full shrink-0 flex-col  gap-2.5 rounded-lg border border-neutral-300 bg-white md:w-95 ${
+                activeCol === col.key ? 'flex' : 'hidden md:flex'
+              } ${items.length ? 'min-h-64' : ''}`}
+            >
+              {/* Column header */}
+              <div
+                className={`m-0 flex items-center rounded-t-lg border-b px-3 py-3 ${
+                  activeCol === col.key
+                    ? 'bg-[var(--primary)] border-b-[var(--primary)]'
+                    : 'bg-white border-b-neutral-300'
+                }`}
+              >
+                <span className="flex items-center gap-1.5 text-sm font-semibold text-neutral-900">
+                  {col.title}
+                </span>
+                <span className="ml-auto text-sm opacity-60">
+                  {items.length} items
+                </span>
+                <button
+                  onClick={() => openNew(col.key)}
+                  className="ml-auto py-2 px-3  hover:bg-amber-300 flex h-5 w-5 items-center justify-center rounded bg-transparent text-sm font-bold leading-none text-neutral-900 hover:text-neutral-600"
+                  aria-label={`Add to ${col.title}`}
+                >
+                  +
+                </button>
+              </div>
+              {/* Items */}
+              <div
+                className="flex flex-col gap-2 px-3 pb-3 overflow-auto max-h-[calc(100vh-14rem)]"
+                onClick={(e) => {
+                  if (e.target === e.currentTarget && isEditingNew)
+                    setEditing(null)
+                }}
+              >
+                {col.key === 'scheduled'
+                  ? scheduledGroups.flatMap((g) => [
+                      <span
+                        key={g.date}
+                        className="text-[13px] font-semibold leading-tight text-neutral-900"
+                      >
+                        {fmtDayLabel(g.date)}
+                      </span>,
+                      ...g.items.map((ev) => renderItem(ev, col.key)),
+                    ])
+                  : col.key === 'overdue'
+                    ? overdueGroups.flatMap((g) => [
+                        <span
+                          key={g.date}
+                          className="text-[13px] font-semibold leading-tight text-neutral-900"
+                        >
+                          {fmtDayLabel(g.date)}
+                        </span>,
+                        ...g.items.map((ev) => renderItem(ev, col.key)),
+                      ])
+                    : items.map((ev) => renderItem(ev, col.key))}{' '}
+                {isEditingNew && renderEditor(editing!)}
+                {items.length === 0 && !isEditingNew && (
+                  <button
+                    onClick={() => openNew(col.key)}
+                    className="rounded-md border border-dashed border-neutral-300 py-2.5 text-xs text-neutral-400 hover:border-neutral-400 hover:text-neutral-600"
+                  >
+                    + Add item
+                  </button>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
 }

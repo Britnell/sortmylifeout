@@ -182,317 +182,323 @@ export default function CalendarEventDialog({
         </div>
 
         <div className="flex flex-col gap-[13px] p-[13px]">
-        <div className="flex gap-[3px] h-[38px] rounded-lg bg-[#F2F3F0] p-[3px]">
-          <label
-            className={`flex-1 rounded-md flex items-center justify-center text-[13px] font-medium cursor-pointer transition-colors ${itemType === 'event' ? 'bg-white text-[#111]' : 'text-[#888]'}`}
-          >
-            <input
-              type="radio"
-              name="itemType"
-              value="event"
-              checked={itemType === 'event'}
-              onChange={() => setItemType('event')}
-              className="sr-only"
-            />
-            Event
-          </label>
-          <label
-            className={`flex-1 rounded-md flex items-center justify-center text-[13px] font-medium cursor-pointer transition-colors ${itemType === 'todo' ? 'bg-white text-[#111]' : 'text-[#888]'}`}
-          >
-            <input
-              type="radio"
-              name="itemType"
-              value="todo"
-              checked={itemType === 'todo'}
-              onChange={() => setItemType('todo')}
-              className="sr-only"
-            />
-            Todo
-          </label>
-        </div>
-
-        {localEditing?.type === 'todo' && (
-          <label className="flex items-center gap-1.5 text-[13px] cursor-pointer text-[#666]">
-            <input
-              type="checkbox"
-              checked={!!localEditing.completed}
-              onChange={(e) =>
-                setLocalEditing({
-                  ...localEditing,
-                  completed: e.target.checked ? localToday() : null,
-                })
-              }
-            />
-            Completed
-          </label>
-        )}
-
-        <div>
-          <label className="block mb-1.5 text-xs font-medium text-[#666]">Title</label>
-          <input
-            type="text"
-            name="title"
-            required
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-            placeholder="Title"
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1.5 text-xs font-medium text-[#666]">
-            {itemType === 'todo' ? 'Date' : 'Start'}
-          </label>
-          {itemType === 'todo' && !beginDate ? (
-            <button
-              type="button"
-              className="w-full h-9 rounded-lg border border-[#DDDDD8] text-[13px] text-[#666] hover:bg-[#F2F3F0]"
-              onClick={() => {
-                const today = fmtDate(new Date())
-                setBeginDate(today)
-                setEndDate(today)
-              }}
+          <div className="flex gap-[3px] h-[38px] rounded-lg bg-[#F2F3F0] p-[3px]">
+            <label
+              className={`flex-1 rounded-md flex items-center justify-center text-[13px] font-medium cursor-pointer transition-colors ${itemType === 'event' ? 'bg-white text-[#111]' : 'text-[#888]'}`}
             >
-              + Add date
-            </button>
-          ) : (
-            <div className="flex gap-2 items-center">
-              <div className="flex flex-1 gap-2">
-                <input
-                  type="date"
-                  value={beginDate}
-                  required={itemType === 'event'}
-                  className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                onChange={(e) => {
-                  setBeginDate(e.target.value)
-                  if (duration) {
-                    const { endDate: ed, endTime: et } = computeEnd(
-                      e.target.value,
-                      beginTime,
-                      allDay,
-                      duration,
-                    )
-                    setEndDate(ed)
-                    setEndTime(et)
-                  }
-                }}
+              <input
+                type="radio"
+                name="itemType"
+                value="event"
+                checked={itemType === 'event'}
+                onChange={() => setItemType('event')}
+                className="sr-only"
               />
-                <input
-                  ref={timeRef}
-                  type="time"
-                  value={beginTime}
-                  className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                onChange={(e) => {
-                  const t = e.target.value
-                  setBeginTime(t)
-                  if (t) {
-                    setAllDay(false)
-                    const dur = duration === '0' ? '30' : duration
-                    setDuration(dur)
-                    const { endDate: ed, endTime: et } = computeEnd(
-                      beginDate,
-                      t,
-                      false,
-                      dur,
-                    )
-                    setEndDate(ed)
-                    setEndTime(et)
-                  }
-                }}
+              Event
+            </label>
+            <label
+              className={`flex-1 rounded-md flex items-center justify-center text-[13px] font-medium cursor-pointer transition-colors ${itemType === 'todo' ? 'bg-white text-[#111]' : 'text-[#888]'}`}
+            >
+              <input
+                type="radio"
+                name="itemType"
+                value="todo"
+                checked={itemType === 'todo'}
+                onChange={() => setItemType('todo')}
+                className="sr-only"
               />
-              </div>
-              {itemType === 'todo' && (
-                <button
-                  type="button"
-                  className="flex-1 h-9 px-3 rounded-lg border border-[#DDDDD8] hover:bg-[#F2F3F0] text-[13px] font-medium text-[#666]"
-                  onClick={() => {
-                    setBeginDate('')
-                    setBeginTime('')
-                    setEndDate('')
-                    setEndTime('')
-                    setDuration('0')
-                  }}
-                >
-                  ✕
-                </button>
-              )}
-              {itemType === 'event' && (
-                <label className="ml-3 flex-1 flex items-center gap-1.5 text-[13px] cursor-pointer text-[#666]">
-                  <input
-                    type="checkbox"
-                    checked={allDay}
-                    onChange={(e) => {
-                      const next = e.target.checked
-                      setAllDay(next)
-                      const bt = next
-                        ? ''
-                        : (beginTime ||
-                          `${String(new Date().getHours()).padStart(2, '0')}:00`)
-                      if (next) {
-                        setBeginTime('')
-                        setEndTime('')
-                      } else {
-                        setBeginTime(bt)
-                      }
-                      const defaultDuration = next ? '0' : '30'
-                      setDuration(defaultDuration)
-                      const { endDate: ed, endTime: et } = computeEnd(
-                        beginDate,
-                        bt,
-                        next,
-                        defaultDuration,
-                      )
-                      setEndDate(ed)
-                      setEndTime(et)
-                    }}
-                  />
-                  All day
-                </label>
-              )}
-            </div>
-          )}
-        </div>
+              Todo
+            </label>
+          </div>
 
-        {itemType !== 'todo' && (
+          {localEditing?.type === 'todo' && (
+            <label className="flex items-center gap-1.5 text-[13px] cursor-pointer text-[#666]">
+              <input
+                type="checkbox"
+                checked={!!localEditing.completed}
+                onChange={(e) =>
+                  setLocalEditing({
+                    ...localEditing,
+                    completed: e.target.checked ? localToday() : null,
+                  })
+                }
+              />
+              Completed
+            </label>
+          )}
+
           <div>
-            <div className="flex">
-              <div className="flex flex-1 gap-2">
-                <label className="block text-xs font-medium text-[#666] mb-1.5">End</label>
-              </div>
-              <label className="ml-3 flex-1 block text-xs font-medium text-[#666] mb-1.5">Duration</label>
-            </div>
-            <div className="flex gap-2 items-end flex-nowrap">
-              <div className="flex flex-1 gap-2">
-                <input
-                  type="date"
-                  value={endDate}
-                  required={itemType === 'event'}
-                  className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  onChange={(e) => {
-                    setEndDate(e.target.value)
-                    setDuration('')
-                  }}
-                />
-                <input
-                  type="time"
-                  value={endTime}
-                  required={itemType === 'event' && !allDay}
-                  className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  onChange={(e) => {
-                    setEndTime(e.target.value)
-                    setDuration('')
-                  }}
-                />
-              </div>
-              <div className="ml-3 flex-1">
-                <select
-                  value={duration}
-                  className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] text-[#888] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  onChange={(e) => {
-                  const d = e.target.value
-                  setDuration(d)
-                  if (d) {
-                    const { endDate: ed, endTime: et } = computeEnd(
-                      beginDate,
-                      beginTime,
-                      allDay,
-                      d,
-                    )
-                    setEndDate(ed)
-                    setEndTime(et)
-                  }
+            <label className="block mb-1.5 text-xs font-medium text-[#666]">
+              Title
+            </label>
+            <input
+              type="text"
+              name="title"
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] bg-white text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              placeholder="Title"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1.5 text-xs font-medium text-[#666]">
+              {itemType === 'todo' ? 'Date' : 'Start'}
+            </label>
+            {itemType === 'todo' && !beginDate ? (
+              <button
+                type="button"
+                className="w-full h-9 rounded-lg border border-[#DDDDD8] text-[13px] text-[#666] hover:bg-[#F2F3F0]"
+                onClick={() => {
+                  const today = fmtDate(new Date())
+                  setBeginDate(today)
+                  setEndDate(today)
                 }}
               >
-                <option value="">— manual —</option>
-                {allDay ? (
-                  <>
-                    <option value="0">1 day</option>
-                    <option value="1">2 days</option>
-                    <option value="2">3 days</option>
-                    <option value="6">1 week</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="15">15 min</option>
-                    <option value="30">30 min</option>
-                    <option value="60">1 hour</option>
-                  </>
+                + Add date
+              </button>
+            ) : (
+              <div className="flex gap-2 items-center">
+                <div className="flex flex-1 gap-2">
+                  <input
+                    type="date"
+                    value={beginDate}
+                    required={itemType === 'event'}
+                    className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    onChange={(e) => {
+                      setBeginDate(e.target.value)
+                      if (duration) {
+                        const { endDate: ed, endTime: et } = computeEnd(
+                          e.target.value,
+                          beginTime,
+                          allDay,
+                          duration,
+                        )
+                        setEndDate(ed)
+                        setEndTime(et)
+                      }
+                    }}
+                  />
+                  <input
+                    ref={timeRef}
+                    type="time"
+                    value={beginTime}
+                    className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    onChange={(e) => {
+                      const t = e.target.value
+                      setBeginTime(t)
+                      if (t) {
+                        setAllDay(false)
+                        const dur = duration === '0' ? '30' : duration
+                        setDuration(dur)
+                        const { endDate: ed, endTime: et } = computeEnd(
+                          beginDate,
+                          t,
+                          false,
+                          dur,
+                        )
+                        setEndDate(ed)
+                        setEndTime(et)
+                      }
+                    }}
+                  />
+                </div>
+                {itemType === 'todo' && (
+                  <button
+                    type="button"
+                    className="flex-1 h-9 px-3 rounded-lg border border-[#DDDDD8] hover:bg-[#F2F3F0] text-[13px] font-medium text-[#666]"
+                    onClick={() => {
+                      setBeginDate('')
+                      setBeginTime('')
+                      setEndDate('')
+                      setEndTime('')
+                      setDuration('0')
+                    }}
+                  >
+                    ✕
+                  </button>
                 )}
-                </select>
+                {itemType === 'event' && (
+                  <label className="ml-3 flex-1 flex items-center gap-1.5 text-[13px] cursor-pointer text-[#666]">
+                    <input
+                      type="checkbox"
+                      checked={allDay}
+                      onChange={(e) => {
+                        const next = e.target.checked
+                        setAllDay(next)
+                        const bt = next
+                          ? ''
+                          : beginTime ||
+                            `${String(new Date().getHours()).padStart(2, '0')}:00`
+                        if (next) {
+                          setBeginTime('')
+                          setEndTime('')
+                        } else {
+                          setBeginTime(bt)
+                        }
+                        const defaultDuration = next ? '0' : '30'
+                        setDuration(defaultDuration)
+                        const { endDate: ed, endTime: et } = computeEnd(
+                          beginDate,
+                          bt,
+                          next,
+                          defaultDuration,
+                        )
+                        setEndDate(ed)
+                        setEndTime(et)
+                      }}
+                    />
+                    All day
+                  </label>
+                )}
+              </div>
+            )}
+          </div>
+
+          {itemType !== 'todo' && (
+            <div>
+              <div className="flex">
+                <div className="flex flex-1 gap-2">
+                  <label className="block text-xs font-medium text-[#666] mb-1.5">
+                    End
+                  </label>
+                </div>
+                <label className="ml-3 flex-1 block text-xs font-medium text-[#666] mb-1.5">
+                  Duration
+                </label>
+              </div>
+              <div className="flex gap-2 items-end flex-nowrap">
+                <div className="flex flex-1 gap-2">
+                  <input
+                    type="date"
+                    value={endDate}
+                    required={itemType === 'event'}
+                    className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    onChange={(e) => {
+                      setEndDate(e.target.value)
+                      setDuration('')
+                    }}
+                  />
+                  <input
+                    type="time"
+                    value={endTime}
+                    required={itemType === 'event' && !allDay}
+                    className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    onChange={(e) => {
+                      setEndTime(e.target.value)
+                      setDuration('')
+                    }}
+                  />
+                </div>
+                <div className="ml-3 flex-1">
+                  <select
+                    value={duration}
+                    className="w-full h-9 px-3 rounded-lg border border-[#DDDDD8] text-[13px] text-[#888] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    onChange={(e) => {
+                      const d = e.target.value
+                      setDuration(d)
+                      if (d) {
+                        const { endDate: ed, endTime: et } = computeEnd(
+                          beginDate,
+                          beginTime,
+                          allDay,
+                          d,
+                        )
+                        setEndDate(ed)
+                        setEndTime(et)
+                      }
+                    }}
+                  >
+                    <option value="">— manual —</option>
+                    {allDay ? (
+                      <>
+                        <option value="0">1 day</option>
+                        <option value="1">2 days</option>
+                        <option value="2">3 days</option>
+                        <option value="6">1 week</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="15">15 min</option>
+                        <option value="30">30 min</option>
+                        <option value="60">1 hour</option>
+                      </>
+                    )}
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <textarea
-          name="detail"
-          rows={3}
-          value={detail}
-          onChange={(e) => setDetail(e.target.value)}
-          className="w-full px-3 py-2.5 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] resize-none placeholder:text-[#AAA]"
-          placeholder="Description"
-        />
+          <textarea
+            name="detail"
+            rows={3}
+            value={detail}
+            onChange={(e) => setDetail(e.target.value)}
+            className="w-full px-3 py-2.5 rounded-lg border border-[#DDDDD8] text-[13px] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] resize-none placeholder:text-[#AAA]"
+            placeholder="Description"
+          />
 
-        {localEditing && !showDeleteConfirm && (
-          <button
-            type="button"
-            className="self-start h-7 px-3 rounded-md border border-[#DDDDD8] text-xs text-[#888] hover:bg-[#F2F3F0] hover:text-red-600"
-            onClick={() => setShowDeleteConfirm(true)}
-          >
-            Delete event
-          </button>
-        )}
-
-        {localEditing && showDeleteConfirm && (
-          <div className="self-start h-7 px-3 flex items-center text-xs text-[#888]">
-            Delete event:
-          </div>
-        )}
-
-        {!showDeleteConfirm && (
-          <div className="flex gap-2">
+          {localEditing && !showDeleteConfirm && (
             <button
               type="button"
-              className="flex-1 h-[38px] rounded-lg border border-[#DDDDD8] text-sm font-semibold text-[#666] hover:bg-[#F2F3F0]"
-              onClick={handleClose}
+              className="self-start h-7 px-3 rounded-md border border-[#DDDDD8] text-xs text-[#888] hover:bg-[#F2F3F0] hover:text-red-600"
+              onClick={() => setShowDeleteConfirm(true)}
             >
-              Cancel
+              Delete event
             </button>
-          <button
-            type="submit"
-            disabled={isPending}
-            className="flex-1 h-[38px] rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold text-sm hover:opacity-90 disabled:opacity-50"
-          >
-            {isPending
-              ? localEditing
-                ? 'Saving...'
-                : 'Creating...'
-              : localEditing
-                ? 'Save'
-              : `Create ${itemType === 'todo' ? 'Todo' : 'Event'}`}
-            </button>
-          </div>
-        )}
-        {localEditing && showDeleteConfirm && (
-          <div className="flex gap-2">
-            <button
-              type="button"
-              className="flex-1 h-[38px] rounded-lg border border-[#DDDDD8] text-[13px] font-semibold text-[#666] hover:bg-[#F2F3F0]"
-              onClick={() => setShowDeleteConfirm(false)}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="flex-1 h-[38px] rounded-lg border border-red-500 text-red-500 font-semibold text-sm hover:bg-red-50 disabled:opacity-50"
-              disabled={deleteMutation.isPending}
-              onClick={() => deleteMutation.mutate(localEditing.id)}
-            >
-              {deleteMutation.isPending ? 'Deleting...' : 'Yes, delete'}
-            </button>
-          </div>
-        )}
+          )}
+
+          {localEditing && showDeleteConfirm && (
+            <div className="self-start h-7 px-3 flex items-center text-xs text-[#888]">
+              Delete event:
+            </div>
+          )}
+
+          {!showDeleteConfirm && (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="flex-1 h-[38px] rounded-lg border border-[#DDDDD8] text-sm font-semibold text-[#666] hover:bg-[#F2F3F0]"
+                onClick={handleClose}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isPending}
+                className="flex-1 h-[38px] rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold text-sm hover:opacity-90 disabled:opacity-50"
+              >
+                {isPending
+                  ? localEditing
+                    ? 'Saving...'
+                    : 'Creating...'
+                  : localEditing
+                    ? 'Save'
+                    : `Create ${itemType === 'todo' ? 'Todo' : 'Event'}`}
+              </button>
+            </div>
+          )}
+          {localEditing && showDeleteConfirm && (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="flex-1 h-[38px] rounded-lg border border-[#DDDDD8] text-[13px] font-semibold text-[#666] hover:bg-[#F2F3F0]"
+                onClick={() => setShowDeleteConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="flex-1 h-[38px] rounded-lg border border-red-500 text-red-500 font-semibold text-sm hover:bg-red-50 disabled:opacity-50"
+                disabled={deleteMutation.isPending}
+                onClick={() => deleteMutation.mutate(localEditing.id)}
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Yes, delete'}
+              </button>
+            </div>
+          )}
         </div>
       </form>
     </Dialog>

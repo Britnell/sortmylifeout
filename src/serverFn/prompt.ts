@@ -2,16 +2,15 @@ import { dateCandidates, datetimeCandidates } from './dates'
 import { promptSpans } from './textSpans'
 
 export const jevPayload = (messages: unknown) => {
-  const prompt =
-    ([...(messages as { role: string; text?: string }[])]
-      .reverse()
-      .find((m) => m.role === 'user')?.text ?? '') as string
+  const prompt = ([...(messages as { role: string; text?: string }[])]
+    .reverse()
+    .find((m) => m.role === 'user')?.text ?? '') as string
   const d = new Date()
 
   return {
-      state: {
-        messages,
-        context: `A calendar + todo app in sqlite
+    state: {
+      messages,
+      context: `A calendar + todo app in sqlite
       we track all items in one events table: events, todos, shopping
 
       # 'event' table
@@ -39,26 +38,26 @@ export const jevPayload = (messages: unknown) => {
       'week' refers to a calendar week from Mo - Su
       if the user asks about "this week" implying the future (upcoming, what's on), interpret it as the next 7 days from today - not the calendar week. Only use calendar week Mo - Su when the user refers to the past too (e.g. "what happened this week")
   `,
-      },
-      questions: {
-        tool_choice: {
-          type: 'choice',
-          instructions:
-            "which tool can be used to fulfil the user's latest request? taking into account the conversation",
-          criteria: {
-            create: 'create tool - to create a new event / todo item',
-            search:
-              'search tool - search the calendar database for events / todos / shopping items',
-            update:
-              'update tool - update one or many calendar items to update their fields',
-            none: 'there is no tool to help answer the query appropriately',
-          },
+    },
+    questions: {
+      tool_choice: {
+        type: 'choice',
+        instructions:
+          "which tool can be used to fulfil the user's latest request? taking into account the conversation",
+        criteria: {
+          create: 'create tool - to create a new event / todo item',
+          search:
+            'search tool - search the calendar database for events / todos / shopping items',
+          update:
+            'update tool - update one or many calendar items to update their fields',
+          none: 'there is no tool to help answer the query appropriately',
         },
-        ...searchChoices(prompt),
-        ...createChoices(prompt),
-        ...updateChoices(prompt),
       },
-    }
+      ...searchChoices(prompt),
+      ...createChoices(prompt),
+      ...updateChoices(prompt),
+    },
+  }
 }
 
 export const searchChoices = (prompt: string) => ({
@@ -67,7 +66,8 @@ export const searchChoices = (prompt: string) => ({
     instructions:
       'search tool param: item type filter - this is optional, only pick a type if the user explicitly asks for that kind of item',
     criteria: {
-      event: 'user explicitly wants only appointments / calendar entries with a start and end',
+      event:
+        'user explicitly wants only appointments / calendar entries with a start and end',
       todo: 'user explicitly wants only tasks or reminders',
       shopping: 'user explicitly wants only shopping list items to buy',
       none: 'no specific type asked for - return ALL types (events, todos and shopping), e.g. schedule questions like "what\'s happening this weekend" or "what\'s on today"',
@@ -105,9 +105,7 @@ export const searchChoices = (prompt: string) => ({
 
 // candidate title options: use spans as both key and value (keys must be unique)
 const titleCandidates = (prompt: string) =>
-  Object.fromEntries(
-    promptSpans(prompt).map((s) => [s, s]),
-  )
+  Object.fromEntries(promptSpans(prompt).map((s) => [s, s]))
 
 // update tool params: ALL optional - 'none' means keep the existing value.
 // Only pick a value when the user explicitly wants to change/update that field.
@@ -120,7 +118,7 @@ export const updateChoices = (prompt: string) => ({
       event: 'change it to a classic appointment / calendar entry',
       todo: 'change it to a task or reminder',
       shopping: 'change it to a shopping list item',
-      none: "type change not asked for - keep the previous value",
+      none: 'type change not asked for - keep the previous value',
     },
   },
   update_events_title: {
@@ -129,7 +127,7 @@ export const updateChoices = (prompt: string) => ({
       "update tool param, OPTIONAL: only if the user explicitly wants a new title/renames it, otherwise 'none' to keep the existing title. Pick the option that best matches what the user calls the thing - short, no dates/times, no filler words.",
     criteria: {
       ...titleCandidates(prompt),
-      none: "no title change asked for - keep the previous value",
+      none: 'no title change asked for - keep the previous value',
     },
   },
   update_events_detail: {
@@ -138,7 +136,7 @@ export const updateChoices = (prompt: string) => ({
       "update tool param, OPTIONAL: only if the user explicitly gives new extra info / address / links, otherwise 'none' to keep the existing detail. Echo it exactly as the option value.",
     criteria: {
       ...titleCandidates(prompt),
-      none: "no detail change asked for - keep the previous value",
+      none: 'no detail change asked for - keep the previous value',
     },
   },
   update_events_begin: {
@@ -148,7 +146,7 @@ export const updateChoices = (prompt: string) => ({
     criteria: {
       ...datetimeCandidates(prompt),
       ...dateCandidates(prompt),
-      none: "no new start given - keep the previous value",
+      none: 'no new start given - keep the previous value',
     },
   },
   update_events_end: {
@@ -158,17 +156,17 @@ export const updateChoices = (prompt: string) => ({
     criteria: {
       ...datetimeCandidates(prompt),
       ...dateCandidates(prompt),
-      none: "no new end given - keep the previous value",
+      none: 'no new end given - keep the previous value',
     },
   },
   update_events_completed: {
     type: 'choice',
     instructions:
-      'update tool param, OPTIONAL: only if the user explicitly says to mark it done or to reopen it, otherwise \'none\' to keep the current status.',
+      "update tool param, OPTIONAL: only if the user explicitly says to mark it done or to reopen it, otherwise 'none' to keep the current status.",
     criteria: {
       true: 'user says mark it as done / completed',
       false: 'user says reopen it / mark as not done',
-      none: "completed status not mentioned - keep the previous value",
+      none: 'completed status not mentioned - keep the previous value',
     },
   },
 })
@@ -217,7 +215,7 @@ export const createChoices = (prompt: string) => ({
   create_events_end: {
     type: 'choice',
     instructions:
-      "create tool param: when does the item end? For a single-day item pick the same date. Timed events need a time here too.",
+      'create tool param: when does the item end? For a single-day item pick the same date. Timed events need a time here too.',
     criteria: {
       ...datetimeCandidates(prompt),
       ...dateCandidates(prompt),
@@ -226,8 +224,7 @@ export const createChoices = (prompt: string) => ({
   },
   create_events_completed: {
     type: 'choice',
-    instructions:
-      'create tool param: is the item already completed/done?',
+    instructions: 'create tool param: is the item already completed/done?',
     criteria: {
       true: 'user says it is already done / completed',
       false: 'item is open / not yet done (the default)',

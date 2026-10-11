@@ -4,7 +4,13 @@ import { jevPayload } from './prompt'
 import { dateCandidates } from './dates'
 
 export { dateCandidates }
-import type { Args, EventRow, Messages, ToolCallMessage, ToolResultMessage } from './types'
+import type {
+  Args,
+  EventRow,
+  Messages,
+  ToolCallMessage,
+  ToolResultMessage,
+} from './types'
 
 export const jev = ({
   state,
@@ -12,7 +18,7 @@ export const jev = ({
 }: {
   state: object
   questions: object
-}): Promise<JevResult|string> =>
+}): Promise<JevResult | string> =>
   fetch('https://api.typesafe.ai/v1/systemone', {
     method: 'POST',
     headers: {
@@ -92,13 +98,17 @@ export const decisionModel = async (
       ...args,
       allDay: !args.begin || !String(args.begin).includes('T'),
     } as Parameters<typeof createEvent>[1])
-    return toolMessages('create_event', args, [{ id, ...args }] as unknown as EventRow[])
+    return toolMessages('create_event', args, [
+      { id, ...args },
+    ] as unknown as EventRow[])
   }
 
   if (answers.tool_choice.choice === 'update') {
     const { id, ...args } = updateArgs(answers)
     await updateEvent(userId, id, args as Parameters<typeof updateEvent>[2])
-    return toolMessages('update_event', args, [{ id, ...args }] as unknown as EventRow[])
+    return toolMessages('update_event', args, [
+      { id, ...args },
+    ] as unknown as EventRow[])
   }
 
   // TODO: none branch

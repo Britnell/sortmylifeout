@@ -217,7 +217,8 @@ export async function createEvent(
       end: data.end || null,
       title: data.title,
       detail: data.detail || null,
-      completed: data.completed !== undefined ? toCompletedDate(data.completed) : null,
+      completed:
+        data.completed !== undefined ? toCompletedDate(data.completed) : null,
     })
     .execute()
 

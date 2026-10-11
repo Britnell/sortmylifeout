@@ -35,7 +35,6 @@ function RouteComponent() {
   const isTodo = location.pathname === '/todo'
   const isShopping = location.pathname === '/shopping'
 
-
   useEffect(() => {
     if (!isPending && !data) navigate({ to: '/login' })
   }, [isPending, data])
@@ -87,15 +86,15 @@ function RouteComponent() {
             }
             className="grid place-items-center px-2 text-[20px] text-[var(--primary-foreground)]"
           >
-            <Icon name={location.pathname === '/profile' ? 'chevron' : 'hamburger'} />
+            <Icon
+              name={location.pathname === '/profile' ? 'chevron' : 'hamburger'}
+            />
           </Link>
         </header>
 
         <div className="flex flex-1">
           {/* Main content */}
-          <main className="flex-1 min-w-0">
-            {data && <Outlet />}
-          </main>
+          <main className="flex-1 min-w-0">{data && <Outlet />}</main>
 
           {/* Right sidebar */}
           <aside

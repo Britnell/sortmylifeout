@@ -1,6 +1,9 @@
 import { useState, useRef } from 'react'
 
-export function useSpeechRecognition(getText: () => string, setText: (v: string) => void) {
+export function useSpeechRecognition(
+  getText: () => string,
+  setText: (v: string) => void,
+) {
   const [isListening, setIsListening] = useState(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
   const voiceBaseRef = useRef('')
@@ -11,7 +14,8 @@ export function useSpeechRecognition(getText: () => string, setText: (v: string)
   }
 
   const startListening = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognition) {
       console.error('SpeechRecognition not supported in this browser')
       return

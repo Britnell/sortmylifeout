@@ -23,7 +23,8 @@ const itemSchema = {
     },
     completed: {
       type: 'boolean',
-      description: 'Required for todo/shopping (default false). Omit for events.',
+      description:
+        'Required for todo/shopping (default false). Omit for events.',
     },
   },
   required: ['type', 'title'],
@@ -39,7 +40,8 @@ export function createCreateEventTool(userId: string) {
       properties: {
         items: {
           type: 'array',
-          description: 'Array of rows to create. Must contain at least one item.',
+          description:
+            'Array of rows to create. Must contain at least one item.',
           items: itemSchema,
         },
       },
@@ -89,10 +91,6 @@ export function createCreateEventTool(userId: string) {
       ),
     )
 
-    return db
-      .selectFrom('event')
-      .selectAll()
-      .where('id', 'in', ids)
-      .execute()
+    return db.selectFrom('event').selectAll().where('id', 'in', ids).execute()
   })
 }

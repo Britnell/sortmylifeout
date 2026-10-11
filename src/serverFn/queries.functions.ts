@@ -1,7 +1,12 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getSessionUser } from '../lib/auth'
 import { db } from '../lib/db'
-import { createEvent, deleteEvent, updateEvent, searchEvents } from './date.server'
+import {
+  createEvent,
+  deleteEvent,
+  updateEvent,
+  searchEvents,
+} from './date.server'
 import { sendChat } from './chat.server'
 import type { Messages } from './types'
 
@@ -14,7 +19,15 @@ export const getSessionFn = createServerFn({ method: 'GET' }).handler(
 
 export const createEventFn = createServerFn({ method: 'POST' })
   .inputValidator(
-    (d: { begin?: string; allDay: boolean; end?: string; title: string; detail?: string; type?: string; completed?: boolean | string }) => d,
+    (d: {
+      begin?: string
+      allDay: boolean
+      end?: string
+      title: string
+      detail?: string
+      type?: string
+      completed?: boolean | string
+    }) => d,
   )
   .handler(async ({ data }) => {
     const user = await getSessionUser()
@@ -24,7 +37,16 @@ export const createEventFn = createServerFn({ method: 'POST' })
 
 export const updateEventFn = createServerFn({ method: 'POST' })
   .inputValidator(
-    (d: { id: number; begin?: string; allDay?: boolean; end?: string | null; title?: string; detail?: string; type?: string; completed?: boolean | string }) => d,
+    (d: {
+      id: number
+      begin?: string
+      allDay?: boolean
+      end?: string | null
+      title?: string
+      detail?: string
+      type?: string
+      completed?: boolean | string
+    }) => d,
   )
   .handler(async ({ data }) => {
     const user = await getSessionUser()
@@ -56,17 +78,21 @@ export const updateUserFn = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const user = await getSessionUser()
     if (!user) throw new Error('Unauthorized')
-    const updates: Record<string, unknown> = { updatedAt: Math.floor(Date.now() / 1000) }
+    const updates: Record<string, unknown> = {
+      updatedAt: Math.floor(Date.now() / 1000),
+    }
     if (data.name !== undefined) updates.name = data.name
     if (data.phone !== undefined) updates.phone = data.phone
-    await db.updateTable('user').set(updates).where('id', '=', user.id).execute()
+    await db
+      .updateTable('user')
+      .set(updates)
+      .where('id', '=', user.id)
+      .execute()
     return { ok: true }
   })
 
 export const sendChatFn = createServerFn({ method: 'POST' })
-  .inputValidator(
-    (d: { messages: unknown[] }) => d as { messages: Messages },
-  )
+  .inputValidator((d: { messages: unknown[] }) => d as { messages: Messages })
   .handler(async ({ data }) => {
     const user = await getSessionUser()
     if (!user) throw new Error('Unauthorized')
@@ -75,7 +101,12 @@ export const sendChatFn = createServerFn({ method: 'POST' })
 
 export const searchEventsFn = createServerFn({ method: 'GET' })
   .inputValidator(
-    (d: { date_from?: string; date_to?: string; type?: string; completed?: boolean }) => d,
+    (d: {
+      date_from?: string
+      date_to?: string
+      type?: string
+      completed?: boolean
+    }) => d,
   )
   .handler(async ({ data }) => {
     const user = await getSessionUser()

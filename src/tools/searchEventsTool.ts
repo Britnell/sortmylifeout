@@ -40,7 +40,15 @@ export function createSearchEventsTool(userId: string) {
       required: ['rows', 'rowCount'],
     },
   }).server(async (args) => {
-    const rows = await searchEvents(userId, args as { type?: string; completed?: boolean; date_from?: string; date_to?: string })
+    const rows = await searchEvents(
+      userId,
+      args as {
+        type?: string
+        completed?: boolean
+        date_from?: string
+        date_to?: string
+      },
+    )
     return { rows, rowCount: rows.length }
   })
 }

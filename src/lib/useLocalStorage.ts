@@ -1,35 +1,35 @@
 import { useState, useCallback } from 'react'
 
 export function useLocalStorage<T extends string | number | boolean>(
-	key: string,
-	initialValue: T,
+  key: string,
+  initialValue: T,
 ): [T, (value: T | ((prev: T) => T)) => void] {
-	const [storedValue, setStoredValue] = useState<T>(() => {
-		if (typeof window === 'undefined') return initialValue
-		try {
-			const item = localStorage.getItem(key)
-			return item !== null ? (JSON.parse(item) as T) : initialValue
-		} catch {
-			return initialValue
-		}
-	})
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    if (typeof window === 'undefined') return initialValue
+    try {
+      const item = localStorage.getItem(key)
+      return item !== null ? (JSON.parse(item) as T) : initialValue
+    } catch {
+      return initialValue
+    }
+  })
 
-	const setValue = useCallback(
-		(value: T | ((prev: T) => T)) => {
-		setStoredValue((prev) => {
-			const nextValue = value instanceof Function ? value(prev) : value
-			try {
-				if (typeof window !== 'undefined') {
-					localStorage.setItem(key, JSON.stringify(nextValue))
-				}
-			} catch {
-					/* storage unavailable */
-				}
-				return nextValue
-			})
-		},
-		[key],
-	)
+  const setValue = useCallback(
+    (value: T | ((prev: T) => T)) => {
+      setStoredValue((prev) => {
+        const nextValue = value instanceof Function ? value(prev) : value
+        try {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(key, JSON.stringify(nextValue))
+          }
+        } catch {
+          /* storage unavailable */
+        }
+        return nextValue
+      })
+    },
+    [key],
+  )
 
-	return [storedValue, setValue]
+  return [storedValue, setValue]
 }

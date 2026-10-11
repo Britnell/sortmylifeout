@@ -58,9 +58,10 @@ export function ChatPanel() {
   const queryClient = useQueryClient()
   const lastHandledToolCallId = useRef<string | null>(null)
 
-  const { messages, sendMessage, setMessages, isLoading /* , stop */ } = useChat({
-    connection: fetchServerSentEvents('/api/chat'),
-  })
+  const { messages, sendMessage, setMessages, isLoading /* , stop */ } =
+    useChat({
+      connection: fetchServerSentEvents('/api/chat'),
+    })
 
   useEffect(() => {
     const lastMessage = messages[messages.length - 1]
@@ -171,53 +172,66 @@ export function ChatPanel() {
         <form onSubmit={handleSubmit} className="flex items-center gap-1.5 p-2">
           {/* Mobile only: nav links inline in the bar */}
           <div className="flex items-center gap-0.5 sm:hidden">
-            <Link to={lastCalView} aria-label="Events" title="Events" className={navLinkClass(isCal)}>
+            <Link
+              to={lastCalView}
+              aria-label="Events"
+              title="Events"
+              className={navLinkClass(isCal)}
+            >
               <Icon name="calendar" className="text-[18px]" />
             </Link>
-            <Link to="/todo" aria-label="Todos" title="Todos" className={navLinkClass(isTodo)}>
+            <Link
+              to="/todo"
+              aria-label="Todos"
+              title="Todos"
+              className={navLinkClass(isTodo)}
+            >
               <Icon name="todo" className="text-[18px]" />
             </Link>
-            <Link to="/shopping" aria-label="Shopping" title="Shopping" className={navLinkClass(isShopping)}>
+            <Link
+              to="/shopping"
+              aria-label="Shopping"
+              title="Shopping"
+              className={navLinkClass(isShopping)}
+            >
               <Icon name="shopping" className="text-[18px]" />
             </Link>
           </div>
-
-		    {/* Input fills remaining space */}
-            <input
-              type="search"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-              placeholder="Ask anything…"
-              className={`flex-1 min-w-0 h-9 px-2.5 text-[13px] rounded-md focus:outline-none placeholder:text-[#111]/60 text-[#111] ${isActive ? 'bg-white' : 'bg-transparent'}`}
-            />
-
-		    {/* Mic */}
-            <button
-              type="button"
-              onClick={toggleListening}
-              className={`shrink-0 flex items-center justify-center w-9 h-9 rounded-md transition-colors ${isListening ? 'bg-[#111] text-white' : 'text-[#111] hover:bg-white/50'}`}
-              aria-label={isListening ? 'Stop listening' : 'Voice input'}
-            >
-              <Mic size={18} strokeWidth={1.5} />
-            </button>
-
-            {/* Send/Stop: last in bar */}            {isActive &&
-              (isLoading ? (
-                <span className="shrink-0 px-3.5 py-1.5 text-xs bg-[#111] text-white rounded-full font-medium order-3 opacity-60">
-                  …
-                </span>
-              ) : (
-                <button
-                  type="submit"
-                  disabled={!input.trim()}
-                  className="shrink-0 px-3.5 py-1.5 text-xs bg-white text-[#111] rounded-full disabled:opacity-30 hover:opacity-80 transition-opacity font-medium order-3"
-                >
-                  Send
-                </button>
-              ))}
-		  </form>
+          {/* Input fills remaining space */}
+          <input
+            type="search"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            placeholder="Ask anything…"
+            className={`flex-1 min-w-0 h-9 px-2.5 text-[13px] rounded-md focus:outline-none placeholder:text-[#111]/60 text-[#111] ${isActive ? 'bg-white' : 'bg-transparent'}`}
+          />
+          {/* Mic */}
+          <button
+            type="button"
+            onClick={toggleListening}
+            className={`shrink-0 flex items-center justify-center w-9 h-9 rounded-md transition-colors ${isListening ? 'bg-[#111] text-white' : 'text-[#111] hover:bg-white/50'}`}
+            aria-label={isListening ? 'Stop listening' : 'Voice input'}
+          >
+            <Mic size={18} strokeWidth={1.5} />
+          </button>
+          {/* Send/Stop: last in bar */}{' '}
+          {isActive &&
+            (isLoading ? (
+              <span className="shrink-0 px-3.5 py-1.5 text-xs bg-[#111] text-white rounded-full font-medium order-3 opacity-60">
+                …
+              </span>
+            ) : (
+              <button
+                type="submit"
+                disabled={!input.trim()}
+                className="shrink-0 px-3.5 py-1.5 text-xs bg-white text-[#111] rounded-full disabled:opacity-30 hover:opacity-80 transition-opacity font-medium order-3"
+              >
+                Send
+              </button>
+            ))}
+        </form>
       </div>
     </div>
   )
@@ -314,11 +328,7 @@ function MessagePart({ part }: { part: Part }) {
       )
     }
 
-    return (
-      <div className="flex flex-col gap-1">
-        {tag}
-      </div>
-    )
+    return <div className="flex flex-col gap-1">{tag}</div>
   }
 
   return null

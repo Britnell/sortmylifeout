@@ -39,7 +39,9 @@ function PrivacyPolicy() {
             </p>
             <ul className="mt-2 list-disc pl-6 space-y-1">
               <li>Account details such as your name and email address</li>
-              <li>Calendar events and scheduling data you enter into the app</li>
+              <li>
+                Calendar events and scheduling data you enter into the app
+              </li>
               <li>
                 Profile information such as phone number, if you choose to
                 provide it
@@ -84,9 +86,9 @@ function PrivacyPolicy() {
               5. Data Retention
             </h2>
             <p>
-              We retain your personal data for as long as your account is
-              active or as needed to provide services. You may request deletion
-              of your account and associated data at any time by contacting us.
+              We retain your personal data for as long as your account is active
+              or as needed to provide services. You may request deletion of your
+              account and associated data at any time by contacting us.
             </p>
           </div>
 

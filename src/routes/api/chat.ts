@@ -14,7 +14,10 @@ export const Route = createFileRoute('/api/chat')({
               status: 401,
               headers: { 'Content-Type': 'application/json' },
             })
-          const { messages, conversationId } = await request.json() as { messages: unknown[]; conversationId: string }
+          const { messages, conversationId } = (await request.json()) as {
+            messages: unknown[]
+            conversationId: string
+          }
           return toServerSentEventsResponse(
             createChatStream(messages, user.id, conversationId),
           )

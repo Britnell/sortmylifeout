@@ -12,11 +12,10 @@ const models = {
   cloudflare: { gemma: '@cf/google/gemma-4-26b-a4b-it' },
   openrouter: {
     deepseek: 'deepseek/deepseek-v4-flash-0731', // 0.03
-    gemma26: 'google/gemma-4-26b-a4b-it',  // 0.042
+    gemma26: 'google/gemma-4-26b-a4b-it', // 0.042
     gemma31: 'google/gemma-4-31b-it', // 0.07
   },
 } as const
-
 
 export function getAdapter() {
   return createOpenRouterText(
@@ -116,7 +115,10 @@ export function createChatStream(
   })
 }
 
-export async function agentMessage(messages: string[], userId: string): Promise<string> {
+export async function agentMessage(
+  messages: string[],
+  userId: string,
+): Promise<string> {
   const stream = chat({
     adapter: getAdapter(),
     systemPrompts: [SYSTEM_PROMPT(userId)],
