@@ -1,7 +1,7 @@
 import { localToday } from '@/lib/date'
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Columns3 } from 'lucide-react'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import CalendarMenuBar from '#/components/CalendarMenuBar'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import {
@@ -107,6 +107,16 @@ function RouteComponent() {
     setDialogOpen(true)
   }
 
+  const navigate = useNavigate()
+
+  const handleDayClick = (dateStr: string) => {
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      navigate({ to: '/cal/schedule', search: { date: dateStr } })
+    } else {
+      openCreate(dateStr)
+    }
+  }
+
   const openEdit = (ev: CalendarEvent, e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
     setExpandedDay(null)
@@ -124,9 +134,7 @@ function RouteComponent() {
   return (
     <div className="flex h-[calc(100dvh-2.75rem)] flex-col pb-2">
       {/* Toolbar */}
-      <CalendarMenuBar
-				onAdd={() => openCreate(fmtDate(today))}
-			/>
+      <CalendarMenuBar onAdd={() => openCreate(fmtDate(today))} />
 
       {/* Date stepper row */}
       <div className="mb-2 flex items-center gap-4 border-y border-[#E7E8E5] py-2 px-1 md:px-4">
@@ -198,7 +206,7 @@ function RouteComponent() {
                 setAnchorRect(rect)
                 setExpandedDay(dateStr)
               }}
-              onCreate={openCreate}
+              onCreate={handleDayClick}
               onEdit={openEdit}
             />
           ) : (
@@ -268,7 +276,9 @@ function Chip({
           readOnly
         />
       )}
-      <span className="text-[11px] text-[#111111] truncate min-w-0">{ev.title}</span>
+      <span className="text-[11px] text-[#111111] truncate min-w-0">
+        {ev.title}
+      </span>
     </button>
   )
 }
@@ -385,9 +395,16 @@ function CurrentWeekGrid({
             </div>
             <div className="flex flex-col gap-1 pt-1.5 pb-1.5 px-2 bg-white border-x border-[#CBCCC9] flex-1 min-h-0 overflow-hidden">
               {visible.map((ev) => (
-                <Chip key={ev.id} ev={ev} onEdit={onEdit} checkbox={ev.type === 'todo'} />
+                <Chip
+                  key={ev.id}
+                  ev={ev}
+                  onEdit={onEdit}
+                  checkbox={ev.type === 'todo'}
+                />
               ))}
-              {rest > 0 && <MoreButton rest={rest} dateStr={dateStr} onOpen={onOpen} />}
+              {rest > 0 && (
+                <MoreButton rest={rest} dateStr={dateStr} onOpen={onOpen} />
+              )}
             </div>
           </div>
         )
@@ -454,7 +471,9 @@ function SectionCell({
         {visible.map((ev) => (
           <EventItem key={ev.id} ev={ev} onEdit={onEdit} />
         ))}
-        {rest > 0 && <MoreButton rest={rest} dateStr={dateStr} onOpen={onOpen} />}
+        {rest > 0 && (
+          <MoreButton rest={rest} dateStr={dateStr} onOpen={onOpen} />
+        )}
       </div>
     </div>
   )
