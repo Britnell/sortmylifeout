@@ -1,5 +1,6 @@
 ## Project
-- 'tanstack start' fullstack 
+
+- 'tanstack start' fullstack
 - router: `src/routes/*`
 - app pages `src/routes/(app)/*` (root layout `route.tsx`)
 - api `src/routes/api` are rpc, server code in `src/serverFn/queries.functions.ts`
@@ -12,10 +13,10 @@
 - tailwind styles + theme in `src/styles.css`
 
 ## Working
-- use tabs not spaces - important! you have edit errors all the time with edit tool
+
 - i have `npm dev` running
 - pckg manager bun
 
 ## Style & Design
-- we have design & style system in pen.dev (formerly pencil)
-- see `./design.pen`
+
+- we have design & style system in pen.dev (formerly pencil), see `./design.pen`

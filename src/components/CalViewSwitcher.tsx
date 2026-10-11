@@ -6,8 +6,8 @@ import { CalendarDays, Columns3, AlarmClock, List } from 'lucide-react'
 const views = [
   { label: 'Month', to: '/cal/month', Icon: CalendarDays },
   { label: 'Week', to: '/cal/week', Icon: Columns3 },
-  { label: 'Day', to: '/cal/day', Icon: AlarmClock },
   { label: 'Schedule', to: '/cal/schedule', Icon: List },
+  { label: 'Day', to: '/cal/day', Icon: AlarmClock },
 ] as const
 
 export type CalView = (typeof views)[number]['to']

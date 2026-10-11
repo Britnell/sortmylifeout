@@ -214,7 +214,7 @@ export default function CheckList({
             <option value="unscheduled">Items</option>
             <option value="upcoming">Scheduled</option>
             <option value="overdue">Overdue</option>
-            <option value="done">Finished</option>
+            <option value="done">Done</option>
           </select>
           <div className="hidden sm:flex border border-gray-300 rounded-md overflow-hidden bg-white">
             <button
