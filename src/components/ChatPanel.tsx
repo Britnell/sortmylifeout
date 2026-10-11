@@ -29,6 +29,7 @@ export function ChatPanel() {
   const [isInputFocused, setIsInputFocused] = useState(false)
   const [mobileChatOpen, setMobileChatOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
   // JEV agent (inactive):
   // const [messages, setMessages] = useState<Message[]>([])
   // const [isLoading, setIsLoading] = useState(false)
@@ -41,7 +42,22 @@ export function ChatPanel() {
   }
 
   const handleBlur = () => {
-    blurTimeoutRef.current = setTimeout(() => setIsInputFocused(false), 600)
+    blurTimeoutRef.current = setTimeout(() => {
+      setIsInputFocused(false)
+      // Auto-close the mobile chat row if the user clicked in but did nothing
+      const { mobileChatOpen, isListening, input, messages } = stateRef.current
+      const focusInside =
+        formRef.current?.contains(document.activeElement) ?? false
+      if (
+        mobileChatOpen &&
+        !isListening &&
+        !input.trim() &&
+        messages.length === 0 &&
+        !focusInside
+      ) {
+        setMobileChatOpen(false)
+      }
+    }, 600)
   }
 
   useEffect(
@@ -52,7 +68,8 @@ export function ChatPanel() {
   )
 
   useEffect(() => {
-    if (mobileChatOpen) inputRef.current?.focus()
+    if (mobileChatOpen)
+      setTimeout(() => inputRef.current?.focus(), 320)
   }, [mobileChatOpen])
 
   const { isListening, toggleListening, stopListening } = useSpeechRecognition(
@@ -144,6 +161,9 @@ export function ChatPanel() {
   }, [messages, expanded])
 
   const hasMessages = messages.length > 0
+  // Latest values for the blur timeout (avoids stale closure)
+  const stateRef = useRef({ mobileChatOpen, isListening, input, messages })
+  stateRef.current = { mobileChatOpen, isListening, input, messages }
   const isActive = isInputFocused || input.trim().length > 0 || hasMessages
   // Mobile: chat row stays hidden until opened by the user, or when a chat is live
   const showChatRow = mobileChatOpen || isListening || (expanded && hasMessages)
@@ -178,11 +198,14 @@ export function ChatPanel() {
         )}
 
         {/* Chat input row: above the nav bar on mobile, only row on desktop.
-            Hidden on mobile until the user taps "Ask anything…" or the mic,
-            or there is an active chat. */}
+            Slides in on mobile via a max-height transition. */}
+        <div
+          className={`overflow-hidden transition-[max-height] duration-300 ease-out ${showChatRow ? 'max-h-24' : 'max-h-0'} sm:max-h-24`}
+        >
         <form
+          ref={formRef}
           onSubmit={handleSubmit}
-          className={`${showChatRow ? 'flex' : 'hidden'} sm:flex items-center gap-1.5 p-2`}
+          className="flex items-center gap-1.5 p-2"
         >
           {/* Close: mobile only */}
           <button
@@ -233,6 +256,7 @@ export function ChatPanel() {
               </button>
             ))}
         </form>
+        </div>
 
         {/* Mobile bottom bar: nav links always; "Ask anything" fake input + mic
             hidden once the chat row is open */}
