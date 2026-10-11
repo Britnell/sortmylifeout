@@ -33,7 +33,7 @@ export default function CalViewSwitcher() {
             key={view.to}
             to={view.to}
             aria-label={view.label}
-            className={`flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-2.5 md:px-4 py-2 text-[11px] md:text-[13px] font-medium transition-colors ${
               isActive
                 ? 'bg-[var(--primary)] text-[#111111]'
                 : 'text-[#666666] hover:bg-[#F2F3F0]'

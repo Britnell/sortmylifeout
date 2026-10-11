@@ -152,7 +152,7 @@ export function ChatPanel() {
   const isShopping = pathname === '/shopping'
 
   const navLinkClass = (active: boolean) =>
-    `grid place-items-center h-9 w-9 rounded-md transition-colors ${active ? 'bg-white text-[#111]' : 'text-[#666] hover:bg-white/50'}`
+    `grid place-items-center h-9 w-9 rounded-md transition-colors ${active ? 'bg-white/60 text-[#111] hover:bg-white' : 'text-[#666] hover:bg-white/50'}`
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 sm:bottom-4 sm:left-auto sm:right-4">
