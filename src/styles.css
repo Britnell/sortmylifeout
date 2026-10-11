@@ -31,3 +31,12 @@
     --primary-foreground: #111111;
   }
 }
+
+@keyframes chat-row-in {
+  from {
+    max-height: 0;
+  }
+  to {
+    max-height: 6rem;
+  }
+}

@@ -200,7 +200,7 @@ export function ChatPanel() {
         {/* Chat input row: above the nav bar on mobile, only row on desktop.
             Slides in on mobile via a max-height transition. */}
         <div
-          className={`overflow-hidden transition-[max-height] duration-300 ease-out ${showChatRow ? 'max-h-24' : 'max-h-0'} sm:max-h-24`}
+          className={`overflow-hidden transition-[max-height] duration-300 ease-out ${showChatRow ? 'max-h-24 animate-[chat-row-in_300ms_ease-out]' : 'max-h-0'} sm:max-h-24 sm:animate-none`}
         >
         <form
           ref={formRef}
