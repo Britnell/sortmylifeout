@@ -9,11 +9,13 @@ import { createDisplayEventsTool } from '@/tools/displayEventsTool'
 
 // -- Providers --
 const models = {
-  cloudflare: { gemma: '@cf/google/gemma-4-26b-a4b-it' },
+  cloudflare: {
+    gemma: '@cf/google/gemma-4-26b-a4b-it',
+  },
   openrouter: {
-    deepseek: 'deepseek/deepseek-v4-flash-0731', // 0.03
-    gemma26: 'google/gemma-4-26b-a4b-it', // 0.042
-    gemma31: 'google/gemma-4-31b-it', // 0.07
+    deepseek: 'deepseek/deepseek-v4.1-flash',
+    gemma26: 'google/gemma-4-26b-a4b-it',
+    gemma31: 'google/gemma-4-31b-it',
   },
 } as const
 
