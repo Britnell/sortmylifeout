@@ -1,0 +1,3 @@
+-[ ] month view not all rows are same height
+-[ ] todo : queue / later / longterm cols
+-[x] agent delete fn > confirm in frontend

@@ -4,9 +4,11 @@ import { Link, useRouterState } from '@tanstack/react-router'
 import { useChat, fetchServerSentEvents } from '@tanstack/ai-react'
 import type { UIMessage } from '@tanstack/ai-react'
 import { useQueryClient } from '@tanstack/react-query'
+import { deleteEventFn } from '../serverFn/queries.functions'
 import { useSpeechRecognition } from '../lib/useSpeechRecognition'
 import {
   updateQueryCachesWithEvents,
+  removeEventsFromQueryCaches,
   EVENT_MUTATING_TOOLS,
 } from '../lib/queryCache'
 import { EventCard, type EventRow } from './EventCard'
@@ -370,6 +372,25 @@ function MessagePart({ part }: { part: Part }) {
       )
     }
 
+    if (part.name === 'delete_event') {
+      let item: (EventRow & { id: number }) | undefined
+      try {
+        const args =
+          typeof part.arguments === 'string'
+            ? JSON.parse(part.arguments)
+            : part.arguments
+        item = (args as { item?: EventRow & { id: number } })?.item
+      } catch {
+        /* ignore */
+      }
+      if (!item || typeof item.id !== 'number') {
+        return (
+          <span className="text-[11px] text-[#666] italic my-1">Loading…</span>
+        )
+      }
+      return <RemoveConfirm item={item} />
+    }
+
     if (part.name === 'create_event' || part.name === 'update_event') {
       const label = part.name === 'create_event' ? 'create' : 'update'
       const tag = <ToolCallTag label={label} />
@@ -416,6 +437,73 @@ function MessagePart({ part }: { part: Part }) {
   }
 
   return null
+}
+
+/** Front-end confirmation for the delete_event tool (user-facing wording:
+ *  "remove"). Only if the user taps Remove is deleteEventFn called. */
+function RemoveConfirm({ item }: { item: EventRow & { id: number } }) {
+  const [state, setState] = useState<'pending' | 'removing' | 'removed' | 'cancelled' | 'error'>('pending')
+  const queryClient = useQueryClient()
+
+  if (state === 'removed') {
+    return (
+      <span className="text-[11px] text-[#666] italic my-1">
+        <ToolCallTag label="remove" /> Removed
+      </span>
+    )
+  }
+  if (state === 'cancelled') {
+    return (
+      <span className="text-[11px] text-[#666] italic my-1">
+        <ToolCallTag label="remove" /> Remove cancelled — item kept
+      </span>
+    )
+  }
+
+  const handleRemove = async () => {
+    setState('removing')
+    try {
+      await deleteEventFn({ data: { id: item.id } })
+      removeEventsFromQueryCaches(queryClient, [item.id])
+      setState('removed')
+    } catch {
+      setState('error')
+    }
+  }
+
+  return (
+    <div className="border border-[#CBCCC9] rounded-md p-2 flex flex-col gap-2 my-1">
+      <div className="text-[11px] font-semibold uppercase tracking-[1px] text-[#666]">
+        {state === 'error' ? 'Could not remove' : 'Remove this item?'}
+      </div>
+      <EventCard item={item} action={null} />
+      {state === 'error' && (
+        <span className="text-[11px] text-red-600">Something went wrong — try again.</span>
+      )}
+      <div className="flex gap-1.5">
+        <button
+          type="button"
+          disabled={state === 'removing'}
+          onClick={handleRemove}
+          className="px-3 py-1 text-xs font-medium rounded-md bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+        >
+          {state === 'removing'
+            ? 'Removing…'
+            : state === 'error'
+              ? 'Retry'
+              : 'Remove'}
+        </button>
+        <button
+          type="button"
+          disabled={state === 'removing'}
+          onClick={() => setState('cancelled')}
+          className="px-3 py-1 text-xs font-medium rounded-md border border-[#CBCCC9] text-[#111] hover:bg-[#EDEEEC] disabled:opacity-60"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  )
 }
 
 function MessageList({
