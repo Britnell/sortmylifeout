@@ -1,5 +1,5 @@
 import { localToday } from '@/lib/date'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Square, CalendarClock, TriangleAlert, SquareCheck } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useLocalStorage } from '#/lib/useLocalStorage'
@@ -40,7 +40,10 @@ function weekAgo(): string {
   return d.toISOString().slice(0, 10)
 }
 
-export function parseBegin(begin: string | null): { date: string; time: string } {
+export function parseBegin(begin: string | null): {
+  date: string
+  time: string
+} {
   if (!begin) return { date: '', time: '' }
   const [datePart, timePart = ''] = begin.split('T')
   return { date: datePart, time: timePart.slice(0, 5) }
@@ -240,9 +243,9 @@ function Column({
   return (
     <div
       ref={setRef}
-      className={`flex h-fit w-full shrink-0 flex-col  gap-2.5 rounded-lg border border-neutral-300 bg-white md:w-95 ${
-        active ? 'flex' : 'hidden md:flex'
-      } ${items.length ? 'min-h-64' : ''}`}
+      className={`flex h-fit w-[calc(100vw-2.5rem)] sm:w-[85vw] shrink-0 snap-start flex-col gap-2.5 rounded-lg border border-neutral-300 bg-white md:w-95 ${
+        items.length ? 'min-h-64' : ''
+      }`}
     >
       {/* Column header */}
       <div
@@ -376,13 +379,16 @@ export default function TodoBoard() {
   const [editing, setEditing] = useState<EditState | null>(null)
   const [colIdx, setColIdx] = useLocalStorage<number>('todoActiveCol', 0)
   const colRefs = useRef<(HTMLDivElement | null)[]>([])
-  useEffect(() => {
-    colRefs.current[colIdx]?.scrollIntoView({
-      behavior: 'smooth',
+  const goToCol = (i: number) => {
+    setColIdx(i)
+    colRefs.current[i]?.scrollIntoView({
+      behavior: window.matchMedia('(min-width: 768px)').matches
+        ? 'smooth'
+        : 'auto',
       inline: 'start',
       block: 'nearest',
     })
-  }, [colIdx])
+  }
   const activeCol = COLS[colIdx]?.key ?? 'todo'
 
   const { data: events = [] } = useQuery({
@@ -526,7 +532,7 @@ export default function TodoBoard() {
           Todos
         </h1>
         {/* Tabs */}
-        <ColumnTabs activeCol={activeCol} onSelect={setColIdx} />
+        <ColumnTabs activeCol={activeCol} onSelect={goToCol} />
         <button
           onClick={() => openNew('todo')}
           className="ml-auto hidden sm:block rounded-md bg-[var(--primary)] px-4 py-2 text-[13px] font-medium text-neutral-900"
@@ -536,7 +542,24 @@ export default function TodoBoard() {
       </div>
 
       {/* Board */}
-      <div className="flex min-h-0 flex-1 gap-3 pb-4 overflow-x-auto">
+      <div
+        className="flex min-h-0 flex-1 gap-3 px-3 pb-4 overflow-x-auto snap-x snap-mandatory [scroll-padding:0.75rem]"
+        onScrollEnd={(e) => {
+          const el = e.currentTarget
+          const mid = el.scrollLeft + el.clientWidth / 2
+          let best = 0
+          let bestDist = Infinity
+          colRefs.current.forEach((c, i) => {
+            if (!c) return
+            const d = Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid)
+            if (d < bestDist) {
+              bestDist = d
+              best = i
+            }
+          })
+          setColIdx(best)
+        }}
+      >
         {COLS.map((col, i) => {
           const items = cols[col.key]
           const grouped =
@@ -564,35 +587,35 @@ export default function TodoBoard() {
                 colRefs.current[i] = el
               }}
             >
-              {grouped
-                ? grouped.flatMap((g) => [
-                    <DateGroup key={g.date} date={g.date} />,
-                    <ItemList
-                      key={g.date + '-items'}
-                      items={g.items}
-                      column={col.key}
-                      editing={editing}
-                      onEdit={onEditItem}
-                      onToggle={toggleMutation.mutate}
-                      onChange={setEditing}
-                      onCancel={() => setEditing(null)}
-                      onSave={save}
-                      onDelete={deleteMutation.mutate}
-                    />,
-                  ])
-                : (
-                    <ItemList
-                      items={items}
-                      column={col.key}
-                      editing={editing}
-                      onEdit={onEditItem}
-                      onToggle={toggleMutation.mutate}
-                      onChange={setEditing}
-                      onCancel={() => setEditing(null)}
-                      onSave={save}
-                      onDelete={deleteMutation.mutate}
-                    />
-                  )}
+              {grouped ? (
+                grouped.flatMap((g) => [
+                  <DateGroup key={g.date} date={g.date} />,
+                  <ItemList
+                    key={g.date + '-items'}
+                    items={g.items}
+                    column={col.key}
+                    editing={editing}
+                    onEdit={onEditItem}
+                    onToggle={toggleMutation.mutate}
+                    onChange={setEditing}
+                    onCancel={() => setEditing(null)}
+                    onSave={save}
+                    onDelete={deleteMutation.mutate}
+                  />,
+                ])
+              ) : (
+                <ItemList
+                  items={items}
+                  column={col.key}
+                  editing={editing}
+                  onEdit={onEditItem}
+                  onToggle={toggleMutation.mutate}
+                  onChange={setEditing}
+                  onCancel={() => setEditing(null)}
+                  onSave={save}
+                  onDelete={deleteMutation.mutate}
+                />
+              )}
             </Column>
           )
         })}
