@@ -192,7 +192,7 @@ export function ChatPanel() {
           <MessageList
             messages={messages}
             onNewChat={handleNewChat}
-            onClose={() => setExpanded(false)}
+            onClose={() => handleNewChat()}
             messagesEndRef={messagesEndRef}
           />
         )}
@@ -317,10 +317,10 @@ export function ChatPanel() {
 // JEV version's comment; full body restored from commit 444a422
 type Part = UIMessage['parts'][number]
 
-function ToolCallTag() {
+function ToolCallTag({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[1px] text-[#111] border border-[#FF8400] rounded px-1.5 py-0.5">
-      action
+    <span className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-[1px] text-[#666] border border-[#CBCCC9] bg-[#EDEEEC] rounded px-1.5 py-0.5">
+      {label}
     </span>
   )
 }
@@ -344,8 +344,6 @@ function MessagePart({ part }: { part: Part }) {
   }
 
   if (part.type === 'tool-call') {
-    const tag = <ToolCallTag />
-
     if (part.name === 'display_events') {
       let items: EventRow[] | undefined
       try {
@@ -365,7 +363,6 @@ function MessagePart({ part }: { part: Part }) {
       }
       return (
         <div className="flex flex-col gap-1">
-          {tag}
           {items.map((item, i) => (
             <EventCard key={i} item={item} action={null} />
           ))}
@@ -374,7 +371,8 @@ function MessagePart({ part }: { part: Part }) {
     }
 
     if (part.name === 'create_event' || part.name === 'update_event') {
-      const action = part.name === 'create_event' ? 'created' : 'updated'
+      const label = part.name === 'create_event' ? 'create' : 'update'
+      const tag = <ToolCallTag label={label} />
       if (part.output !== undefined) {
         const items = (
           Array.isArray(part.output) ? part.output : [part.output]
@@ -383,28 +381,38 @@ function MessagePart({ part }: { part: Part }) {
           <div className="flex flex-col gap-1">
             {tag}
             {items.map((item, i) => (
-              <EventCard key={i} item={item} action={action} />
+              <EventCard
+                key={i}
+                item={item}
+                action={
+                  part.name === 'create_event' ? 'created' : 'updated'
+                }
+              />
             ))}
           </div>
         )
       }
       return (
         <span className="text-[11px] text-[#666] italic my-1">
-          {tag}
+          {tag}{' '}
           {part.name === 'create_event' ? 'Creating…' : 'Updating…'}
         </span>
       )
     }
 
+    if (part.name === 'search_events') {
+      return <ToolCallTag label="searching" />
+    }
+
     if (part.output === undefined) {
       return (
         <span className="text-[11px] text-[#666] italic my-1">
-          {tag} Working…
+          <ToolCallTag label="action" /> Working…
         </span>
       )
     }
 
-    return <div className="flex flex-col gap-1">{tag}</div>
+    return <ToolCallTag label="action" />
   }
 
   return null
@@ -449,9 +457,18 @@ function MessageList({
               </div>
             )}
             <div className="text-[13px] text-[#111]">
-              {message.parts.map((part: Part, i: number) => (
-                <MessagePart key={i} part={part} />
-              ))}
+              {/* Only show thinking while nothing substantive has arrived yet */}
+              {message.parts
+                .filter(
+                  (part: Part) =>
+                    part.type !== 'thinking' ||
+                    !message.parts.some(
+                      (p) => p.type === 'text' || p.type === 'tool-call',
+                    ),
+                )
+                .map((part: Part, i: number) => (
+                  <MessagePart key={i} part={part} />
+                ))}
             </div>
           </div>
         ))}
