@@ -142,143 +142,9 @@ function ShoppingPage() {
     else updateMutation.mutate(e)
   }
 
-  const renderEditor = (e: EditState) => (
-    <div className="rounded-md border border-neutral-800 bg-[#E7E8E5] p-3 space-y-2.5">
-      <input
-        autoFocus
-        type="text"
-        value={e.title}
-        onChange={(ev) => setEditing({ ...e, title: ev.target.value })}
-        onKeyDown={(ev) => ev.key === 'Enter' && save(e)}
-        placeholder="Item"
-        className="w-full bg-transparent border-b border-neutral-400 focus:border-neutral-800 outline-none py-0.5 text-sm font-medium"
-      />
-      <input
-        type="text"
-        value={e.detail}
-        onChange={(ev) => setEditing({ ...e, detail: ev.target.value })}
-        placeholder="Description"
-        className="w-full bg-transparent border-b border-neutral-300 focus:border-neutral-800 outline-none py-0.5 text-sm text-neutral-600"
-      />
-      <div className="flex gap-2">
-        <input
-          type="date"
-          value={e.date}
-          onChange={(ev) => setEditing({ ...e, date: ev.target.value })}
-          className="flex-1 min-w-0 rounded-md border border-neutral-300 px-2.5 py-1.5 font-mono text-xs"
-        />
-        <input
-          type="time"
-          value={e.time}
-          onChange={(ev) => setEditing({ ...e, time: ev.target.value })}
-          className="w-18 rounded-md border border-neutral-300 px-2.5 py-1.5 font-mono text-xs"
-        />
-        <button
-          onClick={() => setEditing({ ...e, date: '', time: '' })}
-          className="w-9 rounded-md border border-neutral-300 font-mono text-xs hover:bg-neutral-100"
-        >
-          ✕
-        </button>
-      </div>
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() =>
-            e.id === null ? setEditing(null) : deleteMutation.mutate(e.id)
-          }
-          className="text-xs font-medium text-[#D93C15]"
-        >
-          {e.id === null ? 'Cancel' : 'Delete'}
-        </button>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setEditing(null)}
-            className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium hover:bg-neutral-100"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => save(e)}
-            disabled={!e.title.trim()}
-            className="rounded-md bg-[var(--primary)] px-3 py-1.5 text-xs font-medium disabled:opacity-40"
-          >
-            Save
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderItem = (ev: CalendarEvent) => {
-    if (editing?.id === ev.id) return renderEditor(editing)
-    const { time } = parseBegin(ev.begin)
-    return (
-      <div
-        key={ev.id}
-        onClick={() =>
-          setEditing({
-            id: ev.id,
-            title: ev.title,
-            detail: ev.detail ?? '',
-            ...parseBegin(ev.begin),
-          })
-        }
-        className="flex cursor-pointer items-center gap-3 rounded-md border border-neutral-300 px-3 py-2.5 hover:border-neutral-400"
-      >
-        <input
-          type="checkbox"
-          checked={!!ev.completed}
-          onClick={(e) => e.stopPropagation()}
-          onChange={() => toggleMutation.mutate(ev)}
-          className="h-3.5 w-3.5 shrink-0 accent-neutral-900"
-        />
-        <span
-          className={`flex-1 min-w-0 truncate text-sm font-medium ${
-            ev.completed ? 'text-neutral-400 line-through' : 'text-neutral-900'
-          }`}
-        >
-          {ev.title}
-        </span>
-        {time && (
-          <span className="shrink-0 font-mono text-[11px] text-neutral-500">
-            {time}
-          </span>
-        )}
-      </div>
-    )
-  }
-
-  const renderColumn = (
-    title: string,
-    items: CalendarEvent[],
-    children: React.ReactNode,
-  ) => (
-    <div className="flex flex-col gap-2.5 rounded-lg border border-neutral-300 bg-white">
-      <div className="flex items-center rounded-t-lg border-b border-b-[var(--primary)] bg-[var(--primary)] px-3 py-3">
-        <span className="text-sm font-semibold text-neutral-900">{title}</span>
-        <span className="ml-auto text-sm opacity-60">{items.length} items</span>
-      </div>
-      <div className="flex flex-col gap-2 px-3 pb-3">
-        {children}
-        {editing?.id === null && (
-          <div onClick={(e) => e.stopPropagation()}>
-            {renderEditor(editing)}
-          </div>
-        )}
-        {items.length === 0 && editing?.id !== null && (
-          <button
-            onClick={openNew}
-            className="rounded-md border border-dashed border-neutral-300 py-2.5 text-xs text-neutral-400 hover:border-neutral-400 hover:text-neutral-600"
-          >
-            + Add item
-          </button>
-        )}
-      </div>
-    </div>
-  )
-
   return (
-    <div className="mx-auto max-w-3xl px-4 pt-6 space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto max-w-3xl space-y-4">
+      <div className="flex items-center justify-between bg-white px-4 py-2">
         <h1 className="text-base font-semibold text-neutral-900 flex gap-1 items-center">
           <Icon name="shopping" />
           Shopping
@@ -291,22 +157,240 @@ function ShoppingPage() {
         </button>
       </div>
 
-      {renderColumn('Items', undated, undated.map(renderItem))}
+      <Column
+        title="Items"
+        count={undated.length}
+        showAddButton={undated.length === 0 && editing?.id !== null}
+        onAdd={openNew}
+      >
+        {editing?.id === null && (
+          <div onClick={(e) => e.stopPropagation()}>
+            <Editor
+              value={editing}
+              onChange={setEditing}
+              onCancel={() => setEditing(null)}
+              onSave={save}
+            />
+          </div>
+        )}
+        {undated.map((ev) =>
+          editing?.id === ev.id ? (
+            <Editor
+              key={ev.id}
+              value={editing}
+              onChange={setEditing}
+              onCancel={() => setEditing(null)}
+              onSave={save}
+              onDelete={deleteMutation.mutate}
+            />
+          ) : (
+            <Item
+              key={ev.id}
+              event={ev}
+              onEdit={() =>
+                setEditing({
+                  id: ev.id,
+                  title: ev.title,
+                  detail: ev.detail ?? '',
+                  ...parseBegin(ev.begin),
+                })
+              }
+              onToggle={() => toggleMutation.mutate(ev)}
+            />
+          ),
+        )}
+      </Column>
 
-      {datedGroups.length > 0 &&
-        renderColumn(
-          'Scheduled',
-          dated,
-          datedGroups.flatMap((g) => [
+      {datedGroups.length > 0 && (
+        <Column
+          title="Scheduled"
+          count={dated.length}
+          showAddButton={false}
+          onAdd={openNew}
+        >
+          {datedGroups.flatMap((g) => [
             <span
               key={g.date}
               className="text-[13px] font-semibold leading-tight text-neutral-900"
             >
               {fmtDayLabel(g.date)}
             </span>,
-            ...g.items.map(renderItem),
-          ]),
+            ...g.items.map((ev) =>
+              editing?.id === ev.id ? (
+                <Editor
+                  key={ev.id}
+                  value={editing}
+                  onChange={setEditing}
+                  onCancel={() => setEditing(null)}
+                  onSave={save}
+                  onDelete={deleteMutation.mutate}
+                />
+              ) : (
+                <Item
+                  key={ev.id}
+                  event={ev}
+                  onEdit={() =>
+                    setEditing({
+                      id: ev.id,
+                      title: ev.title,
+                      detail: ev.detail ?? '',
+                      ...parseBegin(ev.begin),
+                    })
+                  }
+                  onToggle={() => toggleMutation.mutate(ev)}
+                />
+              ),
+            ),
+          ])}
+        </Column>
+      )}
+    </div>
+  )
+}
+
+interface EditorProps {
+  value: EditState
+  onChange: (next: EditState) => void
+  onCancel: () => void
+  onSave: (e: EditState) => void
+  onDelete?: (id: number) => void
+}
+
+function Editor({
+  value: e,
+  onChange,
+  onCancel,
+  onSave,
+  onDelete,
+}: EditorProps) {
+  return (
+    <div className="rounded-md border border-neutral-800 bg-[#E7E8E5] p-3 space-y-2.5">
+      <input
+        autoFocus
+        type="text"
+        value={e.title}
+        onChange={(ev) => onChange({ ...e, title: ev.target.value })}
+        onKeyDown={(ev) => ev.key === 'Enter' && onSave(e)}
+        placeholder="Item"
+        className="w-full bg-transparent border-b border-neutral-400 focus:border-neutral-800 outline-none py-0.5 text-sm font-medium"
+      />
+      <input
+        type="text"
+        value={e.detail}
+        onChange={(ev) => onChange({ ...e, detail: ev.target.value })}
+        placeholder="Description"
+        className="w-full bg-transparent border-b border-neutral-300 focus:border-neutral-800 outline-none py-0.5 text-sm text-neutral-600"
+      />
+      <div className="flex gap-2">
+        <input
+          type="date"
+          value={e.date}
+          onChange={(ev) => onChange({ ...e, date: ev.target.value })}
+          className="flex-1 min-w-0 rounded-md border border-neutral-300 px-2.5 py-1.5 font-mono text-xs"
+        />
+        <input
+          type="time"
+          value={e.time}
+          onChange={(ev) => onChange({ ...e, time: ev.target.value })}
+          className="w-18 rounded-md border border-neutral-300 px-2.5 py-1.5 font-mono text-xs"
+        />
+        <button
+          onClick={() => onChange({ ...e, date: '', time: '' })}
+          className="w-9 rounded-md border border-neutral-300 font-mono text-xs hover:bg-neutral-100"
+        >
+          ✕
+        </button>
+      </div>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => (e.id === null ? onCancel() : onDelete?.(e.id!))}
+          className="text-xs font-medium text-[#D93C15]"
+        >
+          {e.id === null ? 'Cancel' : 'Delete'}
+        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={onCancel}
+            className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium hover:bg-neutral-100"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onSave(e)}
+            disabled={!e.title.trim()}
+            className="rounded-md bg-[var(--primary)] px-3 py-1.5 text-xs font-medium disabled:opacity-40"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+interface ItemProps {
+  event: CalendarEvent
+  onEdit: () => void
+  onToggle: () => void
+}
+
+function Item({ event: ev, onEdit, onToggle }: ItemProps) {
+  const { time } = parseBegin(ev.begin)
+  return (
+    <div
+      key={ev.id}
+      onClick={onEdit}
+      className="flex cursor-pointer items-center gap-3 rounded-md border border-neutral-300 px-3 py-2.5 hover:border-neutral-400"
+    >
+      <input
+        type="checkbox"
+        checked={!!ev.completed}
+        onClick={(e) => e.stopPropagation()}
+        onChange={onToggle}
+        className="h-3.5 w-3.5 shrink-0 accent-neutral-900"
+      />
+      <span
+        className={`flex-1 min-w-0 truncate text-sm font-medium ${
+          ev.completed ? 'text-neutral-400 line-through' : 'text-neutral-900'
+        }`}
+      >
+        {ev.title}
+      </span>
+      {time && (
+        <span className="shrink-0 font-mono text-[11px] text-neutral-500">
+          {time}
+        </span>
+      )}
+    </div>
+  )
+}
+
+interface ColumnProps {
+  title: string
+  count: number
+  showAddButton: boolean
+  onAdd: () => void
+  children: React.ReactNode
+}
+
+function Column({ title, count, showAddButton, onAdd, children }: ColumnProps) {
+  return (
+    <div className="flex flex-col gap-2.5 rounded-lg border border-neutral-300 bg-white">
+      <div className="flex items-center rounded-t-lg border-b border-b-[var(--primary)] bg-[var(--primary)] px-3 py-3">
+        <span className="text-sm font-semibold text-neutral-900">{title}</span>
+        <span className="ml-auto text-sm opacity-60">{count} items</span>
+      </div>
+      <div className="flex flex-col gap-2 px-3 pb-3">
+        {children}
+        {showAddButton && (
+          <button
+            onClick={onAdd}
+            className="rounded-md border border-dashed border-neutral-300 py-2.5 text-xs text-neutral-400 hover:border-neutral-400 hover:text-neutral-600"
+          >
+            + Add item
+          </button>
         )}
+      </div>
     </div>
   )
 }
