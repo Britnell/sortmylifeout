@@ -321,42 +321,40 @@ export default function TodoBoard() {
   const overdueGroups = groupByDate(cols.overdue)
 
   return (
-    <div className="flex h-[calc(100vh-2.75rem)] flex-col gap-3 px-4 pt-4 pb-0">
+    <div className="flex h-[calc(100vh-2.75rem)] flex-col gap-3 ">
       {/* Toolbar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="text-base font-semibold text-neutral-900 flex gap-1 items-center">
-            <SquareCheck size="16" />
-            Todos
-          </h1>
-          {/* Tabs */}
-          <div className="flex items-center overflow-hidden rounded-lg border border-[#CBCCC9] bg-white">
-            {COLS.map((col, i) => {
-              const isActive = activeCol === col.key
-              return (
-                <button
-                  key={col.key}
-                  aria-label={col.title}
-                  onClick={() => setColIdx(i)}
-                  className={`flex items-center gap-1.5 px-3.5 md:px-4 py-2 text-[13px] font-medium transition-colors ${
-                    isActive
-                      ? 'bg-[var(--primary)] text-[#111111]'
-                      : 'text-[#666666] hover:bg-[#F2F3F0]'
-                  }`}
-                >
-                  <col.Icon size={14} strokeWidth={2} className="shrink-0" />
-                  {/* Mobile: only the active tab shows its label */}
-                  <span className={isActive ? '' : 'hidden md:inline'}>
-                    {col.title}
-                  </span>
-                </button>
-              )
-            })}
-          </div>{' '}
+      <div className="flex items-center gap-4 bg-white px-4 py-2 ">
+        <h1 className="text-base font-semibold text-neutral-900 flex gap-1 items-center">
+          <SquareCheck size="16" />
+          Todos
+        </h1>
+        {/* Tabs */}
+        <div className="ml-auto sm:mx-auto flex items-center overflow-hidden rounded-lg border border-[#CBCCC9] bg-white">
+          {COLS.map((col, i) => {
+            const isActive = activeCol === col.key
+            return (
+              <button
+                key={col.key}
+                aria-label={col.title}
+                onClick={() => setColIdx(i)}
+                className={`flex items-center gap-1.5 px-3.5 md:px-4 py-2 text-[13px] font-medium transition-colors ${
+                  isActive
+                    ? 'bg-[var(--primary)] text-[#111111]'
+                    : 'text-[#666666] hover:bg-[#F2F3F0]'
+                }`}
+              >
+                <col.Icon size={14} strokeWidth={2} className="shrink-0" />
+                {/* Mobile: only the active tab shows its label */}
+                <span className={isActive ? '' : 'hidden md:inline'}>
+                  {col.title}
+                </span>
+              </button>
+            )
+          })}
         </div>
         <button
           onClick={() => openNew('todo')}
-          className="hidden sm:block rounded-md bg-[var(--primary)] px-4 py-2 text-[13px] font-medium text-neutral-900"
+          className="ml-auto hidden sm:block rounded-md bg-[var(--primary)] px-4 py-2 text-[13px] font-medium text-neutral-900"
         >
           + New
         </button>
