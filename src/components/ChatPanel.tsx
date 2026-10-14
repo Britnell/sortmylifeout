@@ -214,6 +214,7 @@ export function ChatPanel() {
             type="button"
             onClick={() => {
               stopListening()
+              handleNewChat()
               setMobileChatOpen(false)
               setExpanded(false)
             }}
@@ -446,11 +447,7 @@ function RemoveConfirm({ item }: { item: EventRow & { id: number } }) {
   const queryClient = useQueryClient()
 
   if (state === 'removed') {
-    return (
-      <span className="text-[11px] text-[#666] italic my-1">
-        <ToolCallTag label="remove" /> Removed
-      </span>
-    )
+    return <ToolCallTag label="item removed" />
   }
   if (state === 'cancelled') {
     return (
@@ -544,7 +541,7 @@ function MessageList({
                 {message.role === 'assistant' ? 'Assistant' : 'You'}
               </div>
             )}
-            <div className="text-[13px] text-[#111]">
+            <div className="text-[13px] text-[#111] flex flex-col gap-1">
               {/* Only show thinking while nothing substantive has arrived yet */}
               {message.parts
                 .filter(
