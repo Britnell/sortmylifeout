@@ -146,7 +146,7 @@ function RouteComponent() {
   })
 
   return (
-    <div className="flex h-[calc(100dvh-2.75rem)] flex-col pb-2">
+    <div className="flex h-[calc(100dvh-6rem)] sm:h-[calc(100dvh-6.75rem)] flex-col pb-2">
       {/* Toolbar */}
       <CalendarMenuBar onAdd={() => openCreate(fmtDate(today))} />
 

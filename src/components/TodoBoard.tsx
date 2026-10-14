@@ -325,7 +325,10 @@ export default function TodoBoard() {
       {/* Toolbar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h1 className="text-base font-semibold text-neutral-900">Todos</h1>
+          <h1 className="text-base font-semibold text-neutral-900 flex gap-1 items-center">
+            <SquareCheck size="16" />
+            Todos
+          </h1>
           {/* Tabs */}
           <div className="flex items-center overflow-hidden rounded-lg border border-[#CBCCC9] bg-white">
             {COLS.map((col, i) => {
@@ -353,7 +356,7 @@ export default function TodoBoard() {
         </div>
         <button
           onClick={() => openNew('todo')}
-          className="rounded-md bg-[var(--primary)] px-4 py-2 text-[13px] font-medium text-neutral-900"
+          className="hidden sm:block rounded-md bg-[var(--primary)] px-4 py-2 text-[13px] font-medium text-neutral-900"
         >
           + New
         </button>
@@ -380,7 +383,7 @@ export default function TodoBoard() {
                 className={`m-0 flex items-center rounded-t-lg border-b px-3 py-3 ${
                   activeCol === col.key
                     ? 'bg-[var(--primary)] border-b-[var(--primary)]'
-                    : 'bg-white border-b-neutral-300'
+                    : 'bg-white border-b-neutral-400'
                 }`}
               >
                 <span className="flex items-center gap-1.5 text-sm font-semibold text-neutral-900">
@@ -391,7 +394,7 @@ export default function TodoBoard() {
                 </span>
                 <button
                   onClick={() => openNew(col.key)}
-                  className="ml-auto py-2 px-3  hover:bg-amber-300 flex h-5 w-5 items-center justify-center rounded bg-transparent text-sm font-bold leading-none text-neutral-900 hover:text-neutral-600"
+                  className="ml-auto  hover:bg-amber-300 flex size-8 -my-2 items-center justify-center rounded bg-transparent text-sm font-bold leading-none text-neutral-900 hover:text-neutral-600"
                   aria-label={`Add to ${col.title}`}
                 >
                   +

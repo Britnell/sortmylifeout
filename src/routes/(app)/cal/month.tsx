@@ -306,7 +306,7 @@ function DayCell({
       onClick={() => onCreate()}
     >
       <span
-        className={`w-full text-left text-sm font-semibold pt-1 pb-0.5 px-1.5 rounded-t-sm ${
+        className={`w-full text-left text-sm font-semibold pt-1 pb-0.5 px-1.5 sm:rounded-t-sm ${
           inMonth ? 'text-[#111111]' : 'text-[#666666]'
         } ${isToday && 'bg-[var(--primary)]'}`}
       >

@@ -109,7 +109,7 @@ function RouteComponent() {
 
           {/* Right sidebar */}
           <aside
-            className={`flex-shrink-0 transition-all duration-200 overflow-hidden border-l border-gray-200 dark:border-gray-700 bg-white -900 ${
+            className={`flex-shrink-0 transition-all duration-200 overflow-y-auto border-l border-gray-200 dark:border-gray-700 bg-white sticky top-11 h-[calc(100dvh-2.75rem)] ${
               hideSidebar ? 'hidden' : sidebarOpen ? 'w-72' : 'w-0'
             }`}
           >

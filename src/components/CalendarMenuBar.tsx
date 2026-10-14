@@ -1,4 +1,5 @@
 import { Plus } from 'lucide-react'
+import Icon from '@/components/Icon'
 import CalViewSwitcher from '@/components/CalViewSwitcher'
 import SidebarToggleButton from '@/components/SidebarToggleButton'
 
@@ -9,7 +10,10 @@ export default function CalendarMenuBar({
 }) {
   return (
     <div className="flex flex-row items-center gap-2 md:gap-4 bg-white pl-2 md:pl-4 pr-2 py-2 w-full">
-      <span className=" text-[16px] font-semibold text-[#111111]">Events</span>
+      <span className="flex gap-1 items-center text-[16px] font-semibold text-[#111111]">
+        <Icon name="calendar" />
+        Events
+      </span>
       <CalViewSwitcher />
       <div className="ml-auto hidden sm:flex items-center gap-2 md:gap-3.5">
         <button
