@@ -103,27 +103,27 @@ export function Editor({
         onChange={(ev) => onChange({ ...e, title: ev.target.value })}
         onKeyDown={(ev) => ev.key === 'Enter' && onSave(e)}
         placeholder={placeholder}
-        className="w-full bg-transparent border-b border-neutral-400 focus:border-neutral-800 outline-none py-0.5 text-sm font-medium"
+        className="w-full bg-transparent border-b border-neutral-400 focus:border-neutral-800 outline-none py-0.5 font-medium"
       />
       <input
         type="text"
         value={e.detail}
         onChange={(ev) => onChange({ ...e, detail: ev.target.value })}
         placeholder="Description"
-        className="w-full bg-transparent border-b border-neutral-300 focus:border-neutral-800 outline-none py-0.5 text-sm text-neutral-600"
+        className="w-full bg-transparent border-b border-neutral-300 focus:border-neutral-800 outline-none py-0.5 text-neutral-600"
       />
       <div className="flex gap-2">
         <input
           type="date"
           value={e.date}
           onChange={(ev) => onChange({ ...e, date: ev.target.value })}
-          className="flex-1 min-w-0 rounded-md border border-neutral-300 px-2.5 py-1.5 font-mono text-xs"
+          className="flex-1 min-w-0 rounded-md border border-neutral-300 px-2.5 py-1.5 font-mono"
         />
         <input
           type="time"
           value={e.time}
           onChange={(ev) => onChange({ ...e, time: ev.target.value })}
-          className="w-18 rounded-md border border-neutral-300 px-2.5 py-1.5 font-mono text-xs"
+          className="w-18 rounded-md border border-neutral-300 px-2.5 py-1.5 font-mono"
         />
         <button
           onClick={() => onChange({ ...e, date: '', time: '' })}
@@ -132,28 +132,28 @@ export function Editor({
           ✕
         </button>
       </div>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        {e.id !== null && (
+          <button
+            onClick={() => onDelete?.(e.id!)}
+            className="text-xs font-medium text-[#D93C15]"
+          >
+            Delete
+          </button>
+        )}
         <button
-          onClick={() => (e.id === null ? onCancel() : onDelete?.(e.id!))}
-          className="text-xs font-medium text-[#D93C15]"
+          onClick={onCancel}
+          className="ml-auto rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium hover:bg-neutral-100"
         >
-          {e.id === null ? 'Cancel' : 'Delete'}
+          Cancel
         </button>
-        <div className="flex gap-2">
-          <button
-            onClick={onCancel}
-            className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium hover:bg-neutral-100"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => onSave(e)}
-            disabled={!e.title.trim()}
-            className="rounded-md bg-[var(--primary)] px-3 py-1.5 text-xs font-medium disabled:opacity-40"
-          >
-            Save
-          </button>
-        </div>
+        <button
+          onClick={() => onSave(e)}
+          disabled={!e.title.trim()}
+          className="rounded-md bg-[var(--primary)] px-3 py-1.5 text-xs font-medium disabled:opacity-40"
+        >
+          Save
+        </button>
       </div>
     </div>
   )
