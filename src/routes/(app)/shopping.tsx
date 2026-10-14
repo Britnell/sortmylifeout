@@ -1,5 +1,5 @@
 import { localToday } from '@/lib/date'
-import Icon from '@/components/Icon'
+import PageNavHeading from '@/components/PageNavHeading'
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -198,11 +198,8 @@ function ShoppingPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
-      <div className="flex items-center justify-between bg-white px-4 py-2">
-        <h1 className="text-base font-semibold text-neutral-900 flex gap-1 items-center">
-          <Icon name="shopping" />
-          Shopping
-        </h1>
+      <div className="menu-bar flex items-center justify-between bg-white px-4 py-2">
+        <PageNavHeading page="shopping" />
         <button
           onClick={openNew}
           className="rounded-md bg-[var(--primary)] px-4 py-2 text-[13px] font-medium text-neutral-900"

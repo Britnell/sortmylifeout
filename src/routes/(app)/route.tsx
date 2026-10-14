@@ -55,7 +55,7 @@ function RouteComponent() {
   return (
     <>
       <div className="flex min-h-screen flex-col">
-        <header className="flex h-11 shrink-0 items-center justify-between bg-[var(--primary)] px-4">
+        <header className="hidden sm:flex h-11 shrink-0 items-center justify-between bg-[var(--primary)] px-4">
           <span className="text-[15px] font-semibold text-[var(--primary-foreground)]">
             🤜 Crush
           </span>
