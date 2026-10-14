@@ -10,7 +10,7 @@ import {
   deleteEventFn,
 } from '@/serverFn/queries.functions'
 
-interface CalendarEvent {
+export interface CalendarEvent {
   id: number
   user_id: string
   type: string
@@ -22,10 +22,10 @@ interface CalendarEvent {
   completed: string | null
 }
 
-interface EditState {
+export interface EditState {
   id: number | null // null = creating
-  type: string
-  column: ColumnKey
+  type?: string
+  column?: ColumnKey
   title: string
   detail: string
   date: string
@@ -40,18 +40,18 @@ function weekAgo(): string {
   return d.toISOString().slice(0, 10)
 }
 
-function parseBegin(begin: string | null): { date: string; time: string } {
+export function parseBegin(begin: string | null): { date: string; time: string } {
   if (!begin) return { date: '', time: '' }
   const [datePart, timePart = ''] = begin.split('T')
   return { date: datePart, time: timePart.slice(0, 5) }
 }
 
-function buildBegin(date: string, time: string): string | undefined {
+export function buildBegin(date: string, time: string): string | undefined {
   if (!date) return undefined
   return time ? `${date}T${time}` : date
 }
 
-function fmtDayLabel(dateStr: string): string {
+export function fmtDayLabel(dateStr: string): string {
   if (!dateStr || !/^\d{4}-\d{2}-\d{2}/.test(dateStr))
     console.warn('[TodoBoard] invalid begin date:', JSON.stringify(dateStr))
   const d = new Date(`${dateStr}T00:00:00`)
@@ -79,9 +79,17 @@ interface EditorProps {
   onCancel: () => void
   onSave: (e: EditState) => void
   onDelete?: (id: number) => void
+  placeholder?: string
 }
 
-function Editor({ value: e, onChange, onCancel, onSave, onDelete }: EditorProps) {
+export function Editor({
+  value: e,
+  onChange,
+  onCancel,
+  onSave,
+  onDelete,
+  placeholder = 'Title',
+}: EditorProps) {
   return (
     <div className="rounded-md border border-neutral-800 bg-[#E7E8E5] p-3 space-y-2.5">
       <input
@@ -90,7 +98,7 @@ function Editor({ value: e, onChange, onCancel, onSave, onDelete }: EditorProps)
         value={e.title}
         onChange={(ev) => onChange({ ...e, title: ev.target.value })}
         onKeyDown={(ev) => ev.key === 'Enter' && onSave(e)}
-        placeholder="Title"
+        placeholder={placeholder}
         className="w-full bg-transparent border-b border-neutral-400 focus:border-neutral-800 outline-none py-0.5 text-sm font-medium"
       />
       <input
@@ -149,13 +157,14 @@ function Editor({ value: e, onChange, onCancel, onSave, onDelete }: EditorProps)
 
 interface ItemProps {
   event: CalendarEvent
-  column: ColumnKey
+  column?: ColumnKey
   onEdit: () => void
   onToggle: () => void
 }
 
-function Item({ event: ev, column, onEdit, onToggle }: ItemProps) {
+export function Item({ event: ev, column, onEdit, onToggle }: ItemProps) {
   const { time } = parseBegin(ev.begin)
+  const showTime = time && column !== 'finished'
   return (
     <div
       key={ev.id}
@@ -181,7 +190,7 @@ function Item({ event: ev, column, onEdit, onToggle }: ItemProps) {
           {ev.type}
         </span>
       )}
-      {(column === 'scheduled' || column === 'overdue') && time && (
+      {showTime && (
         <span className="shrink-0 font-mono text-[11px] text-neutral-500">
           {time}
         </span>
@@ -194,7 +203,7 @@ interface DateGroupProps {
   date: string
 }
 
-function DateGroup({ date }: DateGroupProps) {
+export function DateGroup({ date }: DateGroupProps) {
   return (
     <span className="text-[13px] font-semibold leading-tight text-neutral-900">
       {fmtDayLabel(date)}
