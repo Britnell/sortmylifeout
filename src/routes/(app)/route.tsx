@@ -10,8 +10,8 @@ import { authClient } from '../../lib/auth-client'
 import { ChatPanel } from '@/components/ChatPanel'
 import Sidebar from '@/components/Sidebar'
 import Icon from '@/components/Icon'
-import type { CalView } from '@/components/CalViewSwitcher'
-import { useLocalStorage } from '@/lib/useLocalStorage'
+import { calViewAtom } from '@/lib/atoms'
+import { useAtomValue } from 'jotai'
 import { useAtom } from 'jotai'
 import { sidebarOpenAtom } from '@/lib/atoms'
 
@@ -24,7 +24,7 @@ function RouteComponent() {
   const navigate = useNavigate()
   const location = useRouterState({ select: (s) => s.location })
   const [sidebarOpen, setSidebarOpen] = useAtom(sidebarOpenAtom)
-  const [lastCalView] = useLocalStorage<CalView>('cal-last-view', '/cal/month')
+  const lastCalView = useAtomValue(calViewAtom)
 
   const hideSidebar =
     location.pathname.startsWith('/todo') ||

@@ -1,6 +1,7 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { useLocalStorage } from '@/lib/useLocalStorage'
+import { useSetAtom } from 'jotai'
+import { calViewAtom } from '@/lib/atoms'
 import { CalendarDays, Columns3, AlarmClock, List } from 'lucide-react'
 
 const views = [
@@ -15,14 +16,12 @@ export type CalView = (typeof views)[number]['to']
 export default function CalViewSwitcher() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const active = views.find((v) => pathname.startsWith(v.to)) ?? views[0]
-  const [, setLastCalView] = useLocalStorage<CalView>(
-    'cal-last-view',
-    '/cal/month',
-  )
+  const setCalView = useSetAtom(calViewAtom)
 
   useEffect(() => {
-    setLastCalView(active.to)
-  }, [active.to])
+    if (!pathname.startsWith('/cal')) return
+    setCalView(active.to)
+  }, [active.to, setCalView, pathname])
 
   return (
     <div className="ml-auto flex bg-white border border-[#CBCCC9] rounded-lg overflow-hidden">

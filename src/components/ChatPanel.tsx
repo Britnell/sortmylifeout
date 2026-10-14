@@ -16,8 +16,8 @@ import { Mic, X } from 'lucide-react'
 // import type { Message } from '../serverFn/types'
 // import { sendChatFn } from '../serverFn/queries.functions'
 import Icon from './Icon'
-import type { CalView } from './CalViewSwitcher'
-import { useLocalStorage } from '../lib/useLocalStorage'
+import { calViewAtom } from '@/lib/atoms'
+import { useAtomValue } from 'jotai'
 
 // JEV agent (inactive):
 // let nextId = 0
@@ -175,7 +175,7 @@ export function ChatPanel() {
   }
 
   const pathname = useRouterState({ select: (s) => s.location.pathname })
-  const [lastCalView] = useLocalStorage<CalView>('cal-last-view', '/cal/month')
+  const lastCalView = useAtomValue(calViewAtom)
   const isCal = pathname.startsWith('/cal')
   const isTodo = pathname === '/todo'
   const isShopping = pathname === '/shopping'
