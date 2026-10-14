@@ -57,7 +57,10 @@ function ShoppingPage() {
 
   const { data: events = [] } = useQuery({
     queryKey: ['shopping', 'events'],
-    queryFn: () => searchEventsFn({ data: { type: 'shopping' } }),
+    queryFn: () =>
+      searchEventsFn({
+        data: { type: 'shopping', completed_date: localToday() },
+      }),
   })
 
   const invalidate = () =>
