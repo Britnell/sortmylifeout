@@ -1,12 +1,13 @@
 #!/usr/bin/env bun
 // Usage: bun scripts/test-wazap.ts [message] [url]
 // Sends a fake WhatsApp webhook POST to your local dev server
+export {}
 
 const APP_SECRET = process.env.FB_APP_SECRET
 if (!APP_SECRET) throw new Error('FB_APP_SECRET env var required')
 const FROM_NUMBER = '447700900000'
 const MESSAGE = process.argv[2] ?? 'Hello, what events do I have today?'
-const URL = process.argv[3] ?? 'http://localhost:3000/api/wazap'
+const ENDPOINT = process.argv[3] ?? 'http://localhost:3000/api/wazap'
 
 const payload = {
 	object: 'whatsapp_business_account',
@@ -55,11 +56,11 @@ const signature =
 		.map((b) => b.toString(16).padStart(2, '0'))
 		.join('')
 
-console.log(`Sending to: ${URL}`)
+console.log(`Sending to: ${ENDPOINT}`)
 console.log(`From: +${FROM_NUMBER}`)
 console.log(`Message: "${MESSAGE}"`)
 
-const res = await fetch(URL, {
+const res = await fetch(ENDPOINT, {
 	method: 'POST',
 	headers: {
 		'Content-Type': 'application/json',

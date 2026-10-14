@@ -1,10 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { env } from 'cloudflare:workers'
 
-function base64urlDecode(input: string): Uint8Array {
+function base64urlDecode(input: string): Uint8Array<ArrayBuffer> {
   const base64 = input.replace(/-/g, '+').replace(/_/g, '/')
   const binary = atob(base64)
-  return Uint8Array.from(binary, (c) => c.charCodeAt(0))
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+  return bytes
 }
 
 async function parseSignedRequest(signedRequest: string) {

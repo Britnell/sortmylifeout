@@ -1,13 +1,10 @@
 import { Plus } from 'lucide-react'
-import type { ReactNode } from 'react'
 import CalViewSwitcher from '@/components/CalViewSwitcher'
 import SidebarToggleButton from '@/components/SidebarToggleButton'
 
 export default function CalendarMenuBar({
-  children,
   onAdd,
 }: {
-  children?: ReactNode
   onAdd: () => void
 }) {
   return (

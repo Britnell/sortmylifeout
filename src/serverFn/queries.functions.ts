@@ -106,6 +106,7 @@ export const searchEventsFn = createServerFn({ method: 'GET' })
       date_to?: string
       type?: string
       completed?: boolean
+      completed_date?: string
     }) => d,
   )
   .handler(async ({ data }) => {

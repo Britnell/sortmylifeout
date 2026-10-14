@@ -1,7 +1,6 @@
 // Seeds the LOCAL d1 dev db with your real user (copied from remote) + sample events
 // usage: bun run scripts/seed-local.ts
 import { execSync } from 'node:child_process'
-import { webcrypto } from 'node:crypto'
 
 // your real remote user + credential account (password hash copied from remote db)
 const UID = 'HE5JjdP6ORZqBFSAnkIC50e83S71Wmfr'
@@ -11,7 +10,6 @@ const ACCOUNT = {
 		'pbkdf2:19324bc4eefeecbeecc1c1c1792e60d9:c507f49bc58741f532aa66f9bea65f7a40c791adeeef560e7f5c0e365a14bedc',
 }
 const now = Date.now()
-const week = 60 * 60 * 24 * 7 * 1000
 const day = (offset: number) => new Date(now + offset * 60 * 60 * 24 * 1000).toISOString().slice(0, 10)
 
 const titles = ['Team standup', 'Dentist', 'Weekend trip', 'Fix calendar bug', 'Buy milk', 'Coffee beans', 'Paper towels']
@@ -29,7 +27,7 @@ const events = [
 const rows = events
 	.map(
 		([type, title, detail, completed, allDay, begin, end]) =>
-			`('${UID}','${type}','${title.replace(/'/g, "''")}','${detail.replace(/'/g, "''")}',${completed},${allDay ?? 'NULL'},${begin ? `'${begin}'` : 'NULL'},${end ? `'${end}'` : 'NULL'})`,
+			`('${UID}','${type}','${String(title).replace(/'/g, "''")}','${String(detail ?? '').replace(/'/g, "''")}',${completed},${allDay ?? 'NULL'},${begin ? `'${begin}'` : 'NULL'},${end ? `'${end}'` : 'NULL'})`,
 	)
 	.join(',\n')
 

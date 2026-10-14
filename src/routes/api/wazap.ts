@@ -41,7 +41,7 @@ export const Route = createFileRoute('/api/wazap')({
         for (const entry of payload.entry) {
           for (const change of entry.changes) {
             if (change.field !== 'messages') continue
-            const { messages, statuses, contacts } = change.value
+            const { messages } = change.value
 
             const textBodies = (messages ?? [])
               .filter((m) => m.type === 'text')

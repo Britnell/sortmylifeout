@@ -30,7 +30,7 @@ export const Route = createFileRoute('/api/emila')({
           waitUntil(prom)
           return new Response('ok', { status: 200 })
         } catch (e) {
-          console.log(e.message)
+          console.log((e as Error).message)
           return new Response('nope', { status: 500 })
         }
       },

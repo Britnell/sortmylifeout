@@ -105,7 +105,7 @@ function RouteComponent() {
 
         <div className="flex flex-1">
           {/* Main content */}
-          <main className="flex-1 min-w-0">{data && <Outlet />}</main>
+          <main className="flex-1 min-w-0 mb-20">{data && <Outlet />}</main>
 
           {/* Right sidebar */}
           <aside
