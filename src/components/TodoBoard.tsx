@@ -312,16 +312,18 @@ function ColumnTabs({ activeCol, onSelect }: ColumnTabsProps) {
             key={col.key}
             aria-label={col.title}
             onClick={() => onSelect(i)}
-            className={`flex items-center gap-1.5 px-3.5 md:px-4 py-2 text-[13px] font-medium transition-colors ${
+            className={`block px-2.5 md:px-4 py-2 text-[11px] md:text-[13px] font-medium transition-colors ${
               isActive
                 ? 'bg-[var(--primary)] text-[#111111]'
                 : 'text-[#666666] hover:bg-[#F2F3F0]'
             }`}
           >
-            <col.Icon size={14} strokeWidth={2} className="shrink-0" />
-            {/* Mobile: only the active tab shows its label */}
-            <span className={isActive ? '' : 'hidden md:inline'}>
-              {col.title}
+            <span className="flex items-center gap-1.5 leading-none">
+              <col.Icon size={14} strokeWidth={2} className="shrink-0" />
+              {/* Mobile: only the active tab shows its label */}
+              <span className={isActive ? '' : 'hidden md:inline'}>
+                {col.title}
+              </span>
             </span>
           </button>
         )
