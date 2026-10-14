@@ -73,6 +73,295 @@ const COLS: {
   { key: 'finished', title: 'Finished', Icon: SquareCheck },
 ]
 
+interface EditorProps {
+  value: EditState
+  onChange: (next: EditState) => void
+  onCancel: () => void
+  onSave: (e: EditState) => void
+  onDelete?: (id: number) => void
+}
+
+function Editor({ value: e, onChange, onCancel, onSave, onDelete }: EditorProps) {
+  return (
+    <div className="rounded-md border border-neutral-800 bg-[#E7E8E5] p-3 space-y-2.5">
+      <input
+        autoFocus
+        type="text"
+        value={e.title}
+        onChange={(ev) => onChange({ ...e, title: ev.target.value })}
+        onKeyDown={(ev) => ev.key === 'Enter' && onSave(e)}
+        placeholder="Title"
+        className="w-full bg-transparent border-b border-neutral-400 focus:border-neutral-800 outline-none py-0.5 text-sm font-medium"
+      />
+      <input
+        type="text"
+        value={e.detail}
+        onChange={(ev) => onChange({ ...e, detail: ev.target.value })}
+        placeholder="Description"
+        className="w-full bg-transparent border-b border-neutral-300 focus:border-neutral-800 outline-none py-0.5 text-sm text-neutral-600"
+      />
+      <div className="flex gap-2">
+        <input
+          type="date"
+          value={e.date}
+          onChange={(ev) => onChange({ ...e, date: ev.target.value })}
+          className="flex-1 min-w-0 rounded-md border border-neutral-300 px-2.5 py-1.5 font-mono text-xs"
+        />
+        <input
+          type="time"
+          value={e.time}
+          onChange={(ev) => onChange({ ...e, time: ev.target.value })}
+          className="w-18 rounded-md border border-neutral-300 px-2.5 py-1.5 font-mono text-xs"
+        />
+        <button
+          onClick={() => onChange({ ...e, date: '', time: '' })}
+          className="w-9 rounded-md border border-neutral-300 font-mono text-xs hover:bg-neutral-100"
+        >
+          ✕
+        </button>
+      </div>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => (e.id === null ? onCancel() : onDelete?.(e.id!))}
+          className="text-xs font-medium text-[#D93C15]"
+        >
+          {e.id === null ? 'Cancel' : 'Delete'}
+        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={onCancel}
+            className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium hover:bg-neutral-100"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onSave(e)}
+            disabled={!e.title.trim()}
+            className="rounded-md bg-[var(--primary)] px-3 py-1.5 text-xs font-medium disabled:opacity-40"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+interface ItemProps {
+  event: CalendarEvent
+  column: ColumnKey
+  onEdit: () => void
+  onToggle: () => void
+}
+
+function Item({ event: ev, column, onEdit, onToggle }: ItemProps) {
+  const { time } = parseBegin(ev.begin)
+  return (
+    <div
+      key={ev.id}
+      onClick={onEdit}
+      className="flex cursor-pointer items-center gap-3 rounded-md border border-neutral-300 px-3 py-2.5 hover:border-neutral-400"
+    >
+      <input
+        type="checkbox"
+        checked={!!ev.completed}
+        onClick={(e) => e.stopPropagation()}
+        onChange={onToggle}
+        className="h-3.5 w-3.5 shrink-0 accent-neutral-900"
+      />
+      <span
+        className={`flex-1 min-w-0 truncate text-sm font-medium ${
+          ev.completed ? 'text-neutral-400 line-through' : 'text-neutral-900'
+        }`}
+      >
+        {ev.title}
+      </span>
+      {column === 'finished' && (
+        <span className="shrink-0 rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-neutral-500">
+          {ev.type}
+        </span>
+      )}
+      {(column === 'scheduled' || column === 'overdue') && time && (
+        <span className="shrink-0 font-mono text-[11px] text-neutral-500">
+          {time}
+        </span>
+      )}
+    </div>
+  )
+}
+
+interface DateGroupProps {
+  date: string
+}
+
+function DateGroup({ date }: DateGroupProps) {
+  return (
+    <span className="text-[13px] font-semibold leading-tight text-neutral-900">
+      {fmtDayLabel(date)}
+    </span>
+  )
+}
+
+interface ColumnProps {
+  col: (typeof COLS)[number]
+  active: boolean
+  items: CalendarEvent[]
+  newEditor: EditState | null
+  onAdd: () => void
+  onCancelNew: () => void
+  onChange: (next: EditState) => void
+  onSave: (e: EditState) => void
+  setRef: (el: HTMLDivElement | null) => void
+  children?: React.ReactNode
+}
+
+function Column({
+  col,
+  active,
+  items,
+  newEditor,
+  onAdd,
+  onCancelNew,
+  onChange,
+  onSave,
+  setRef,
+  children,
+}: ColumnProps) {
+  const isEditingNew = !!newEditor
+  return (
+    <div
+      ref={setRef}
+      className={`flex h-fit w-full shrink-0 flex-col  gap-2.5 rounded-lg border border-neutral-300 bg-white md:w-95 ${
+        active ? 'flex' : 'hidden md:flex'
+      } ${items.length ? 'min-h-64' : ''}`}
+    >
+      {/* Column header */}
+      <div
+        className={`m-0 flex items-center rounded-t-lg border-b px-3 py-3 ${
+          active
+            ? 'bg-[var(--primary)] border-b-[var(--primary)]'
+            : 'bg-white border-b-neutral-400'
+        }`}
+      >
+        <span className="flex items-center gap-1.5 text-sm font-semibold text-neutral-900">
+          {col.title}
+        </span>
+        <span className="ml-auto text-sm opacity-60">{items.length} items</span>
+        <button
+          onClick={onAdd}
+          className="ml-auto  hover:bg-amber-300 flex size-8 -my-2 items-center justify-center rounded bg-transparent text-sm font-bold leading-none text-neutral-900 hover:text-neutral-600"
+          aria-label={`Add to ${col.title}`}
+        >
+          +
+        </button>
+      </div>
+      {/* Items */}
+      <div
+        className="flex flex-col gap-2 px-3 pb-3 overflow-auto max-h-[calc(100vh-14rem)]"
+        onClick={(e) => {
+          if (e.target === e.currentTarget && isEditingNew) onCancelNew()
+        }}
+      >
+        {children}
+        {isEditingNew && newEditor && (
+          <Editor
+            value={newEditor}
+            onChange={onChange}
+            onCancel={onCancelNew}
+            onSave={onSave}
+          />
+        )}
+        {items.length === 0 && !isEditingNew && (
+          <button
+            onClick={onAdd}
+            className="rounded-md border border-dashed border-neutral-300 py-2.5 text-xs text-neutral-400 hover:border-neutral-400 hover:text-neutral-600"
+          >
+            + Add item
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+interface ColumnTabsProps {
+  activeCol: ColumnKey
+  onSelect: (i: number) => void
+}
+
+function ColumnTabs({ activeCol, onSelect }: ColumnTabsProps) {
+  return (
+    <div className="ml-auto sm:mx-auto flex items-center overflow-hidden rounded-lg border border-[#CBCCC9] bg-white">
+      {COLS.map((col, i) => {
+        const isActive = activeCol === col.key
+        return (
+          <button
+            key={col.key}
+            aria-label={col.title}
+            onClick={() => onSelect(i)}
+            className={`flex items-center gap-1.5 px-3.5 md:px-4 py-2 text-[13px] font-medium transition-colors ${
+              isActive
+                ? 'bg-[var(--primary)] text-[#111111]'
+                : 'text-[#666666] hover:bg-[#F2F3F0]'
+            }`}
+          >
+            <col.Icon size={14} strokeWidth={2} className="shrink-0" />
+            {/* Mobile: only the active tab shows its label */}
+            <span className={isActive ? '' : 'hidden md:inline'}>
+              {col.title}
+            </span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+interface ItemListProps {
+  items: CalendarEvent[]
+  column: ColumnKey
+  editing: EditState | null
+  onEdit: (ev: CalendarEvent, column: ColumnKey) => void
+  onToggle: (ev: CalendarEvent) => void
+  onChange: (next: EditState) => void
+  onCancel: () => void
+  onSave: (e: EditState) => void
+  onDelete: (id: number) => void
+}
+
+function ItemList({
+  items,
+  column,
+  editing,
+  onEdit,
+  onToggle,
+  onChange,
+  onCancel,
+  onSave,
+  onDelete,
+}: ItemListProps) {
+  return items.map((ev) =>
+    editing?.id === ev.id && editing ? (
+      <Editor
+        key={ev.id}
+        value={editing}
+        onChange={onChange}
+        onCancel={onCancel}
+        onSave={onSave}
+        onDelete={onDelete}
+      />
+    ) : (
+      <Item
+        key={ev.id}
+        event={ev}
+        column={column}
+        onEdit={() => onEdit(ev, column)}
+        onToggle={() => onToggle(ev)}
+      />
+    ),
+  )
+}
+
 export default function TodoBoard() {
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState<EditState | null>(null)
@@ -194,118 +483,6 @@ export default function TodoBoard() {
     else updateMutation.mutate(e)
   }
 
-  const renderEditor = (e: EditState) => (
-    <div className="rounded-md border border-neutral-800 bg-[#E7E8E5] p-3 space-y-2.5">
-      <input
-        autoFocus
-        type="text"
-        value={e.title}
-        onChange={(ev) => setEditing({ ...e, title: ev.target.value })}
-        onKeyDown={(ev) => ev.key === 'Enter' && save(e)}
-        placeholder="Title"
-        className="w-full bg-transparent border-b border-neutral-400 focus:border-neutral-800 outline-none py-0.5 text-sm font-medium"
-      />
-      <input
-        type="text"
-        value={e.detail}
-        onChange={(ev) => setEditing({ ...e, detail: ev.target.value })}
-        placeholder="Description"
-        className="w-full bg-transparent border-b border-neutral-300 focus:border-neutral-800 outline-none py-0.5 text-sm text-neutral-600"
-      />
-      <div className="flex gap-2">
-        <input
-          type="date"
-          value={e.date}
-          onChange={(ev) => setEditing({ ...e, date: ev.target.value })}
-          className="flex-1 min-w-0 rounded-md border border-neutral-300 px-2.5 py-1.5 font-mono text-xs"
-        />
-        <input
-          type="time"
-          value={e.time}
-          onChange={(ev) => setEditing({ ...e, time: ev.target.value })}
-          className="w-18 rounded-md border border-neutral-300 px-2.5 py-1.5 font-mono text-xs"
-        />
-        <button
-          onClick={() => setEditing({ ...e, date: '', time: '' })}
-          className="w-9 rounded-md border border-neutral-300 font-mono text-xs hover:bg-neutral-100"
-        >
-          ✕
-        </button>
-      </div>
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() =>
-            e.id === null ? setEditing(null) : deleteMutation.mutate(e.id)
-          }
-          className="text-xs font-medium text-[#D93C15]"
-        >
-          {e.id === null ? 'Cancel' : 'Delete'}
-        </button>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setEditing(null)}
-            className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium hover:bg-neutral-100"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => save(e)}
-            disabled={!e.title.trim()}
-            className="rounded-md bg-[var(--primary)] px-3 py-1.5 text-xs font-medium disabled:opacity-40"
-          >
-            Save
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderItem = (ev: CalendarEvent, column: ColumnKey) => {
-    if (editing?.id === ev.id) return renderEditor(editing)
-    const { time } = parseBegin(ev.begin)
-    return (
-      <div
-        key={ev.id}
-        onClick={() =>
-          setEditing({
-            id: ev.id,
-            type: ev.type,
-            column,
-            title: ev.title,
-            detail: ev.detail ?? '',
-            ...parseBegin(ev.begin),
-          })
-        }
-        className="flex cursor-pointer items-center gap-3 rounded-md border border-neutral-300 px-3 py-2.5 hover:border-neutral-400"
-      >
-        <input
-          type="checkbox"
-          checked={!!ev.completed}
-          onClick={(e) => e.stopPropagation()}
-          onChange={() => toggleMutation.mutate(ev)}
-          className="h-3.5 w-3.5 shrink-0 accent-neutral-900"
-        />
-        <span
-          className={`flex-1 min-w-0 truncate text-sm font-medium ${
-            ev.completed ? 'text-neutral-400 line-through' : 'text-neutral-900'
-          }`}
-        >
-          {ev.title}
-        </span>
-        {column === 'finished' && (
-          <span className="shrink-0 rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-neutral-500">
-            {ev.type}
-          </span>
-        )}
-        {(column === 'scheduled' || column === 'overdue') && time && (
-          <span className="shrink-0 font-mono text-[11px] text-neutral-500">
-            {time}
-          </span>
-        )}
-      </div>
-    )
-  }
-
   // group scheduled/overdue by date
   const groupByDate = (items: CalendarEvent[]) => {
     const groups: { date: string; items: CalendarEvent[] }[] = []
@@ -320,6 +497,17 @@ export default function TodoBoard() {
   const scheduledGroups = groupByDate(cols.scheduled)
   const overdueGroups = groupByDate(cols.overdue)
 
+  const onEditItem = (ev: CalendarEvent, column: ColumnKey) => {
+    setEditing({
+      id: ev.id,
+      type: ev.type,
+      column,
+      title: ev.title,
+      detail: ev.detail ?? '',
+      ...parseBegin(ev.begin),
+    })
+  }
+
   return (
     <div className="flex h-[calc(100vh-2.75rem)] flex-col gap-3 ">
       {/* Toolbar */}
@@ -329,29 +517,7 @@ export default function TodoBoard() {
           Todos
         </h1>
         {/* Tabs */}
-        <div className="ml-auto sm:mx-auto flex items-center overflow-hidden rounded-lg border border-[#CBCCC9] bg-white">
-          {COLS.map((col, i) => {
-            const isActive = activeCol === col.key
-            return (
-              <button
-                key={col.key}
-                aria-label={col.title}
-                onClick={() => setColIdx(i)}
-                className={`flex items-center gap-1.5 px-3.5 md:px-4 py-2 text-[13px] font-medium transition-colors ${
-                  isActive
-                    ? 'bg-[var(--primary)] text-[#111111]'
-                    : 'text-[#666666] hover:bg-[#F2F3F0]'
-                }`}
-              >
-                <col.Icon size={14} strokeWidth={2} className="shrink-0" />
-                {/* Mobile: only the active tab shows its label */}
-                <span className={isActive ? '' : 'hidden md:inline'}>
-                  {col.title}
-                </span>
-              </button>
-            )
-          })}
-        </div>
+        <ColumnTabs activeCol={activeCol} onSelect={setColIdx} />
         <button
           onClick={() => openNew('todo')}
           className="ml-auto hidden sm:block rounded-md bg-[var(--primary)] px-4 py-2 text-[13px] font-medium text-neutral-900"
@@ -362,82 +528,63 @@ export default function TodoBoard() {
 
       {/* Board */}
       <div className="flex min-h-0 flex-1 gap-3 pb-4 overflow-x-auto">
-        {COLS.map((col) => {
-          const isEditingNew =
-            editing?.id === null && editing?.column === col.key
+        {COLS.map((col, i) => {
           const items = cols[col.key]
+          const grouped =
+            col.key === 'scheduled'
+              ? scheduledGroups
+              : col.key === 'overdue'
+                ? overdueGroups
+                : null
           return (
-            <div
+            <Column
               key={col.key}
-              ref={(el) => {
-                colRefs.current[COLS.indexOf(col)] = el
+              col={col}
+              active={activeCol === col.key}
+              items={items}
+              newEditor={
+                editing?.id === null && editing?.column === col.key
+                  ? editing
+                  : null
+              }
+              onAdd={() => openNew(col.key)}
+              onCancelNew={() => setEditing(null)}
+              onChange={setEditing}
+              onSave={save}
+              setRef={(el) => {
+                colRefs.current[i] = el
               }}
-              className={`flex h-fit w-full shrink-0 flex-col  gap-2.5 rounded-lg border border-neutral-300 bg-white md:w-95 ${
-                activeCol === col.key ? 'flex' : 'hidden md:flex'
-              } ${items.length ? 'min-h-64' : ''}`}
             >
-              {/* Column header */}
-              <div
-                className={`m-0 flex items-center rounded-t-lg border-b px-3 py-3 ${
-                  activeCol === col.key
-                    ? 'bg-[var(--primary)] border-b-[var(--primary)]'
-                    : 'bg-white border-b-neutral-400'
-                }`}
-              >
-                <span className="flex items-center gap-1.5 text-sm font-semibold text-neutral-900">
-                  {col.title}
-                </span>
-                <span className="ml-auto text-sm opacity-60">
-                  {items.length} items
-                </span>
-                <button
-                  onClick={() => openNew(col.key)}
-                  className="ml-auto  hover:bg-amber-300 flex size-8 -my-2 items-center justify-center rounded bg-transparent text-sm font-bold leading-none text-neutral-900 hover:text-neutral-600"
-                  aria-label={`Add to ${col.title}`}
-                >
-                  +
-                </button>
-              </div>
-              {/* Items */}
-              <div
-                className="flex flex-col gap-2 px-3 pb-3 overflow-auto max-h-[calc(100vh-14rem)]"
-                onClick={(e) => {
-                  if (e.target === e.currentTarget && isEditingNew)
-                    setEditing(null)
-                }}
-              >
-                {col.key === 'scheduled'
-                  ? scheduledGroups.flatMap((g) => [
-                      <span
-                        key={g.date}
-                        className="text-[13px] font-semibold leading-tight text-neutral-900"
-                      >
-                        {fmtDayLabel(g.date)}
-                      </span>,
-                      ...g.items.map((ev) => renderItem(ev, col.key)),
-                    ])
-                  : col.key === 'overdue'
-                    ? overdueGroups.flatMap((g) => [
-                        <span
-                          key={g.date}
-                          className="text-[13px] font-semibold leading-tight text-neutral-900"
-                        >
-                          {fmtDayLabel(g.date)}
-                        </span>,
-                        ...g.items.map((ev) => renderItem(ev, col.key)),
-                      ])
-                    : items.map((ev) => renderItem(ev, col.key))}{' '}
-                {isEditingNew && renderEditor(editing!)}
-                {items.length === 0 && !isEditingNew && (
-                  <button
-                    onClick={() => openNew(col.key)}
-                    className="rounded-md border border-dashed border-neutral-300 py-2.5 text-xs text-neutral-400 hover:border-neutral-400 hover:text-neutral-600"
-                  >
-                    + Add item
-                  </button>
-                )}
-              </div>
-            </div>
+              {grouped
+                ? grouped.flatMap((g) => [
+                    <DateGroup key={g.date} date={g.date} />,
+                    <ItemList
+                      key={g.date + '-items'}
+                      items={g.items}
+                      column={col.key}
+                      editing={editing}
+                      onEdit={onEditItem}
+                      onToggle={toggleMutation.mutate}
+                      onChange={setEditing}
+                      onCancel={() => setEditing(null)}
+                      onSave={save}
+                      onDelete={deleteMutation.mutate}
+                    />,
+                  ])
+                : (
+                    <ItemList
+                      items={items}
+                      column={col.key}
+                      editing={editing}
+                      onEdit={onEditItem}
+                      onToggle={toggleMutation.mutate}
+                      onChange={setEditing}
+                      onCancel={() => setEditing(null)}
+                      onSave={save}
+                      onDelete={deleteMutation.mutate}
+                    />
+                  )}
+            </Column>
           )
         })}
       </div>
