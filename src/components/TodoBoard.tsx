@@ -31,6 +31,7 @@ export interface EditState {
   detail: string
   date: string
   time: string
+  completed?: string | null
 }
 
 type ColumnKey = 'todo' | 'scheduled' | 'overdue' | 'finished'
@@ -83,6 +84,7 @@ interface EditorProps {
   onCancel: () => void
   onSave: (e: EditState) => void
   onDelete?: (id: number) => void
+  onToggle?: () => void
   placeholder?: string
 }
 
@@ -92,19 +94,36 @@ export function Editor({
   onCancel,
   onSave,
   onDelete,
+  onToggle,
   placeholder = 'Title',
 }: EditorProps) {
   return (
     <div className="rounded-md border border-neutral-800 bg-[#E7E8E5] p-3 space-y-2.5">
-      <input
-        autoFocus
-        type="text"
-        value={e.title}
-        onChange={(ev) => onChange({ ...e, title: ev.target.value })}
-        onKeyDown={(ev) => ev.key === 'Enter' && onSave(e)}
-        placeholder={placeholder}
-        className="w-full bg-transparent border-b border-neutral-400 focus:border-neutral-800 outline-none py-0.5 font-medium"
-      />
+      <div className="flex items-center gap-2.5">
+        {onToggle && (
+          <button
+            onClick={onToggle}
+            aria-label="Toggle completed"
+            className="flex size-7 -m-2 shrink-0 items-center justify-center rounded"
+          >
+            <input
+              type="checkbox"
+              readOnly
+              checked={!!e.completed}
+              className="pointer-events-none h-3.5 w-3.5 accent-neutral-900"
+            />
+          </button>
+        )}
+        <input
+          autoFocus
+          type="text"
+          value={e.title}
+          onChange={(ev) => onChange({ ...e, title: ev.target.value })}
+          onKeyDown={(ev) => ev.key === 'Enter' && onSave(e)}
+          placeholder={placeholder}
+          className="min-w-0 flex-1 bg-transparent border-b border-neutral-400 focus:border-neutral-800 outline-none py-0.5 font-medium"
+        />
+      </div>
       <input
         type="text"
         value={e.detail}
@@ -173,15 +192,22 @@ export function Item({ event: ev, column, onEdit, onToggle }: ItemProps) {
     <div
       key={ev.id}
       onClick={onEdit}
-      className="flex cursor-pointer items-center gap-3 rounded-md border border-neutral-300 px-3 py-2.5 hover:border-neutral-400"
+      className="flex cursor-pointer items-center gap-3 rounded-md border border-neutral-300 px-3 py-2 hover:border-neutral-400"
     >
-      <input
-        type="checkbox"
-        checked={!!ev.completed}
-        onClick={(e) => e.stopPropagation()}
-        onChange={onToggle}
-        className="h-3.5 w-3.5 shrink-0 accent-neutral-900"
-      />
+      <label
+        onClick={(e) => {
+          e.stopPropagation()
+          onToggle()
+        }}
+        className="flex size-7 -m-2 shrink-0 cursor-pointer items-center justify-center rounded"
+      >
+        <input
+          type="checkbox"
+          readOnly
+          checked={!!ev.completed}
+          className="pointer-events-none h-3.5 w-3.5 accent-neutral-900"
+        />
+      </label>
       <span
         className={`flex-1 min-w-0 truncate text-sm font-medium ${
           ev.completed ? 'text-neutral-400 line-through' : 'text-neutral-900'
@@ -359,11 +385,12 @@ function ItemList({
     editing?.id === ev.id && editing ? (
       <Editor
         key={ev.id}
-        value={editing}
+        value={{ ...editing, completed: ev.completed }}
         onChange={onChange}
         onCancel={onCancel}
         onSave={onSave}
         onDelete={onDelete}
+        onToggle={() => onToggle(ev)}
       />
     ) : (
       <Item

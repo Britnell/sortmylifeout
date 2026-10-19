@@ -170,14 +170,52 @@ function RouteComponent() {
   }
 
   const toggleTodo = (ev: CalendarEvent, checked: boolean) => {
-    updateMutation.mutate({
+    const vars = {
       id: ev.id,
       begin: ev.begin ?? '',
       allDay: !ev.begin?.includes('T'),
       title: ev.title,
       detail: ev.detail ?? undefined,
       completed: checked ? localToday() : false,
+    }
+    updateMutation.mutate(vars, {
+      onSuccess: () => {
+        updateQueryCachesWithEvents(queryClient, [
+          updatedEventRow(ev, vars),
+        ])
+      },
     })
+  }
+
+  const TodoCheckbox = ({ ev }: { ev: CalendarEvent }) => {
+    const done = !!ev.completed
+    return (
+      <button
+        className="-m-1.5 flex shrink-0 items-center justify-center p-1.5"
+        onClick={(e) => {
+          e.stopPropagation()
+          toggleTodo(ev, !done)
+        }}
+      >
+        <span
+          className={`h-3.5 w-3.5 rounded-[3px] border border-[#CBCCC9] flex items-center justify-center ${
+            done ? 'bg-[#111111] border-[#111111]' : 'bg-white'
+          }`}
+        >
+          {done && (
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M20 6 9 17l-5-5"
+                stroke="#FFFFFF"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+        </span>
+      </button>
+    )
   }
 
   const renderAllDayItem = (ev: CalendarEvent) => {
@@ -191,29 +229,7 @@ function RouteComponent() {
         }`}
         onClick={(e) => openEdit(ev, e)}
       >
-        {isTodo && (
-          <button
-            className={`h-3.5 w-3.5 shrink-0 rounded-[3px] border border-[#CBCCC9] flex items-center justify-center ${
-              done ? 'bg-[#111111] border-[#111111]' : 'bg-white'
-            }`}
-            onClick={(e) => {
-              e.stopPropagation()
-              toggleTodo(ev, !ev.completed)
-            }}
-          >
-            {done && (
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M20 6 9 17l-5-5"
-                  stroke="#FFFFFF"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            )}
-          </button>
-        )}
+        {isTodo && <TodoCheckbox ev={ev} />}
         <span className="text-[13px] text-[#111111]">{ev.title}</span>
       </div>
     )
@@ -233,29 +249,7 @@ function RouteComponent() {
           }`}
           onClick={(e) => openEdit(ev, e)}
         >
-          {isTodo && (
-            <button
-              className={`h-3.5 w-3.5 shrink-0 rounded-[3px] border border-[#CBCCC9] flex items-center justify-center ${
-                done ? 'bg-[#111111] border-[#111111]' : 'bg-white'
-              }`}
-              onClick={(e) => {
-                e.stopPropagation()
-                toggleTodo(ev, !ev.completed)
-              }}
-            >
-              {done && (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M20 6 9 17l-5-5"
-                    stroke="#FFFFFF"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              )}
-            </button>
-          )}
+          {isTodo && <TodoCheckbox ev={ev} />}
           <span className="text-[13px] text-[#111111]">{ev.title}</span>
           {ev.end?.includes('T') && (
             <span className="text-[11px] text-[#666666]">
