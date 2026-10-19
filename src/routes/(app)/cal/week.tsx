@@ -226,7 +226,7 @@ function RouteComponent() {
           ) : (
             <div
               key={wi}
-              className="grid grid-cols-7 gap-1 opacity-55 hidden md:gap-1 md:grid"
+              className="grid grid-cols-7 gap-1 opacity-55 hidden md:grid [@media(max-height:750px)]:hidden grow min-h-0 basis-0"
             >
               {weekDays.map((day) => (
                 <DayCell
@@ -380,10 +380,7 @@ function CurrentWeekGrid({
   // all-day rows: max visible count across the week
   return (
     <div
-      className="grid grid-cols-7 gap-x-0 md:gap-x-1 gap-y-0 flex-1 min-h-0"
-      style={{
-        gridTemplateRows: `auto repeat(2, 1fr)`,
-      }}
+      className="grid grid-cols-7 gap-x-0 md:gap-x-1 gap-y-0 min-h-0 shrink-0 grow-5 basis-0 [grid-template-rows:auto_repeat(2,minmax(min-content,1fr))]"
     >
       {/* header + all-day row */}
       {days.map(({ day, dateStr, isToday, allDayEvs }) => {
@@ -407,7 +404,7 @@ function CurrentWeekGrid({
                 </span>
               )}
             </div>
-            <div className="flex flex-col gap-1 pt-1.5 pb-1.5 px-2 bg-white border-x border-[#CBCCC9] flex-1 min-h-0 overflow-hidden">
+            <div className="flex flex-col gap-1 pt-1.5 pb-1.5 px-2 bg-white border-x border-[#CBCCC9] min-h-0">
               {visible.map((ev) => (
                 <Chip
                   key={ev.id}
@@ -475,7 +472,7 @@ function SectionCell({
   const rest = evs.length - visible.length
   return (
     <div
-      className={`bg-white border-x border-[#CBCCC9] p-1.5 flex flex-col gap-1 flex-1 border-t min-w-0 overflow-hidden ${rounded === 'bottom' ? 'border-b rounded-b-none md:rounded-b-md' : ''}`}
+      className={`bg-white border-x border-[#CBCCC9] p-1.5 flex flex-col gap-1 min-h-0 border-t ${rounded === 'bottom' ? 'border-b rounded-b-none md:rounded-b-md' : ''}`}
       onClick={() => onCreate(dateStr)}
     >
       <span className="text-[8px] font-mono text-[#8A8B87] leading-none">
@@ -498,7 +495,7 @@ function DayCell({ day, onCreate }: { day: Date; onCreate: () => void }) {
     <div
       role="button"
       tabIndex={0}
-      className="group flex flex-col text-left w-full cursor-pointer rounded-md border overflow-hidden bg-[#F2F3F0] border-[#CBCCC9] h-40"
+      className="group flex flex-col text-left w-full cursor-pointer rounded-md border overflow-hidden bg-[#F2F3F0] border-[#CBCCC9] min-h-[1.75rem]"
       onClick={onCreate}
     >
       <span className="text-[13px] font-semibold text-[#666666] px-2 pt-1.5">
